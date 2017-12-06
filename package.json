@@ -1,0 +1,40 @@
+{
+  "name": "node-test-bed-adapter",
+  "version": "0.0.1",
+  "description": "An adapter to connect a node.js application to the test-bed's Common Information Space or Common Simulation Space.",
+  "main": "./dist/lib/index.js",
+  "scripts": {
+    "build": "tsc -w",
+    "patch-release": "npm version patch && npm publish && git push --follow-tags",
+    "minor-release": "npm version minor && npm publish && git push --follow-tags",
+    "test": "jasmine JASMINE_CONFIG_PATH=src/test/jasmine.json || true",
+    "watch": "nodemon --exec npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DRIVER-EU/node-test-bed-adapter.git"
+  },
+  "keywords": [
+    "kafka",
+    "node",
+    "test-bed",
+    "cis",
+    "css"
+  ],
+  "author": "Erik Vullings <erik.vullings@gmail.com> (http://www.tno.nl)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DRIVER-EU/node-test-bed-adapter/issues"
+  },
+  "homepage": "https://github.com/DRIVER-EU/node-test-bed-adapter#readme",
+  "dependencies": {
+    "jasmine-ts": "^0.2.1",
+    "kafka-node": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^2.8.2",
+    "@types/kafka-node": "^2.0.3",
+    "@types/node": "^8.0.55",
+    "typescript": "^2.6.2"
+  }
+}
