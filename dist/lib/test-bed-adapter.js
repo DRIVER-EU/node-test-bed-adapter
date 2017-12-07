@@ -31,6 +31,18 @@ class TestBedAdapter extends events_1.EventEmitter {
             this.emit('reconnect');
         });
     }
+    pause() {
+        this.consumer.pause();
+    }
+    resume() {
+        this.consumer.resume();
+    }
+    pauseTopics(topics) {
+        this.consumer.pauseTopics(topics);
+    }
+    resumeTopics(topics) {
+        this.consumer.resumeTopics(topics);
+    }
     close() {
         timers_1.clearInterval(this.heartbeatId);
         this.client.close();
@@ -55,6 +67,23 @@ class TestBedAdapter extends events_1.EventEmitter {
         else {
             this.consumer.addTopics(offsetFetchRequests, cb, fromOffset);
         }
+    }
+    /**
+     * Load the metadata for all topics (in case of an empty array), or specific ones.
+     * @param topics If topics is an empty array, retreive the metadata of all topics
+     * @param cb callback function to return the metadata results
+     */
+    loadMetadataForTopics(topics, cb) {
+        if (!this.isConnected) {
+            cb('Client is not connected');
+        }
+        this.client.loadMetadataForTopics(topics, (error, results) => {
+            if (error) {
+                return console.error(error);
+            }
+            console.log(results);
+            // console.log('%j', _.get(results, '1.metadata'));
+        });
     }
     startHeartbeat() {
         this.isConnected = true;

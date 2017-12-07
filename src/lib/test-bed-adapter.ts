@@ -40,6 +40,22 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
+  public pause() {
+    this.consumer.pause();
+  }
+
+  public resume() {
+    this.consumer.resume();
+  }
+
+  public pauseTopics(topics: string[]) {
+    this.consumer.pauseTopics(topics);
+  }
+
+  public resumeTopics(topics: string[]) {
+    this.consumer.resumeTopics(topics);
+  }
+
   public close() {
     clearInterval(this.heartbeatId);
     this.client.close();
@@ -62,6 +78,22 @@ export class TestBedAdapter extends EventEmitter {
     } else {
       this.consumer.addTopics(offsetFetchRequests, cb, fromOffset);
     }
+  }
+
+  /**
+   * Load the metadata for all topics (in case of an empty array), or specific ones.
+   * @param topics If topics is an empty array, retreive the metadata of all topics
+   * @param cb callback function to return the metadata results
+   */
+  public loadMetadataForTopics(topics: string[], cb: (error?: any, results?: any) => any) {
+    if (!this.isConnected) { cb('Client is not connected'); }
+    (this.client as any).loadMetadataForTopics(topics, (error: Error, results?: any) => {
+      if (error) {
+        return console.error(error);
+      }
+      console.log(results);
+      // console.log('%j', _.get(results, '1.metadata'));
+    });
   }
 
   private startHeartbeat() {
@@ -91,7 +123,7 @@ export class TestBedAdapter extends EventEmitter {
       autoConnect: true,
       sslOptions: false,
       heartbeatInterval: 5000
-    } as ITestBedOptions, options)
+    } as ITestBedOptions, options);
   }
 
   private validateOptions(options: ITestBedOptions) {
