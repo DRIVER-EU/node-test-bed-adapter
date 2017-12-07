@@ -1,4 +1,4 @@
-import { TestBedAdapter } from '../lib/index';
+import { TestBedAdapter } from '../lib/index-debug';
 import { Message } from 'kafka-node';
 
 class Consumer {
