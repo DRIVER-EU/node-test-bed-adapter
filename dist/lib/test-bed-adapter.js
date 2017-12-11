@@ -48,6 +48,7 @@ class TestBedAdapter extends events_1.EventEmitter {
         this.client.close();
     }
     /**
+     * Add topics (encoding utf8)
      *
      * @param topics Array of topics to add
      * @param cb Callback
@@ -66,6 +67,28 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         else {
             this.consumer.addTopics(offsetFetchRequests, cb, fromOffset);
+        }
+    }
+    /**
+     * Add topics (encoding Buffer)
+     *
+     * @param topics Array of topics to add
+     * @param cb Callback
+     * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
+     */
+    addBinaryTopics(topics, cb, fromOffset) {
+        if (typeof topics === 'string') {
+            topics = [topics];
+        }
+        const offsetFetchRequests = topics.map(t => ({ topic: t }));
+        if (!this.binaryConsumer) {
+            this.binaryConsumer = new kafka_node_1.Consumer(this.client, offsetFetchRequests, { encoding: 'buffer' });
+            this.binaryConsumer.on('message', message => this.emit('message', message));
+            this.binaryConsumer.on('error', error => this.emit('error', error));
+            this.binaryConsumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
+        }
+        else {
+            this.binaryConsumer.addTopics(offsetFetchRequests, cb, fromOffset);
         }
     }
     /**

@@ -6,6 +6,7 @@ export declare class TestBedAdapter extends EventEmitter {
     private client;
     private producer;
     private consumer;
+    private binaryConsumer;
     private options;
     private heartbeatTopic;
     private heartbeatId;
@@ -18,12 +19,21 @@ export declare class TestBedAdapter extends EventEmitter {
     resumeTopics(topics: string[]): void;
     close(): void;
     /**
+     * Add topics (encoding utf8)
      *
      * @param topics Array of topics to add
      * @param cb Callback
      * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
      */
     addTopics(topics: string | string[], cb: (error: Error, data: any) => void, fromOffset?: boolean): void;
+    /**
+     * Add topics (encoding Buffer)
+     *
+     * @param topics Array of topics to add
+     * @param cb Callback
+     * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
+     */
+    addBinaryTopics(topics: string | string[], cb: (error: Error, data: any) => void, fromOffset?: boolean): void;
     /**
      * Load the metadata for all topics (in case of an empty array), or specific ones.
      * @param topics If topics is an empty array, retreive the metadata of all topics

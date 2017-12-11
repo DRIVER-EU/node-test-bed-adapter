@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/DRIVER-EU/node-test-bed-adapter#readme",
   "dependencies": {
+    "avsc": "^5.1.1",
     "jasmine-ts": "^0.2.1",
     "kafka-node": "^2.3.0"
   },

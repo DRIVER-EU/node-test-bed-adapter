@@ -10,6 +10,7 @@ export class TestBedAdapter extends EventEmitter {
   private client: KafkaClient;
   private producer: Producer;
   private consumer: Consumer;
+  private binaryConsumer: Consumer;
   private options: ITestBedOptions;
   private heartbeatTopic: string;
   private heartbeatId: NodeJS.Timer;
@@ -62,6 +63,7 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   /**
+   * Add topics (encoding utf8)
    *
    * @param topics Array of topics to add
    * @param cb Callback
@@ -77,6 +79,26 @@ export class TestBedAdapter extends EventEmitter {
       this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
     } else {
       this.consumer.addTopics(offsetFetchRequests, cb, fromOffset);
+    }
+  }
+
+  /**
+   * Add topics (encoding Buffer)
+   *
+   * @param topics Array of topics to add
+   * @param cb Callback
+   * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
+   */
+  public addBinaryTopics(topics: string | string[], cb: (error: Error, data: any) => void, fromOffset?: boolean) {
+    if (typeof topics === 'string') { topics = [topics]; }
+    const offsetFetchRequests = topics.map(t => ({ topic: t } as OffsetFetchRequest));
+    if (!this.binaryConsumer) {
+      this.binaryConsumer = new Consumer(this.client, offsetFetchRequests, { encoding: 'buffer' });
+      this.binaryConsumer.on('message', message => this.emit('message', message));
+      this.binaryConsumer.on('error', error => this.emit('error', error));
+      this.binaryConsumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
+    } else {
+      this.binaryConsumer.addTopics(offsetFetchRequests, cb, fromOffset);
     }
   }
 
