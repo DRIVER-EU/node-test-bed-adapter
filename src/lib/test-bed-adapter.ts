@@ -100,9 +100,8 @@ export class TestBedAdapter extends EventEmitter {
       this.consumer.on('message', message => this.emit('message', message));
       this.consumer.on('error', error => this.emit('error', error));
       this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
-    } else {
-      this.consumer.addTopics(topics, cb, fromOffset);
     }
+    this.consumer.addTopics(topics, cb, fromOffset);
   }
 
   /**
@@ -163,7 +162,8 @@ export class TestBedAdapter extends EventEmitter {
   private initializeProducerTopic(pr: ProduceRequest) {
     if (!this.config.produce) { return; }
     const initializedTopic = { topic: pr.topic, partition: pr.partition } as IInitializedTopic;
-    // TODO Initialize encoder en validator, e.g. for AVRO messages.
+    // TODO Initialize encoder en validator, e.g. for AVRO messages.`
+    // const validator =
     this.consumerTopics[pr.topic] = initializedTopic;
     this.config.produce.push(initializedTopic);
   }

@@ -2,6 +2,8 @@ import { TestBedAdapter } from '../lib/test-bed-adapter';
 import { ITestBedOptions } from '../lib/models/test-bed-options';
 import * as proxyquire from 'proxyquire';
 import { EventEmitter } from 'events';
+import { KafkaClient } from 'kafka-node';
+import { ITopic } from '../lib/index';
 
 describe('TestBedAdapter', () => {
   let TestBedAdapterMock: typeof TestBedAdapter;
@@ -13,9 +15,17 @@ describe('TestBedAdapter', () => {
     }
   }
 
+  class ConsumerMock extends EventEmitter {
+    constructor(_client: KafkaClient, _topics: ITopic[], _options: Object) {
+      super();
+      setTimeout(() => this.emit('ready'), 10);
+    }
+  }
+
   beforeAll(done => {
     TestBedAdapterMock = proxyquire('../lib/test-bed-adapter', { 'kafka-node': {
-      KafkaClient: KafkaClientMock
+      KafkaClient: KafkaClientMock,
+      Consumer: ConsumerMock
     } }).TestBedAdapter;
     done();
   });

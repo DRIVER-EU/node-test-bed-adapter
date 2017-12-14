@@ -89,9 +89,7 @@ class TestBedAdapter extends events_1.EventEmitter {
             this.consumer.on('error', error => this.emit('error', error));
             this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
         }
-        else {
-            this.consumer.addTopics(topics, cb, fromOffset);
-        }
+        this.consumer.addTopics(topics, cb, fromOffset);
     }
     /**
      * Add topics (encoding Buffer)
@@ -158,7 +156,8 @@ class TestBedAdapter extends events_1.EventEmitter {
             return;
         }
         const initializedTopic = { topic: pr.topic, partition: pr.partition };
-        // TODO Initialize encoder en validator, e.g. for AVRO messages.
+        // TODO Initialize encoder en validator, e.g. for AVRO messages.`
+        // const validator =
         this.consumerTopics[pr.topic] = initializedTopic;
         this.config.produce.push(initializedTopic);
     }
