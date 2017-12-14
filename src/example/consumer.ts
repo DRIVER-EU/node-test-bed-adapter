@@ -20,7 +20,7 @@ class Consumer {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', error => console.error(error));
     this.adapter.on('offsetOutOfRange', error => console.error(error));
-    this.adapter.addTopics('heartbeat-Producer', err => console.error(err));
+    this.adapter.addTopics({ topic: 'heartbeat-Producer' }, err => console.error(err));
   }
 
   private handleMessage(message: Message) {
