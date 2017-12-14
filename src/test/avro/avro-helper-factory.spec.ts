@@ -23,4 +23,20 @@ describe('AVRO Helper Factory', () => {
     const ha = avro.validate(homelandSecurityAlert);
     expect(ha).toBeTruthy();
   });
+
+  it('should encode and decode messages', () => {
+    const avro = avroHelperFactory('./data/cap/cap.avsc', 'driver.eu.alert');
+    expect(avro.encode).toBeDefined();
+    expect(avro.decode).toBeDefined();
+    const aa = avro.encode(amberAlert);
+    expect(aa).toBeTruthy();
+    const aad = avro.decode(aa);
+    expect(avro.toString(aad)).toEqual(JSON.stringify(amberAlert));
+    const ae = avro.encode(earthquakeAlert);
+    expect(ae).toBeTruthy();
+    const aed = avro.decode(ae);
+    // Default properties are added automatically, and cause the comparison to fail
+    delete (aed as any).info.language;
+    expect(avro.toString(aed)).toEqual(JSON.stringify(earthquakeAlert));
+  });
 });

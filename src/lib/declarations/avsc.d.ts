@@ -85,7 +85,7 @@ declare module 'avsc' {
       offset: number
     };
   }
-  interface IAvroSchema {
+  interface IAvroSchema extends IAvroType {
     branchName: string;
     doc: string;
     name: string;
