@@ -3,6 +3,6 @@
   "clientId": "client",
   "produce": [{
     "topic": "test-cap",
-    "schemaURI": "./schemas/avro/cap.avsc"
+    "schemaURI": "./data/cap/cap.avsc"
   }]
 }
