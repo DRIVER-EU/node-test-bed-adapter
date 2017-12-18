@@ -4,6 +4,8 @@ Test-bed adapter for node.js.
 
 # Installation
 
+Assuming you have node (8 or higher) have installed, you can do the following:
+
 ```console
 npm i
 npm build
@@ -27,12 +29,16 @@ In order to test the application, you need to have a local test-bed running in D
 - Encode/decode object using AVRO helper factory
 - Setup test framework
 - Create kafka-node mock using proxyquire
-
-### To be done
 - Publish CAP messages (for testing purposes)
 - Consume CAP messages (for testing purposes)
+
+### To be done
+
 - Test sending an array of CAP messages - do we create one Buffer for all, or a separate one per message.
 - Test sending messages using GZip or SNAPPY compression (set attributes to 1 resp 2 in ProduceRequest payload)
+- Logging via Kafka (look for log4j-kafka connector - allow to set the logging level/mode in the adapter):
+  - key: clientId
+  - message: log-level, timestamp and log message
 - Create AVRO schema for Heartbeat message:
   - key: name of client
   - value: current time
