@@ -13,14 +13,14 @@ describe('AVRO Helper Factory', () => {
 
   it('should validate messages', () => {
     const avro = avroHelperFactory('./data/cap/cap.avsc', 'driver.eu.alert');
-    expect(avro.validate).toBeDefined();
-    const aa = avro.validate(amberAlert);
+    expect(avro.isValid).toBeDefined();
+    const aa = avro.isValid(amberAlert);
     expect(aa).toBeTruthy();
-    const ea = avro.validate(earthquakeAlert);
+    const ea = avro.isValid(earthquakeAlert);
     expect(ea).toBeTruthy();
-    const ta = avro.validate(thunderstormAlert);
+    const ta = avro.isValid(thunderstormAlert);
     expect(ta).toBeTruthy();
-    const ha = avro.validate(homelandSecurityAlert);
+    const ha = avro.isValid(homelandSecurityAlert);
     expect(ha).toBeTruthy();
   });
 

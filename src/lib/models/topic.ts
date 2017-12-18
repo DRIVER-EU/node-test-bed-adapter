@@ -10,7 +10,7 @@ export interface ITopic extends OffsetFetchRequest {
 }
 
 export interface IInitializedTopic extends ITopic {
-  validate?: (msg: Object) => boolean;
+  isValid?: (msg: Object) => boolean;
   encode?: (msg: Object) => any;
   decode?: (buf: Buffer) => Object;
 }

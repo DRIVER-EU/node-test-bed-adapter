@@ -20,12 +20,24 @@ describe('TestBedAdapter', () => {
       super();
       setTimeout(() => this.emit('ready'), 10);
     }
+
+    public addTopics(..._args: any[]) {};
+  }
+
+  class ProducerMock extends EventEmitter {
+    constructor(_client: KafkaClient, _topics: ITopic[], _options: Object) {
+      super();
+      setTimeout(() => this.emit('ready'), 10);
+    }
+
+    public createTopics(..._args: any[]) {};
   }
 
   beforeAll(done => {
     TestBedAdapterMock = proxyquire('../lib/test-bed-adapter', { 'kafka-node': {
       KafkaClient: KafkaClientMock,
-      Consumer: ConsumerMock
+      Consumer: ConsumerMock,
+      Producer: ProducerMock
     } }).TestBedAdapter;
     done();
   });

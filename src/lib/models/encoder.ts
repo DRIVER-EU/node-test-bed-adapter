@@ -1,3 +1,6 @@
 export interface IEncoder {
-  encode: (obj: Object) => Buffer;
+  /**
+   * Encode each message separately?
+   */
+  encode: (obj: Object | Object[]) => Buffer | Buffer[];
 }

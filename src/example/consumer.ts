@@ -8,7 +8,12 @@ class Consumer {
   constructor() {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'broker:3501',
-      clientId: 'Consumer'
+      clientId: 'Consumer',
+      consume: [{
+        topic: 'CAP',
+        schemaURI: './data/cap/cap.avsc',
+        type: 'driver.eu.alert'
+      }]
     });
     this.adapter.on('ready', () => {
       this.subscribe();
@@ -21,13 +26,14 @@ class Consumer {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', error => console.error(error));
     this.adapter.on('offsetOutOfRange', error => console.error(error));
-    this.adapter.addTopics({ topic: 'heartbeat-Producer' }, err => console.error(err));
+    this.adapter.addTopics({ topic: TestBedAdapter.HeartbeatTopic }, err => console.error(err));
   }
 
   private handleMessage(message: Message) {
     switch (message.topic) {
       default:
         console.log(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
+        break;
     }
   }
 }

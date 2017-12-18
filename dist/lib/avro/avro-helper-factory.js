@@ -15,9 +15,20 @@ exports.avroHelperFactory = (schemaUri, type) => {
     const removeNulls = (_key, value) => (value === 'null' || value === null) ? undefined : value;
     const errorHook = (path, part) => console.error(path.join(', ') + '\n' + JSON.stringify(part, null, 2));
     return {
-        validate: (obj) => avroType.isValid(obj, { errorHook }),
-        encode: (obj) => avroType.toBuffer(obj),
-        decode: (buf) => avroType.decode(buf, 0).value,
+        isValid: (obj) => {
+            const msg = obj instanceof Array ? obj : [obj];
+            return msg.reduce((p, c) => p && avroType.isValid(c, { errorHook }), true);
+        },
+        encode: (obj) => {
+            return obj instanceof Array
+                ? obj.map(o => avroType.toBuffer(o))
+                : avroType.toBuffer(obj);
+        },
+        decode: (buf) => {
+            return buf instanceof Array
+                ? buf.map(m => avroType.decode(m, 0).value)
+                : avroType.decode(buf, 0).value;
+        },
         toString: (buf) => typeof buf === 'object'
             ? JSON.stringify(buf, removeNulls)
             : JSON.stringify(avroType.decode(buf, 0).value, removeNulls)

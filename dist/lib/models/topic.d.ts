@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { OffsetFetchRequest } from 'kafka-node';
 /**
  * Topic configuration for consumers or producers.
@@ -9,7 +10,7 @@ export interface ITopic extends OffsetFetchRequest {
     type?: string;
 }
 export interface IInitializedTopic extends ITopic {
-    validate?: (msg: Object) => boolean;
+    isValid?: (msg: Object) => boolean;
     encode?: (msg: Object) => any;
-    decode?: (msg: Object) => any;
+    decode?: (buf: Buffer) => Object;
 }

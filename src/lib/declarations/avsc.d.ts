@@ -84,6 +84,10 @@ declare module 'avsc' {
       value: any,
       offset: number
     };
+    fromBuffer: (buf: Buffer, offset?: number, resolver?: (t: IAvroType) => IAvroType) => {
+      value: any,
+      offset: number
+    };
   }
   interface IAvroSchema extends IAvroType {
     branchName: string;

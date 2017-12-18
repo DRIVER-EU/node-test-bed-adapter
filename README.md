@@ -31,8 +31,11 @@ In order to test the application, you need to have a local test-bed running in D
 ### To be done
 - Publish CAP messages (for testing purposes)
 - Consume CAP messages (for testing purposes)
+- Test sending an array of CAP messages - do we create one Buffer for all, or a separate one per message.
+- Test sending messages using GZip or SNAPPY compression (set attributes to 1 resp 2 in ProduceRequest payload)
 - Create AVRO schema for Heartbeat message:
-  - name of client
+  - key: name of client
+  - value: current time
 - Create AVRO schema for Configuration message:
 - Publish configuration (topic: configuration-CLIENTID)
   - topics you consume
@@ -42,6 +45,7 @@ In order to test the application, you need to have a local test-bed running in D
 - Pause consuming messages remotely
 - Pause publishing messages remotely
 - Validate published XML messages
+- Send XML messages
 - Add option to publish unvalidated messages
 
 ## Observations creating an AVRO schema

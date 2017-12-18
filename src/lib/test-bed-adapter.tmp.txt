@@ -15,6 +15,7 @@ export class TestBedAdapter extends EventEmitter {
   private client: KafkaClient;
   private producer: Producer;
   private consumer: Consumer;
+  private binaryConsumer: Consumer;
   private config: ITestBedOptions;
   private heartbeatId: NodeJS.Timer;
   /** Map of all initialized topics, i.e. with validators/encoders/decoders */
@@ -41,9 +42,9 @@ export class TestBedAdapter extends EventEmitter {
 
   public connect() {
     this.client = new KafkaClient(this.config);
-    this.initProducer();
     this.client.on('ready', () => {
       if (this.config.consume && this.config.consume.length > 0) { this.addTopics(this.config.consume, this.defaultCallback); }
+      this.initProducer();
     });
     this.client.on('error', (error) => {
       console.error(error);
@@ -63,14 +64,6 @@ export class TestBedAdapter extends EventEmitter {
     });
     this.producer.on('error', error => this.emit('error', error));
   }
-
-  private initConsumer(topics: ITopic[]) {
-    this.consumer = new Consumer(this.client, topics, { encoding: 'buffer', autoCommit: true });
-    this.consumer.on('message', message => this.handleMessage(message));
-    this.consumer.on('error', error => this.emit('error', error));
-    this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
-  }
-
   public pause() {
     this.consumer.pause();
   }
@@ -101,9 +94,6 @@ export class TestBedAdapter extends EventEmitter {
       if (topic.isValid && topic.isValid(payload.messages)) {
         if (topic.encode) { payload.messages = topic.encode(payload.messages); }
         pl.push(payload);
-        console.log(payload.messages);
-        console.log(payload);
-        console.log(payload.messages.length);
       }
     });
     this.producer.send(pl, cb);
@@ -124,7 +114,12 @@ export class TestBedAdapter extends EventEmitter {
   public addTopics(topics: ITopic[] | ITopic, cb: (error: Error, data: any) => void, fromOffset?: boolean) {
     if (!(topics instanceof Array)) { topics = [topics]; }
     this.initializeConsumerTopics(topics);
-    if (!this.consumer) { this.initConsumer(topics); }
+    if (!this.consumer) {
+      this.consumer = new Consumer(this.client, topics, { encoding: 'utf8' });
+      this.consumer.on('message', message => this.handleMessage(message));
+      this.consumer.on('error', error => this.emit('error', error));
+      this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
+    }
     this.consumer.addTopics(topics, cb, fromOffset);
   }
 
@@ -132,6 +127,26 @@ export class TestBedAdapter extends EventEmitter {
     if (!(topics instanceof Array)) { topics = [topics]; }
     this.initializeProducerTopics(topics);
     this.producer.createTopics(topics.map(t => t.topic), true, cb);
+  }
+
+  /**
+   * Add topics (encoding Buffer)
+   *
+   * @param topics Array of topics to add
+   * @param cb Callback
+   * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
+   */
+  public addBinaryTopics(topics: ITopic[] | ITopic, cb: (error: Error, data: any) => void, fromOffset?: boolean) {
+    if (!(topics instanceof Array)) { topics = [topics]; }
+    this.initializeConsumerTopics(topics);
+    if (!this.binaryConsumer) {
+      this.binaryConsumer = new Consumer(this.client, topics, { encoding: 'buffer' });
+      this.binaryConsumer.on('message', message => this.emit('message', message));
+      this.binaryConsumer.on('error', error => this.emit('error', error));
+      this.binaryConsumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
+    } else {
+      this.binaryConsumer.addTopics(topics, cb, fromOffset);
+    }
   }
 
   /**
@@ -151,13 +166,10 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private handleMessage(message: Message) {
-    const { topic } = message;
+    const { topic, value } = message;
     if (this.consumerTopics.hasOwnProperty(topic)) {
       const consumerTopic = this.consumerTopics[topic];
-      if (consumerTopic.decode) {
-        const buf = new Buffer(message.value, 'binary');
-        message.value = consumerTopic.decode(buf) as any;
-      }
+      if (consumerTopic.decode) { message.value = consumerTopic.decode(value as any) as any; }
       this.emit('message', message);
     } else {
       this.emit('message', message);

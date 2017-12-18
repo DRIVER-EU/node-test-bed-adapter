@@ -7,6 +7,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Producer",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/dist/example/producer.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Consumer",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/dist/example/consumer.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Tests",
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine.js",
