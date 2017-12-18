@@ -101,9 +101,6 @@ export class TestBedAdapter extends EventEmitter {
       if (topic.isValid && topic.isValid(payload.messages)) {
         if (topic.encode) { payload.messages = topic.encode(payload.messages); }
         pl.push(payload);
-        console.log(payload.messages);
-        console.log(payload);
-        console.log(payload.messages.length);
       }
     });
     this.producer.send(pl, cb);
@@ -157,6 +154,8 @@ export class TestBedAdapter extends EventEmitter {
       if (consumerTopic.decode) {
         const buf = new Buffer(message.value, 'binary');
         message.value = consumerTopic.decode(buf) as any;
+      } else {
+        message.value = message.value.toString(); // decode buffer to string for normal messages
       }
       this.emit('message', message);
     } else {
