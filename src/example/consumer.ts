@@ -30,9 +30,16 @@ class Consumer {
   }
 
   private handleMessage(message: Message) {
-    switch (message.topic) {
+    switch (message.topic.toLowerCase()) {
+      case 'heartbeat':
+        console.log(`Received message on topic ${message.topic} with key ${message.key}:`);
+        console.log(message.value);
+        console.log('\n');
+        break;
       default:
-        console.log(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
+        console.log(`Received message on topic ${message.topic}:`);
+        console.log(message.value);
+        console.log('\n');
         break;
     }
   }

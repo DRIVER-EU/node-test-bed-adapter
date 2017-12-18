@@ -31,11 +31,11 @@ In order to test the application, you need to have a local test-bed running in D
 - Create kafka-node mock using proxyquire
 - Publish CAP messages (for testing purposes)
 - Consume CAP messages (for testing purposes)
+- Test sending messages using GZip compression (set attributes to 1in ProduceRequest payload)
+- Test sending an array of CAP messages - creating a Buffer per message.
 
 ### To be done
 
-- Test sending an array of CAP messages - do we create one Buffer for all, or a separate one per message.
-- Test sending messages using GZip or SNAPPY compression (set attributes to 1 resp 2 in ProduceRequest payload)
 - Logging via Kafka (look for log4j-kafka connector - allow to set the logging level/mode in the adapter):
   - key: clientId
   - message: log-level, timestamp and log message

@@ -1,9 +1,9 @@
 import { ProduceRequest } from 'kafka-node';
 import { TestBedAdapter } from '../lib/index';
 import * as amberAlert from '../../data/cap/examples/example_amber_alert.json';
-// import * as earthquakeAlert from '../../../data/cap/examples/example_earthquake.json';
-// import * as thunderstormAlert from '../../../data/cap/examples/example_thunderstorm.json';
-// import * as homelandSecurityAlert from '../../../data/cap/examples/example_homeland_security.json';
+import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.json';
+import * as thunderstormAlert from '../../data/cap/examples/example_thunderstorm.json';
+import * as homelandSecurityAlert from '../../data/cap/examples/example_homeland_security.json';
 
 class Producer {
   private adapter: TestBedAdapter;
@@ -27,12 +27,30 @@ class Producer {
   }
 
   private sendCAP() {
-    // const avro = avroHelperFactory('./data/cap/cap.avsc', 'driver.eu.alert');
-    const payload: ProduceRequest = {
+    const payloads: ProduceRequest[] = [{
       topic: 'CAP',
-      messages: amberAlert
-    };
-    this.adapter.send(payload, (error, data) => {
+      messages: amberAlert,
+      attributes: 1 // Gzip
+    }, {
+      topic: 'CAP',
+      messages: earthquakeAlert,
+      attributes: 1 // Gzip
+    }, {
+      topic: 'CAP',
+      messages: thunderstormAlert,
+      attributes: 1 // Gzip
+    }, {
+      topic: 'CAP',
+      messages: homelandSecurityAlert,
+      attributes: 1 // Gzip
+    }];
+    // payloads.forEach(payload => {
+    //   this.adapter.send(payload, (error, data) => {
+    //     if (error) { console.error(error); }
+    //     if (data) { console.log(data); }
+    //   });
+    // });
+    this.adapter.send(payloads, (error, data) => {
       if (error) { console.error(error); }
       if (data) { console.log(data); }
     });
