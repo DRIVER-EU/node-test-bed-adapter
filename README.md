@@ -18,6 +18,8 @@ In order to run the tests continuously on code change, run `npm run watch`. This
 
 In order to test the application, you need to have a local test-bed running in Docker. Please see [here](https://github.com/DRIVER-EU/test-bed) to get it up and running (Docker folder).
 
+## Usage
+
 ## Functionality
 
 ### Completed
