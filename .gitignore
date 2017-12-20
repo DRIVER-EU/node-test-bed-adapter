@@ -60,3 +60,4 @@ typings/
 # repo specific
 dist/test
 dist/example
+log.txt
