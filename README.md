@@ -1,24 +1,24 @@
 # node-test-bed-adapter
 
-Test-bed adapter for node.js.
+This is a test-bed adapter for node.js: it allows you to easily connect javascript and typescript services to the Apache Kafka test-bed via Node.js. Although it is specifically created for connecting to our [test-bed](https://github.com/DRIVER-EU/test-bed), it should work for any Apache Kafka version too.
 
-# Installation
-
-Assuming you have node (8 or higher) have installed, you can do the following:
-
-```console
-npm i
-npm build
-npm run test
-```
-
-In order to run the tests continuously on code change, run `npm run watch`. This assumes that you have installed nodemon globally (`npm i -g nodemon`).
-
-## Dependencies
-
-In order to test the application, you need to have a local test-bed running in Docker. Please see [here](https://github.com/DRIVER-EU/test-bed) to get it up and running (Docker folder).
+The implementation is a wrapper around [kafka-node](https://www.npmjs.com/package/kafka-node), offering support for:
+- AVRO schema's and messages
+- Logging via console, file and via Kafka: you can set for each log provider the log level (e.g. error or debug)
+- Management
+  - heartbeat (topic: heartbeat), so you know which clients are online
+  - logging (topic: log-clientID): when Kafka Logging is enabled in the options
+  - TBD configuration (topic: configuration-clientID), so you can see which topics clients consume and produce
 
 ## Usage
+
+First, install the adapter, so you can import / require it in your code.
+
+```console
+npm i node-test-bed-adapter
+```
+
+See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/tree/master/src/example) for an example of a consumer and producer sending CAP messages.
 
 ## Functionality
 
@@ -67,6 +67,22 @@ In order to test the application, you need to have a local test-bed running in D
 - Add option to publish unvalidated messages
 
 - REST interface -> not directly in here: we will create a new project, test-bed-rest-service, using this adapter.
+
+# Build
+
+Assuming you have node (8 or higher) have installed, you can do the following:
+
+```console
+npm i
+npm build
+npm run test
+```
+
+In order to run the tests continuously on code change, run `npm run watch`. This assumes that you have installed nodemon globally (`npm i -g nodemon`).
+
+## Dependencies
+
+In order to test the application, you need to have a local test-bed running in Docker. Please see [here](https://github.com/DRIVER-EU/test-bed) to get it up and running (Docker folder).
 
 ## Observations creating an AVRO schema
 
