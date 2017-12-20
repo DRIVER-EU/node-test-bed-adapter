@@ -45,10 +45,10 @@ In order to test the application, you need to have a local test-bed running in D
     silly: 5
   }, see [RFC5424](https://tools.ietf.org/html/rfc5424)
   - Created a KafkaLogger, FileLogger, and ConsoleLogger
+- Configure logger (which ones to use, which debug level, output file)
 
 ### To be done
 
-- Configure logger (which ones to use, which debug level, output file)
 - Create AVRO schema for Heartbeat message?: topic = 'heartbeat'
   - key: name of client
   - value: current time

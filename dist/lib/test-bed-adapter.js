@@ -4,7 +4,6 @@ const fs = require("fs");
 const path = require("path");
 const file_logger_1 = require("./logger/file-logger");
 const events_1 = require("events");
-const log_levels_1 = require("./logger/log-levels");
 const logger_1 = require("./logger/logger");
 const kafka_node_1 = require("kafka-node");
 const timers_1 = require("timers");
@@ -188,20 +187,32 @@ class TestBedAdapter extends events_1.EventEmitter {
         if (!this.producer) {
             return;
         }
-        const kafkaLogger = new kafka_logger_1.KafkaLogger({
-            producer: this.producer,
-            clientId: this.config.clientId
-        });
-        this.log.initialize([{
-                logger: new console_logger_1.ConsoleLogger(),
-                minLevel: log_levels_1.LogLevel.Debug
-            }, {
-                logger: new file_logger_1.FileLogger('log.txt'),
-                minLevel: log_levels_1.LogLevel.Debug
-            }, {
-                logger: kafkaLogger,
-                minLevel: log_levels_1.LogLevel.Debug
-            }]);
+        const loggers = [];
+        const logOptions = this.config.logging;
+        if (logOptions) {
+            if (logOptions.logToConsole) {
+                loggers.push({
+                    logger: new console_logger_1.ConsoleLogger(),
+                    minLevel: logOptions.logToConsole
+                });
+            }
+            if (logOptions.logToFile) {
+                loggers.push({
+                    logger: new file_logger_1.FileLogger(logOptions.logFile || 'log.txt'),
+                    minLevel: logOptions.logToFile
+                });
+            }
+            if (logOptions.logToKafka) {
+                loggers.push({
+                    logger: new kafka_logger_1.KafkaLogger({
+                        producer: this.producer,
+                        clientId: this.config.clientId
+                    }),
+                    minLevel: logOptions.logToKafka
+                });
+            }
+        }
+        this.log.initialize(loggers);
     }
     initConsumer(topics) {
         if (!this.client) {
@@ -338,7 +349,8 @@ class TestBedAdapter extends events_1.EventEmitter {
             sslOptions: false,
             heartbeatInterval: 5000,
             consume: [],
-            produce: []
+            produce: [],
+            logging: {}
         }, options);
     }
     /**

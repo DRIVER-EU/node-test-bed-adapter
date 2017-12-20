@@ -12,6 +12,7 @@ import { clone } from './utils/helpers';
 import { avroHelperFactory } from './avro/avro-helper-factory';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
+import { ILogger } from '.';
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'heartbeat';
@@ -160,21 +161,32 @@ export class TestBedAdapter extends EventEmitter {
 
   private initLogger() {
     if (!this.producer) { return; }
-    const kafkaLogger = new KafkaLogger({
-      producer: this.producer,
-      clientId: this.config.clientId
-    });
-
-    this.log.initialize([{
-      logger: new ConsoleLogger(),
-      minLevel: LogLevel.Debug
-    }, {
-      logger: new FileLogger('log.txt'),
-      minLevel: LogLevel.Debug
-    }, {
-      logger: kafkaLogger,
-      minLevel: LogLevel.Debug
-    }]);
+    const loggers: ILogger[] = [];
+    const logOptions = this.config.logging;
+    if (logOptions) {
+      if (logOptions.logToConsole) {
+        loggers.push({
+          logger: new ConsoleLogger(),
+          minLevel: logOptions.logToConsole
+        });
+      }
+      if (logOptions.logToFile) {
+        loggers.push({
+          logger: new FileLogger(logOptions.logFile || 'log.txt'),
+          minLevel: logOptions.logToFile
+        });
+      }
+      if (logOptions.logToKafka) {
+        loggers.push({
+          logger: new KafkaLogger({
+            producer: this.producer,
+            clientId: this.config.clientId
+          }),
+          minLevel: logOptions.logToKafka
+        });
+      }
+    }
+    this.log.initialize(loggers);
   }
 
   private initConsumer(topics: ITopic[]) {
@@ -295,7 +307,8 @@ export class TestBedAdapter extends EventEmitter {
       sslOptions: false,
       heartbeatInterval: 5000,
       consume: [],
-      produce: []
+      produce: [],
+      logging: {}
     } as ITestBedOptions, options);
   }
 

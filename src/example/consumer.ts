@@ -4,7 +4,7 @@
 // kafkaLogging.setLoggerProvider(consoleLoggerProvider);
 
 import { Message } from 'kafka-node';
-import { TestBedAdapter, Logger } from '../lib/index';
+import { TestBedAdapter, Logger, LogLevel } from '../lib/index';
 
 class Consumer {
   private adapter: TestBedAdapter;
@@ -20,7 +20,13 @@ class Consumer {
         type: 'driver.eu.alert'
       }, {
         topic: 'log-producer'
-      }]
+      }],
+      logging: {
+        logToConsole: LogLevel.Debug,
+        logToFile: LogLevel.Debug,
+        logToKafka: LogLevel.Debug,
+        logFile: 'log.txt'
+      }
     });
     this.adapter.on('ready', () => {
       this.subscribe();
