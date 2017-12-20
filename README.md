@@ -23,7 +23,7 @@ In order to test the application, you need to have a local test-bed running in D
 ### Completed
 
 - Connect to Kafka
-- Publish heartbeat (topic: heartbeat-CLIENTID)
+- Publish heartbeat (topic: heartbeat)
 - Create AVRO schema for CAP messages (for testing purposes)
 - Validate AVRO messages
 - Encode/decode object using AVRO helper factory
@@ -33,16 +33,26 @@ In order to test the application, you need to have a local test-bed running in D
 - Consume CAP messages (for testing purposes)
 - Test sending messages using GZip compression (set attributes to 1in ProduceRequest payload)
 - Test sending an array of CAP messages - creating a Buffer per message.
+- Logging via Kafka (e.g. [log4j-kafka appender](https://logging.apache.org/log4j/2.x/manual/appenders.html#KafkaAppender)
+  - allow to set the logging level/mode in the adapter): topic: log-CLIENTID
+    - message: log-level, timestamp and log message
+  - const logLevels = {
+    error: 0,
+    warn: 1,
+    info: 2,
+    verbose: 3,
+    debug: 4,
+    silly: 5
+  }, see [RFC5424](https://tools.ietf.org/html/rfc5424)
+  - Created a KafkaLogger, FileLogger, and ConsoleLogger
 
 ### To be done
 
-- Logging via Kafka (look for log4j-kafka connector - allow to set the logging level/mode in the adapter):
-  - key: clientId
-  - message: log-level, timestamp and log message
-- Create AVRO schema for Heartbeat message:
+- Configure logger (which ones to use, which debug level, output file)
+- Create AVRO schema for Heartbeat message?: topic = 'heartbeat'
   - key: name of client
   - value: current time
-- Create AVRO schema for Configuration message:
+- Create AVRO schema for Configuration message?:
 - Publish configuration (topic: configuration-CLIENTID)
   - topics you consume
   - topics you produce
@@ -53,6 +63,8 @@ In order to test the application, you need to have a local test-bed running in D
 - Validate published XML messages
 - Send XML messages
 - Add option to publish unvalidated messages
+
+- REST interface -> not directly in here: we will create a new project, test-bed-rest-service, using this adapter.
 
 ## Observations creating an AVRO schema
 

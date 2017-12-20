@@ -1,5 +1,5 @@
 import { ProduceRequest } from 'kafka-node';
-import { TestBedAdapter } from '../lib/index';
+import { TestBedAdapter, Logger } from '../lib/index';
 import * as amberAlert from '../../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.json';
 import * as thunderstormAlert from '../../data/cap/examples/example_thunderstorm.json';
@@ -7,6 +7,7 @@ import * as homelandSecurityAlert from '../../data/cap/examples/example_homeland
 
 class Producer {
   private adapter: TestBedAdapter;
+  private log = Logger.instance;
 
   constructor() {
     this.adapter = new TestBedAdapter({
@@ -20,7 +21,7 @@ class Producer {
     });
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
-      console.log('Producer is connected');
+      this.log.info('Producer is connected');
       this.sendCAP();
     });
     this.adapter.connect();

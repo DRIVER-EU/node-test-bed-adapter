@@ -2,15 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
-const kafka_node_1 = require("kafka-node");
+const file_logger_1 = require("./logger/file-logger");
 const events_1 = require("events");
+const log_levels_1 = require("./logger/log-levels");
+const logger_1 = require("./logger/logger");
+const kafka_node_1 = require("kafka-node");
 const timers_1 = require("timers");
 const helpers_1 = require("./utils/helpers");
-const index_debug_1 = require("./index-debug");
+const avro_helper_factory_1 = require("./avro/avro-helper-factory");
+const kafka_logger_1 = require("./logger/kafka-logger");
+const console_logger_1 = require("./logger/console-logger");
 class TestBedAdapter extends events_1.EventEmitter {
     constructor(config) {
         super();
         this.isConnected = false;
+        this.log = logger_1.Logger.instance;
         /** Map of all initialized topics, i.e. with validators/encoders/decoders */
         this.consumerTopics = {};
         this.producerTopics = {};
@@ -18,10 +24,10 @@ class TestBedAdapter extends events_1.EventEmitter {
         this.configFile = 'config/test-bed-config.json';
         this.defaultCallback = (error, data) => {
             if (error) {
-                console.error(error.message);
+                this.log.error(error.message);
             }
             if (data) {
-                console.log(data);
+                this.log.info(data);
             }
         };
         if (!config) {
@@ -42,47 +48,55 @@ class TestBedAdapter extends events_1.EventEmitter {
             }
         });
         this.client.on('error', (error) => {
-            console.error(error);
+            this.log.error(error);
             this.emit('error', error);
         });
         this.client.on('reconnect', () => {
             this.emit('reconnect');
         });
     }
-    initProducer() {
-        this.producer = new kafka_node_1.Producer(this.client);
-        this.producer.on('ready', () => {
-            this.startHeartbeat();
-            if (this.config.produce && this.config.produce.length > 0) {
-                this.addProducerTopics(this.config.produce, this.defaultCallback);
-            }
-            this.emit('ready');
-        });
-        this.producer.on('error', error => this.emit('error', error));
-    }
-    initConsumer(topics) {
-        this.consumer = new kafka_node_1.Consumer(this.client, topics, { encoding: 'buffer', autoCommit: true });
-        this.consumer.on('message', message => this.handleMessage(message));
-        this.consumer.on('error', error => this.emit('error', error));
-        this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
-    }
     pause() {
+        if (!this.consumer) {
+            this.emit('error', 'Consumer not ready!');
+            return;
+        }
         this.consumer.pause();
     }
     resume() {
+        if (!this.consumer) {
+            this.emit('error', 'Consumer not ready!');
+            return;
+        }
         this.consumer.resume();
     }
     pauseTopics(topics) {
+        if (!this.consumer) {
+            this.emit('error', 'Consumer not ready!');
+            return;
+        }
         this.consumer.pauseTopics(topics);
     }
     resumeTopics(topics) {
+        if (!this.consumer) {
+            this.emit('error', 'Consumer not ready!');
+            return;
+        }
         this.consumer.resumeTopics(topics);
     }
     close() {
-        timers_1.clearInterval(this.heartbeatId);
+        if (this.heartbeatId) {
+            timers_1.clearInterval(this.heartbeatId);
+        }
+        if (!this.client) {
+            return;
+        }
         this.client.close();
     }
     send(payloads, cb) {
+        if (!this.producer) {
+            this.emit('error', 'Producer not ready!');
+            return;
+        }
         payloads = payloads instanceof Array ? payloads : [payloads];
         const pl = [];
         payloads.forEach(payload => {
@@ -119,6 +133,10 @@ class TestBedAdapter extends events_1.EventEmitter {
         if (!this.consumer) {
             this.initConsumer(topics);
         }
+        if (!this.consumer) {
+            this.emit('error', 'Consumer not ready!');
+            return;
+        }
         this.consumer.addTopics(topics, cb, fromOffset);
     }
     addProducerTopics(topics, cb) {
@@ -126,6 +144,10 @@ class TestBedAdapter extends events_1.EventEmitter {
             topics = [topics];
         }
         this.initializeProducerTopics(topics);
+        if (!this.producer) {
+            this.emit('error', 'Producer not ready!');
+            return;
+        }
         this.producer.createTopics(topics.map(t => t.topic), true, cb);
     }
     /**
@@ -139,11 +161,57 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         this.client.loadMetadataForTopics(topics, (error, results) => {
             if (error) {
-                return console.error(error);
+                return this.log.error(error);
             }
-            console.log(results);
-            // console.log('%j', _.get(results, '1.metadata'));
+            this.log.info(results);
+            // this.log('%j', _.get(results, '1.metadata'));
         });
+    }
+    // PRIVATE METHODS
+    initProducer() {
+        if (!this.client) {
+            this.emit('error', 'Client not ready!');
+            return;
+        }
+        this.producer = new kafka_node_1.Producer(this.client);
+        this.producer.on('ready', () => {
+            this.initLogger();
+            this.startHeartbeat();
+            if (this.config.produce && this.config.produce.length > 0) {
+                this.addProducerTopics(this.config.produce, this.defaultCallback);
+            }
+            this.emit('ready');
+        });
+        this.producer.on('error', error => this.emit('error', error));
+    }
+    initLogger() {
+        if (!this.producer) {
+            return;
+        }
+        const kafkaLogger = new kafka_logger_1.KafkaLogger({
+            producer: this.producer,
+            clientId: this.config.clientId
+        });
+        this.log.initialize([{
+                logger: new console_logger_1.ConsoleLogger(),
+                minLevel: log_levels_1.LogLevel.Debug
+            }, {
+                logger: new file_logger_1.FileLogger('log.txt'),
+                minLevel: log_levels_1.LogLevel.Debug
+            }, {
+                logger: kafkaLogger,
+                minLevel: log_levels_1.LogLevel.Debug
+            }]);
+    }
+    initConsumer(topics) {
+        if (!this.client) {
+            this.emit('error', 'Client not ready!');
+            return;
+        }
+        this.consumer = new kafka_node_1.Consumer(this.client, topics, { encoding: 'buffer', autoCommit: true });
+        this.consumer.on('message', message => this.handleMessage(message));
+        this.consumer.on('error', error => this.emit('error', error));
+        this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
     }
     handleMessage(message) {
         const { topic } = message;
@@ -156,11 +224,8 @@ class TestBedAdapter extends events_1.EventEmitter {
             else {
                 message.value = message.value.toString(); // decode buffer to string for normal messages
             }
-            this.emit('message', message);
         }
-        else {
-            this.emit('message', message);
-        }
+        this.emit('message', message);
     }
     /**
      * Add the topics to the configuration and initialize the decoders.
@@ -181,12 +246,12 @@ class TestBedAdapter extends events_1.EventEmitter {
                 const ext = path.extname(t.schemaURI).toLowerCase();
                 switch (ext) {
                     case '.avsc':
-                        const avro = index_debug_1.avroHelperFactory(t.schemaURI, t.type);
+                        const avro = avro_helper_factory_1.avroHelperFactory(t.schemaURI, t.type);
                         initializedTopic.decode = avro.decode;
                         // initializedTopic.decode = avro.toString;
                         break;
                     default:
-                        console.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
+                        this.log.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
                         break;
                 }
             }
@@ -213,12 +278,12 @@ class TestBedAdapter extends events_1.EventEmitter {
                 const ext = path.extname(t.schemaURI).toLowerCase();
                 switch (ext) {
                     case '.avsc':
-                        const avro = index_debug_1.avroHelperFactory(t.schemaURI, t.type);
+                        const avro = avro_helper_factory_1.avroHelperFactory(t.schemaURI, t.type);
                         initializedTopic.encode = avro.encode;
                         initializedTopic.isValid = avro.isValid;
                         break;
                     default:
-                        console.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
+                        this.log.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
                         break;
                 }
             }
@@ -241,18 +306,21 @@ class TestBedAdapter extends events_1.EventEmitter {
             if (error) {
                 throw error;
             }
-            console.log(data);
+            this.log.info(data);
             if (this.config.produce) {
                 this.config.produce.push({ topic: TestBedAdapter.HeartbeatTopic });
             }
             this.heartbeatId = setInterval(() => {
-                console.log('.');
+                if (!this.producer) {
+                    this.emit('error', 'Producer not ready!');
+                    return;
+                }
                 this.producer.send([{
                         topic: TestBedAdapter.HeartbeatTopic,
                         messages: new kafka_node_1.KeyedMessage(`${this.config.clientId}`, new Date().toISOString())
                     }], (error) => {
                     if (error) {
-                        console.error(error);
+                        this.log.error(error);
                     }
                 });
             }, this.config.heartbeatInterval || 5000);
@@ -294,7 +362,7 @@ class TestBedAdapter extends events_1.EventEmitter {
      */
     loadOptionsFromFile(configFile = this.configFile) {
         configFile = path.resolve(configFile);
-        // console.log(configFile);
+        // this.log(configFile);
         if (fs.existsSync(configFile)) {
             return JSON.parse(fs.readFileSync(configFile, { encoding: 'utf8' }));
         }

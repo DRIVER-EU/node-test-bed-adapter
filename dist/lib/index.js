@@ -4,6 +4,7 @@ function __export(m) {
 }
 Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./avro/avro-helper-factory"));
-__export(require("./utils/logger"));
+__export(require("./logger/logger"));
+__export(require("./logger/kafka-logger"));
 __export(require("./test-bed-adapter"));
 //# sourceMappingURL=index.js.map

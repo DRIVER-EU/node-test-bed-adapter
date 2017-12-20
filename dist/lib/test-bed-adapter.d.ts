@@ -1,16 +1,17 @@
 /// <reference types="node" />
+import { EventEmitter } from 'events';
 import { ProduceRequest } from 'kafka-node';
 import { ITopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
-import { EventEmitter } from 'events';
 export declare class TestBedAdapter extends EventEmitter {
     static HeartbeatTopic: string;
     isConnected: boolean;
-    private client;
-    private producer;
-    private consumer;
+    private log;
+    private client?;
+    private producer?;
+    private consumer?;
     private config;
-    private heartbeatId;
+    private heartbeatId?;
     /** Map of all initialized topics, i.e. with validators/encoders/decoders */
     private consumerTopics;
     private producerTopics;
@@ -19,8 +20,6 @@ export declare class TestBedAdapter extends EventEmitter {
     private defaultCallback;
     constructor(config?: ITestBedOptions | string);
     connect(): void;
-    private initProducer();
-    private initConsumer(topics);
     pause(): void;
     resume(): void;
     pauseTopics(topics: string[]): void;
@@ -46,6 +45,9 @@ export declare class TestBedAdapter extends EventEmitter {
      * @param cb callback function to return the metadata results
      */
     loadMetadataForTopics(topics: string[], cb: (error?: any, results?: any) => any): void;
+    private initProducer();
+    private initLogger();
+    private initConsumer(topics);
     private handleMessage(message);
     /**
      * Add the topics to the configuration and initialize the decoders.

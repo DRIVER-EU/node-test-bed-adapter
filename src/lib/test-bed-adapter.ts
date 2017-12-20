@@ -1,30 +1,36 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { FileLogger } from './logger/file-logger';
+import { EventEmitter } from 'events';
+import { LogLevel } from './logger/log-levels';
+import { Logger } from './logger/logger';
 import { KafkaClient, Producer, KeyedMessage, Consumer, ProduceRequest, Message } from 'kafka-node';
 import { ITopic, IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
-import { EventEmitter } from 'events';
 import { clearInterval } from 'timers';
 import { clone } from './utils/helpers';
-import { avroHelperFactory } from './index-debug';
+import { avroHelperFactory } from './avro/avro-helper-factory';
+import { KafkaLogger } from './logger/kafka-logger';
+import { ConsoleLogger } from './logger/console-logger';
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'heartbeat';
   public isConnected = false;
 
-  private client: KafkaClient;
-  private producer: Producer;
-  private consumer: Consumer;
+  private log = Logger.instance;
+  private client?: KafkaClient;
+  private producer?: Producer;
+  private consumer?: Consumer;
   private config: ITestBedOptions;
-  private heartbeatId: NodeJS.Timer;
+  private heartbeatId?: NodeJS.Timer;
   /** Map of all initialized topics, i.e. with validators/encoders/decoders */
   private consumerTopics: { [topic: string]: IInitializedTopic } = {};
   private producerTopics: { [topic: string]: IInitializedTopic } = {};
   /** Location of the configuration file */
   private configFile = 'config/test-bed-config.json';
   private defaultCallback = (error: Error, data: any) => {
-    if (error) { console.error(error.message); }
-    if (data) { console.log(data); }
+    if (error) { this.log.error(error.message); }
+    if (data) { this.log.info(data); }
   };
 
   constructor(config?: ITestBedOptions | string) {
@@ -46,7 +52,7 @@ export class TestBedAdapter extends EventEmitter {
       if (this.config.consume && this.config.consume.length > 0) { this.addTopics(this.config.consume, this.defaultCallback); }
     });
     this.client.on('error', (error) => {
-      console.error(error);
+      this.log.error(error);
       this.emit('error', error);
     });
     this.client.on('reconnect', () => {
@@ -54,45 +60,34 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
-  private initProducer() {
-    this.producer = new Producer(this.client);
-    this.producer.on('ready', () => {
-      this.startHeartbeat();
-      if (this.config.produce && this.config.produce.length > 0) { this.addProducerTopics(this.config.produce, this.defaultCallback); }
-      this.emit('ready');
-    });
-    this.producer.on('error', error => this.emit('error', error));
-  }
-
-  private initConsumer(topics: ITopic[]) {
-    this.consumer = new Consumer(this.client, topics, { encoding: 'buffer', autoCommit: true });
-    this.consumer.on('message', message => this.handleMessage(message));
-    this.consumer.on('error', error => this.emit('error', error));
-    this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
-  }
-
   public pause() {
+    if (!this.consumer) { this.emit('error', 'Consumer not ready!'); return; }
     this.consumer.pause();
   }
 
   public resume() {
+    if (!this.consumer) { this.emit('error', 'Consumer not ready!'); return; }
     this.consumer.resume();
   }
 
   public pauseTopics(topics: string[]) {
+    if (!this.consumer) { this.emit('error', 'Consumer not ready!'); return; }
     this.consumer.pauseTopics(topics);
   }
 
   public resumeTopics(topics: string[]) {
+    if (!this.consumer) { this.emit('error', 'Consumer not ready!'); return; }
     this.consumer.resumeTopics(topics);
   }
 
   public close() {
-    clearInterval(this.heartbeatId);
+    if (this.heartbeatId) { clearInterval(this.heartbeatId); }
+    if (!this.client) { return; }
     this.client.close();
   }
 
   public send(payloads: ProduceRequest | ProduceRequest[], cb: (error: any, data: any) => any) {
+    if (!this.producer) { this.emit('error', 'Producer not ready!'); return; }
     payloads = payloads instanceof Array ? payloads : [payloads];
     const pl: ProduceRequest[] = [];
     payloads.forEach(payload => {
@@ -122,12 +117,14 @@ export class TestBedAdapter extends EventEmitter {
     if (!(topics instanceof Array)) { topics = [topics]; }
     this.initializeConsumerTopics(topics);
     if (!this.consumer) { this.initConsumer(topics); }
+    if (!this.consumer) { this.emit('error', 'Consumer not ready!'); return; }
     this.consumer.addTopics(topics, cb, fromOffset);
   }
 
   public addProducerTopics(topics: ITopic | ITopic[], cb: (error: Error, data: any) => void) {
     if (!(topics instanceof Array)) { topics = [topics]; }
     this.initializeProducerTopics(topics);
+    if (!this.producer) { this.emit('error', 'Producer not ready!'); return; }
     this.producer.createTopics(topics.map(t => t.topic), true, cb);
   }
 
@@ -138,13 +135,54 @@ export class TestBedAdapter extends EventEmitter {
    */
   public loadMetadataForTopics(topics: string[], cb: (error?: any, results?: any) => any) {
     if (!this.isConnected) { cb('Client is not connected'); }
-    (this.client as any).loadMetadataForTopics(topics, (error: Error, results?: any) => {
+    (this.client as any).loadMetadataForTopics(topics, (error: any, results?: any) => {
       if (error) {
-        return console.error(error);
+        return this.log.error(error);
       }
-      console.log(results);
-      // console.log('%j', _.get(results, '1.metadata'));
+      this.log.info(results);
+      // this.log('%j', _.get(results, '1.metadata'));
     });
+  }
+
+  // PRIVATE METHODS
+
+  private initProducer() {
+    if (!this.client) { this.emit('error', 'Client not ready!'); return; }
+    this.producer = new Producer(this.client);
+    this.producer.on('ready', () => {
+      this.initLogger();
+      this.startHeartbeat();
+      if (this.config.produce && this.config.produce.length > 0) { this.addProducerTopics(this.config.produce, this.defaultCallback); }
+      this.emit('ready');
+    });
+    this.producer.on('error', error => this.emit('error', error));
+  }
+
+  private initLogger() {
+    if (!this.producer) { return; }
+    const kafkaLogger = new KafkaLogger({
+      producer: this.producer,
+      clientId: this.config.clientId
+    });
+
+    this.log.initialize([{
+      logger: new ConsoleLogger(),
+      minLevel: LogLevel.Debug
+    }, {
+      logger: new FileLogger('log.txt'),
+      minLevel: LogLevel.Debug
+    }, {
+      logger: kafkaLogger,
+      minLevel: LogLevel.Debug
+    }]);
+  }
+
+  private initConsumer(topics: ITopic[]) {
+    if (!this.client) { this.emit('error', 'Client not ready!'); return; }
+    this.consumer = new Consumer(this.client, topics, { encoding: 'buffer', autoCommit: true });
+    this.consumer.on('message', message => this.handleMessage(message));
+    this.consumer.on('error', error => this.emit('error', error));
+    this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
   }
 
   private handleMessage(message: Message) {
@@ -157,10 +195,8 @@ export class TestBedAdapter extends EventEmitter {
       } else {
         message.value = message.value.toString(); // decode buffer to string for normal messages
       }
-      this.emit('message', message);
-    } else {
-      this.emit('message', message);
     }
+    this.emit('message', message);
   }
 
   /**
@@ -182,7 +218,7 @@ export class TestBedAdapter extends EventEmitter {
             // initializedTopic.decode = avro.toString;
             break;
           default:
-            console.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
+            this.log.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
             break;
         }
       }
@@ -210,7 +246,7 @@ export class TestBedAdapter extends EventEmitter {
             initializedTopic.isValid = avro.isValid;
             break;
           default:
-            console.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
+            this.log.error(`Unknown schema type: ${t.schemaURI}. Ignoring.`);
             break;
         }
       }
@@ -233,15 +269,15 @@ export class TestBedAdapter extends EventEmitter {
     this.isConnected = true;
     this.addProducerTopics({ topic: TestBedAdapter.HeartbeatTopic }, (error, data) => {
       if (error) { throw error; }
-      console.log(data);
+      this.log.info(data);
       if (this.config.produce) { this.config.produce.push({ topic: TestBedAdapter.HeartbeatTopic }); }
       this.heartbeatId = setInterval(() => {
-        console.log('.');
+        if (!this.producer) { this.emit('error', 'Producer not ready!'); return; }
         this.producer.send([{
           topic: TestBedAdapter.HeartbeatTopic,
           messages: new KeyedMessage(`${this.config.clientId}`, new Date().toISOString())
         }], (error) => {
-          if (error) { console.error(error); }
+          if (error) { this.log.error(error); }
         });
       }, this.config.heartbeatInterval || 5000);
     });
@@ -279,7 +315,7 @@ export class TestBedAdapter extends EventEmitter {
    */
   private loadOptionsFromFile(configFile = this.configFile) {
     configFile = path.resolve(configFile);
-    // console.log(configFile);
+    // this.log(configFile);
     if (fs.existsSync(configFile)) { return JSON.parse(fs.readFileSync(configFile, { encoding: 'utf8' })) as ITestBedOptions; }
     throw new Error(`Error loading options! Either supply them as parameter or as a configuration file at ${configFile}.`);
   }
