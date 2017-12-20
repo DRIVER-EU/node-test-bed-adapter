@@ -306,14 +306,30 @@ class TestBedAdapter extends events_1.EventEmitter {
      * Configuration has changed.
      */
     configUpdated() {
-        // TODO Send an update that the configuration has changed
+        if (!this.producer) {
+            return;
+        }
+        this.producer.send([{
+                topic: TestBedAdapter.ConfigurationTopic,
+                messages: new kafka_node_1.KeyedMessage(this.config.clientId.toLowerCase(), JSON.stringify(this.config))
+            }], (err, result) => {
+            if (err) {
+                this.emit('error', err);
+            }
+            if (result) {
+                this.log.info(result);
+            }
+        });
     }
     /**
      * Start transmitting a heartbeat message.
      */
     startHeartbeat() {
+        if (this.isConnected) {
+            return;
+        }
         this.isConnected = true;
-        this.addProducerTopics({ topic: TestBedAdapter.HeartbeatTopic }, (error, data) => {
+        this.addProducerTopics([{ topic: TestBedAdapter.HeartbeatTopic }, { topic: TestBedAdapter.ConfigurationTopic }], (error, data) => {
             if (error) {
                 throw error;
             }
@@ -382,5 +398,6 @@ class TestBedAdapter extends events_1.EventEmitter {
     }
 }
 TestBedAdapter.HeartbeatTopic = 'heartbeat';
+TestBedAdapter.ConfigurationTopic = 'configuration';
 exports.TestBedAdapter = TestBedAdapter;
 //# sourceMappingURL=test-bed-adapter.js.map

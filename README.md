@@ -6,9 +6,9 @@ The implementation is a wrapper around [kafka-node](https://www.npmjs.com/packag
 - AVRO schema's and messages
 - Logging via console, file and via Kafka: you can set for each log provider the log level (e.g. error or debug)
 - Management
-  - heartbeat (topic: heartbeat), so you know which clients are online
-  - logging (topic: log-clientID): when Kafka Logging is enabled in the options
-  - TBD configuration (topic: configuration-clientID), so you can see which topics clients consume and produce
+  - Heartbeat (topic: heartbeat), so you know which clients are online
+  - Logging (topic: log-clientID): when Kafka Logging is enabled in the options
+  - Configuration (topic: configuration), so you can see which topics clients consume and produce
 
 ## Usage
 
@@ -48,6 +48,11 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
   }, see [RFC5424](https://tools.ietf.org/html/rfc5424)
   - Created a KafkaLogger, FileLogger, and ConsoleLogger
 - Configure logger (which ones to use, which debug level, output file)
+- Publish configuration (topic: configuration)
+  - topics you consume
+  - topics you produce
+  - IP address and port
+  - local time
 
 ### To be done
 
@@ -55,11 +60,6 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
   - key: name of client
   - value: current time
 - Create AVRO schema for Configuration message?:
-- Publish configuration (topic: configuration-CLIENTID)
-  - topics you consume
-  - topics you produce
-  - IP address and port
-  - local time
 - Pause consuming messages remotely
 - Pause publishing messages remotely
 - Validate published XML messages

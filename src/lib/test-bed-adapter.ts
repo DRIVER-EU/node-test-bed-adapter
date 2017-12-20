@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
-import { LogLevel } from './logger/log-levels';
 import { Logger } from './logger/logger';
 import { KafkaClient, Producer, KeyedMessage, Consumer, ProduceRequest, Message } from 'kafka-node';
 import { ITopic, IInitializedTopic } from './models/topic';
@@ -16,6 +15,7 @@ import { ILogger } from '.';
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'heartbeat';
+  public static ConfigurationTopic = 'configuration';
   public isConnected = false;
 
   private log = Logger.instance;
@@ -271,15 +271,23 @@ export class TestBedAdapter extends EventEmitter {
    * Configuration has changed.
    */
   private configUpdated() {
-    // TODO Send an update that the configuration has changed
+    if (!this.producer) { return; }
+    this.producer.send([{
+      topic: TestBedAdapter.ConfigurationTopic,
+      messages: new KeyedMessage(this.config.clientId.toLowerCase(), JSON.stringify(this.config))
+    }], (err, result) => {
+      if (err) { this.emit('error', err); }
+      if (result) { this.log.info(result); }
+    });
   }
 
   /**
    * Start transmitting a heartbeat message.
    */
   private startHeartbeat() {
+    if (this.isConnected) { return; }
     this.isConnected = true;
-    this.addProducerTopics({ topic: TestBedAdapter.HeartbeatTopic }, (error, data) => {
+    this.addProducerTopics([{ topic: TestBedAdapter.HeartbeatTopic }, { topic: TestBedAdapter.ConfigurationTopic }], (error, data) => {
       if (error) { throw error; }
       this.log.info(data);
       if (this.config.produce) { this.config.produce.push({ topic: TestBedAdapter.HeartbeatTopic }); }

@@ -20,6 +20,8 @@ class Consumer {
         type: 'driver.eu.alert'
       }, {
         topic: 'log-producer'
+      }, {
+        topic: TestBedAdapter.ConfigurationTopic
       }],
       logging: {
         logToConsole: LogLevel.Debug,
@@ -50,6 +52,9 @@ class Consumer {
   private handleMessage(message: Message) {
     switch (message.topic.toLowerCase()) {
       case 'heartbeat':
+        this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
+        break;
+      case 'configuration':
         this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
         break;
       default:

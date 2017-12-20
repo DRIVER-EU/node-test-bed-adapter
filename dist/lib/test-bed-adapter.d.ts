@@ -5,6 +5,7 @@ import { ITopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
 export declare class TestBedAdapter extends EventEmitter {
     static HeartbeatTopic: string;
+    static ConfigurationTopic: string;
     isConnected: boolean;
     private log;
     private client?;
