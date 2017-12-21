@@ -151,6 +151,7 @@ class TestBedAdapter extends events_1.EventEmitter {
     }
     /**
      * Load the metadata for all topics (in case of an empty array), or specific ones.
+     *
      * @param topics If topics is an empty array, retreive the metadata of all topics
      * @param cb callback function to return the metadata results
      */
@@ -160,10 +161,9 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         this.client.loadMetadataForTopics(topics, (error, results) => {
             if (error) {
-                return this.log.error(error);
+                cb(error, undefined);
             }
-            this.log.info(results);
-            // this.log('%j', _.get(results, '1.metadata'));
+            cb(null, results);
         });
     }
     // PRIVATE METHODS

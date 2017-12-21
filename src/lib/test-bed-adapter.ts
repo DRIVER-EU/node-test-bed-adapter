@@ -12,6 +12,7 @@ import { avroHelperFactory } from './avro/avro-helper-factory';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
 import { ILogger } from '.';
+import { ITopicsMetadata } from './declarations/kafka-node-ext';
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'heartbeat';
@@ -131,17 +132,15 @@ export class TestBedAdapter extends EventEmitter {
 
   /**
    * Load the metadata for all topics (in case of an empty array), or specific ones.
+   *
    * @param topics If topics is an empty array, retreive the metadata of all topics
    * @param cb callback function to return the metadata results
    */
-  public loadMetadataForTopics(topics: string[], cb: (error?: any, results?: any) => any) {
+  public loadMetadataForTopics(topics: string[], cb: (error?: any, results?: ITopicsMetadata) => void) {
     if (!this.isConnected) { cb('Client is not connected'); }
-    (this.client as any).loadMetadataForTopics(topics, (error: any, results?: any) => {
-      if (error) {
-        return this.log.error(error);
-      }
-      this.log.info(results);
-      // this.log('%j', _.get(results, '1.metadata'));
+    (this.client as any).loadMetadataForTopics(topics, (error?: any, results?: ITopicsMetadata) => {
+      if (error) { cb(error, undefined); }
+      cb(null, results);
     });
   }
 

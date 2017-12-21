@@ -2,7 +2,7 @@ import { TestBedAdapter } from '../lib/test-bed-adapter';
 import { ITestBedOptions } from '../lib/models/test-bed-options';
 import * as proxyquire from 'proxyquire';
 import { EventEmitter } from 'events';
-import { KafkaClient } from 'kafka-node';
+import { KafkaClient, ProduceRequest } from 'kafka-node';
 import { ITopic } from '../lib/index';
 
 describe('TestBedAdapter', () => {
@@ -31,6 +31,9 @@ describe('TestBedAdapter', () => {
     }
 
     public createTopics(..._args: any[]) {};
+    public send(_pr: ProduceRequest[], cb: (err: any, result: any) => void) {
+      cb(null, '');
+    }
   }
 
   beforeAll(done => {

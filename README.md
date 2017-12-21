@@ -53,17 +53,16 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
   - topics you produce
   - IP address and port
   - local time
+- Discover existing topics (call method loadMetadataForTopics with empty array)
 
 ### To be done
 
-- Create AVRO schema for Heartbeat message?: topic = 'heartbeat'
-  - key: name of client
-  - value: current time
+- Add to Travis CI
+- Validate published XML messages
+- Send XML messages
 - Create AVRO schema for Configuration message?:
 - Pause consuming messages remotely
 - Pause publishing messages remotely
-- Validate published XML messages
-- Send XML messages
 - Add option to publish unvalidated messages
 
 - REST interface -> not directly in here: we will create a new project, test-bed-rest-service, using this adapter.

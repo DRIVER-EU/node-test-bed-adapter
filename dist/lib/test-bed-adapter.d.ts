@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import { ProduceRequest } from 'kafka-node';
 import { ITopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
+import { ITopicsMetadata } from './declarations/kafka-node-ext';
 export declare class TestBedAdapter extends EventEmitter {
     static HeartbeatTopic: string;
     static ConfigurationTopic: string;
@@ -42,10 +43,11 @@ export declare class TestBedAdapter extends EventEmitter {
     addProducerTopics(topics: ITopic | ITopic[], cb: (error: Error, data: any) => void): void;
     /**
      * Load the metadata for all topics (in case of an empty array), or specific ones.
+     *
      * @param topics If topics is an empty array, retreive the metadata of all topics
      * @param cb callback function to return the metadata results
      */
-    loadMetadataForTopics(topics: string[], cb: (error?: any, results?: any) => any): void;
+    loadMetadataForTopics(topics: string[], cb: (error?: any, results?: ITopicsMetadata) => void): void;
     private initProducer();
     private initLogger();
     private initConsumer(topics);
