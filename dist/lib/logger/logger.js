@@ -47,6 +47,9 @@ class Logger extends events_1.EventEmitter {
         }));
     }
     formatter(msg, meta, level = log_levels_1.LogLevel[log_levels_1.LogLevel.Info]) {
+        if (msg && typeof msg === 'object' && Object.keys(msg).length) {
+            msg = JSON.stringify(msg);
+        }
         const metadata = meta && Object.keys(meta).length ? JSON.stringify(meta) : '';
         return `${new Date().toISOString()} [${level.toUpperCase()}] - ${msg ? msg : ''}${metadata ? ' - ' + metadata : ''}`;
     }

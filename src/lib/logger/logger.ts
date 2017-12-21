@@ -65,6 +65,7 @@ export class Logger extends EventEmitter {
   }
 
   private formatter(msg?: string, meta?: Object, level = LogLevel[LogLevel.Info]) {
+    if (msg && typeof msg === 'object' && Object.keys(msg).length) { msg = JSON.stringify(msg); }
     const metadata = meta && Object.keys(meta).length ? JSON.stringify(meta) : '';
     return `${new Date().toISOString()} [${level.toUpperCase()}] - ${msg ? msg : ''}${metadata ?  ' - ' + metadata : ''}`;
   }
