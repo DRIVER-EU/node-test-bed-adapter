@@ -197,7 +197,8 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private handleMessage(message: Message) {
-    const { topic } = message;
+    const { topic, value } = message;
+    if (!value) { return; }
     if (this.consumerTopics.hasOwnProperty(topic)) {
       const consumerTopic = this.consumerTopics[topic];
       if (consumerTopic.decode) {

@@ -225,7 +225,10 @@ class TestBedAdapter extends events_1.EventEmitter {
         this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
     }
     handleMessage(message) {
-        const { topic } = message;
+        const { topic, value } = message;
+        if (!value) {
+            return;
+        }
         if (this.consumerTopics.hasOwnProperty(topic)) {
             const consumerTopic = this.consumerTopics[topic];
             if (consumerTopic.decode) {
