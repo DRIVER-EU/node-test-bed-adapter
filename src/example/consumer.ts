@@ -4,7 +4,7 @@
 // kafkaLogging.setLoggerProvider(consoleLoggerProvider);
 
 import { Message } from 'kafka-node';
-import { TestBedAdapter, Logger, LogLevel } from '../lib/index';
+import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem } from '../lib/index';
 
 class Consumer {
   private adapter: TestBedAdapter;
@@ -33,6 +33,7 @@ class Consumer {
     this.adapter.on('ready', () => {
       this.subscribe();
       this.log.info('Consumer is connected');
+      this.getTopics();
     });
     this.adapter.on('error', err => {
       this.log.error(`Consumer received an error: ${err}`);
@@ -40,12 +41,33 @@ class Consumer {
     this.adapter.connect();
   }
 
-  public subscribe() {
+  private subscribe() {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', err => this.log.error(`Consumer received an error: ${err}`));
     this.adapter.on('offsetOutOfRange', err => this.log.error(`Consumer received an error: ${err}`));
     this.adapter.addTopics({ topic: TestBedAdapter.HeartbeatTopic }, err => {
       if (err) { this.log.error(`Consumer received an error: ${err}`); }
+    });
+  }
+
+  private getTopics() {
+    this.adapter.loadMetadataForTopics([], (error, results) => {
+      if (error) { return this.log.error(error); }
+      if (results && results.length > 0) {
+        results.forEach(result => {
+          if (result.hasOwnProperty('metadata')) {
+            console.log('TOPICS');
+            const metadata = (result as { [metadata: string]: { [topic: string]: ITopicMetadataItem } }).metadata;
+            for (let key in metadata) {
+              const md = metadata[key];
+              console.log(`Topic: ${key}, partitions: ${Object.keys(md).length}`);
+            }
+          } else {
+            console.log('NODE');
+            console.log(result);
+          }
+        });
+      }
     });
   }
 
