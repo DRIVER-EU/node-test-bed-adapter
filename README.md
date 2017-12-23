@@ -57,6 +57,9 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 
 ### To be done
 
+- Add support for Confluence's schema registry:
+  - note that this involves using a magic byte and schemaID as part of the message, e.g. see kafka-avro on Github
+  - also, it seems that the schema registry does not support sub-schema's, so we need to flatten them.
 - Add to Travis CI
 - Validate published XML messages
 - Send XML messages
