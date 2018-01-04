@@ -95,3 +95,9 @@ The AVRO schema is specified [here](https://avro.apache.org/docs/current/spec.ht
 - The CAP schema uses `minOccors = "0"` (optional element). I've converted this to an AVRO UnionType, for example when the type is `xs:string`, it becomes `type: ["null", "string"], default: null`.
 - The CAP schema uses `maxOccors = "unbounded"` (array). I've converted this to an AVRO UnionType, for example when the type is `xs:string`, it becomes `type: ["null", "string", { type: "array", items: "string" }], default: null`. So the element is optional (type is null and default is null), a simple string, or a string array.
 - The CAP schema contains many types: each type has been converted to an AVRO `enum` with symbols (e.g. for `simpleType`)), or `record` (e.g. for `complexType`). As a consequence, the AVRO schema may contain many types, in which case we need to specify the actual (top) type that we will use for validating/encoding/decoding messages.
+
+### Remarks when using the Kafka schema registry
+
+- In order to register a schema with Confluence's schema registry, the schema file may only define one top-level schema, i.e. although the AVRO specifications allow you to use an array of schema's, the registry needs to know which one you are using. This implies that all referenced schema's needs to be inlined. Please have a look at the avro-schema-parser project to learn more.
+- Internally, Confluence extends the byte encoded messages by prepending a Magic Byte (byte 0) and schema ID (bytes 1-4) to the encoded message. For more information, see [here](https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html#wire-format). We need to use this too in order for the Kafka REST service, topic viewer, etc. to work.
+- A Javascript implementation can be found [here](https://github.com/waldophotos/kafka-avro). Unfortunately, it depends on the librdkafka client, which does not compile on (my setup of) Windows.
