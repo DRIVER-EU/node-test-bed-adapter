@@ -1,1 +1,1 @@
-export const clone = (model: any) => { return JSON.parse(JSON.stringify(model)); };
+export const clone = <T>(model: T) => { return JSON.parse(JSON.stringify(model)) as T; };
