@@ -56,12 +56,12 @@ describe('TestBedAdapter', () => {
   });
 
   it('should not automatically connect to the testbed', () => {
-    const result = new TestBedAdapterMock({ kafkaHost: 'broker:9092', clientId: 'client' });
+    const result = new TestBedAdapterMock({ kafkaHost: 'broker:9092', schemaRegistry: 'schema-registry:3502', clientId: 'client' });
     expect(result.isConnected).toBe(false);
   });
 
   it('should connect to the testbed', (done) => {
-    const tba = new TestBedAdapterMock({ kafkaHost: 'broker:9092', clientId: 'client' });
+    const tba = new TestBedAdapterMock({ kafkaHost: 'broker:9092', schemaRegistry: 'schema-registry:3502', clientId: 'client' });
     tba.on('ready', () => {
       expect(tba.isConnected).toBe(true);
       done();

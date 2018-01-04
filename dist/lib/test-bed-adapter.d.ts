@@ -8,6 +8,7 @@ export declare class TestBedAdapter extends EventEmitter {
     static HeartbeatTopic: string;
     static ConfigurationTopic: string;
     isConnected: boolean;
+    private schemaRegistry;
     private log;
     private client?;
     private producer?;
@@ -39,7 +40,7 @@ export declare class TestBedAdapter extends EventEmitter {
      * @param cb Callback
      * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
      */
-    addTopics(topics: ITopic[] | ITopic, cb: (error: Error, data: any) => void, fromOffset?: boolean): void;
+    addConsumerTopics(topics: ITopic[] | ITopic, cb: (error: Error, data: any) => void, fromOffset?: boolean): void;
     addProducerTopics(topics: ITopic | ITopic[], cb: (error: Error, data: any) => void): void;
     /**
      * Load the metadata for all topics (in case of an empty array), or specific ones.

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const schema_registry_1 = require("./schema-registry");
 const fs = require("fs");
 const path = require("path");
 const file_logger_1 = require("./logger/file-logger");
@@ -37,13 +38,14 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         this.validateOptions(config);
         this.config = this.setDefaultOptions(config);
+        this.schemaRegistry = new schema_registry_1.SchemaRegistry(this.config);
     }
     connect() {
         this.client = new kafka_node_1.KafkaClient(this.config);
         this.initProducer();
         this.client.on('ready', () => {
             if (this.config.consume && this.config.consume.length > 0) {
-                this.addTopics(this.config.consume, this.defaultCallback);
+                this.addConsumerTopics(this.config.consume, this.defaultCallback);
             }
         });
         this.client.on('error', (error) => {
@@ -124,7 +126,7 @@ class TestBedAdapter extends events_1.EventEmitter {
      * @param cb Callback
      * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
      */
-    addTopics(topics, cb, fromOffset) {
+    addConsumerTopics(topics, cb, fromOffset) {
         if (!(topics instanceof Array)) {
             topics = [topics];
         }
@@ -175,11 +177,13 @@ class TestBedAdapter extends events_1.EventEmitter {
         this.producer = new kafka_node_1.Producer(this.client);
         this.producer.on('ready', () => {
             this.initLogger();
-            this.startHeartbeat();
-            if (this.config.produce && this.config.produce.length > 0) {
-                this.addProducerTopics(this.config.produce, this.defaultCallback);
-            }
-            this.emit('ready');
+            this.schemaRegistry.init().then(() => {
+                this.startHeartbeat();
+                if (this.config.produce && this.config.produce.length > 0) {
+                    this.addProducerTopics(this.config.produce, this.defaultCallback);
+                }
+                this.emit('ready');
+            });
         });
         this.producer.on('error', error => this.emit('error', error));
     }
@@ -362,7 +366,8 @@ class TestBedAdapter extends events_1.EventEmitter {
      */
     setDefaultOptions(options) {
         return Object.assign({
-            kafkaHost: '',
+            kafkaHost: 'broker:3501',
+            schemaRegistry: 'schema_registry:3502',
             clientId: '',
             autoConnect: true,
             sslOptions: false,

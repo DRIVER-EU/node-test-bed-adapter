@@ -13,6 +13,7 @@ class Consumer {
   constructor() {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'broker:3501',
+      schemaRegistry: 'http://schema_registry:3502',
       clientId: 'Consumer',
       consume: [{
         topic: 'CAP',
@@ -45,7 +46,7 @@ class Consumer {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', err => this.log.error(`Consumer received an error: ${err}`));
     this.adapter.on('offsetOutOfRange', err => this.log.error(`Consumer received an error: ${err}`));
-    this.adapter.addTopics({ topic: TestBedAdapter.HeartbeatTopic }, err => {
+    this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }, err => {
       if (err) { this.log.error(`Consumer received an error: ${err}`); }
     });
   }

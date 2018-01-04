@@ -1,3 +1,4 @@
+import { SchemaRegistry } from './schema-registry';
 import * as fs from 'fs';
 import * as path from 'path';
 import { FileLogger } from './logger/file-logger';
@@ -19,6 +20,7 @@ export class TestBedAdapter extends EventEmitter {
   public static ConfigurationTopic = 'configuration';
   public isConnected = false;
 
+  private schemaRegistry: SchemaRegistry;
   private log = Logger.instance;
   private client?: KafkaClient;
   private producer?: Producer;
@@ -45,13 +47,14 @@ export class TestBedAdapter extends EventEmitter {
     }
     this.validateOptions(config);
     this.config = this.setDefaultOptions(config);
+    this.schemaRegistry = new SchemaRegistry(this.config);
   }
 
   public connect() {
     this.client = new KafkaClient(this.config);
     this.initProducer();
     this.client.on('ready', () => {
-      if (this.config.consume && this.config.consume.length > 0) { this.addTopics(this.config.consume, this.defaultCallback); }
+      if (this.config.consume && this.config.consume.length > 0) { this.addConsumerTopics(this.config.consume, this.defaultCallback); }
     });
     this.client.on('error', (error) => {
       this.log.error(error);
@@ -106,7 +109,7 @@ export class TestBedAdapter extends EventEmitter {
   /**
    * Returns (a clone of) the configuration options.
    */
-  public get configuration(): ITestBedOptions { return clone(this.config); }
+  public get configuration() { return clone(this.config); }
 
   /**
    * Add topics (encoding utf8)
@@ -115,7 +118,7 @@ export class TestBedAdapter extends EventEmitter {
    * @param cb Callback
    * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
    */
-  public addTopics(topics: ITopic[] | ITopic, cb: (error: Error, data: any) => void, fromOffset?: boolean) {
+  public addConsumerTopics(topics: ITopic[] | ITopic, cb: (error: Error, data: any) => void, fromOffset?: boolean) {
     if (!(topics instanceof Array)) { topics = [topics]; }
     this.initializeConsumerTopics(topics);
     if (!this.consumer) { this.initConsumer(topics); }
@@ -151,9 +154,11 @@ export class TestBedAdapter extends EventEmitter {
     this.producer = new Producer(this.client);
     this.producer.on('ready', () => {
       this.initLogger();
-      this.startHeartbeat();
-      if (this.config.produce && this.config.produce.length > 0) { this.addProducerTopics(this.config.produce, this.defaultCallback); }
-      this.emit('ready');
+      this.schemaRegistry.init().then(() => {
+        this.startHeartbeat();
+        if (this.config.produce && this.config.produce.length > 0) { this.addProducerTopics(this.config.produce, this.defaultCallback); }
+        this.emit('ready');
+      });
     });
     this.producer.on('error', error => this.emit('error', error));
   }
@@ -309,7 +314,8 @@ export class TestBedAdapter extends EventEmitter {
    */
   private setDefaultOptions(options: ITestBedOptions) {
     return Object.assign({
-      kafkaHost: '',
+      kafkaHost: 'broker:3501',
+      schemaRegistry: 'schema_registry:3502',
       clientId: '',
       autoConnect: true,
       sslOptions: false,
