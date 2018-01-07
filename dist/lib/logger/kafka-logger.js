@@ -6,15 +6,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 class KafkaLogger {
     constructor(options) {
-        this.topic = `log-${options.clientId.toLowerCase()}`;
+        this.id = options.clientId;
         this.producer = options.producer;
-        this.producer.createTopics([this.topic], true, (err, _data) => { if (err) {
+        this.producer.createTopics([KafkaLogger.LogTopic], true, (err, _data) => { if (err) {
             console.error(err);
         } });
     }
     log(_level, msg, callback) {
         const payload = [{
-                topic: this.topic, messages: msg
+                key: this.id, topic: KafkaLogger.LogTopic, messages: {
+                    id: this.id, log: msg
+                }
             }];
         this.producer.send(payload, (err, res) => {
             if (err) {
@@ -30,5 +32,6 @@ class KafkaLogger {
         });
     }
 }
+KafkaLogger.LogTopic = '_log';
 exports.KafkaLogger = KafkaLogger;
 //# sourceMappingURL=kafka-logger.js.map

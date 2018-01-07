@@ -16,8 +16,8 @@ import { ILogger } from '.';
 import { ITopicsMetadata } from './declarations/kafka-node-ext';
 
 export class TestBedAdapter extends EventEmitter {
-  public static HeartbeatTopic = 'heartbeat';
-  public static ConfigurationTopic = 'configuration';
+  public static HeartbeatTopic = '_heartbeat';
+  public static ConfigurationTopic = '_configuration';
   public isConnected = false;
 
   private schemaRegistry: SchemaRegistry;
@@ -334,7 +334,8 @@ export class TestBedAdapter extends EventEmitter {
     if (!this.producer) { return; }
     this.producer.send([{
       topic: TestBedAdapter.ConfigurationTopic,
-      messages: new KeyedMessage(this.config.clientId.toLowerCase(), JSON.stringify(this.config))
+      key: this.config.clientId,
+      messages: this.config
     }], (err, result) => {
       if (err) { this.emitErrorMsg('Producer not ready!'); }
       if (result) { this.log.info(result); }
@@ -360,7 +361,8 @@ export class TestBedAdapter extends EventEmitter {
             }
             this.producer.send([{
               topic: TestBedAdapter.HeartbeatTopic,
-              messages: new KeyedMessage(`${this.config.clientId}`, new Date().toISOString())
+              key: this.config.clientId,
+              messages: { alive: new Date().toISOString() }
             }], (error) => {
               if (error) { this.log.error(error); }
             });

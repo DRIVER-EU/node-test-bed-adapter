@@ -54,21 +54,19 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
   - IP address and port
   - local time
 - Discover existing topics (call method loadMetadataForTopics with empty array)
+- Added support for Confluence's schema registry:
+  - note that this involves using a magic byte and schemaID as part of the message, e.g. see kafka-avro on Github
+  - also, it seems that the schema registry does not support sub-schema's, so we need to flatten them. Created a tool for that, [avro-schema-parser](npmjs.org/avro-schema-parser)
+  - Schema's are automatically loaded on startup from the registry. Topics that have no corresponding schema are ignored! For a list of schema's, see [here](github.com/DRIVER-EU/avro-schemas).
+- Create AVRO schema for Configuration, Log and Heartbeat message
 
 ### To be done
 
-- Add support for Confluence's schema registry:
-  - note that this involves using a magic byte and schemaID as part of the message, e.g. see kafka-avro on Github
-  - also, it seems that the schema registry does not support sub-schema's, so we need to flatten them.
+- Automatically publish schema's to the registry.
+- Test configuration, log and heartbeat schema's
 - Add to Travis CI
-- Validate published XML messages
-- Send XML messages
-- Create AVRO schema for Configuration message?:
 - Pause consuming messages remotely
 - Pause publishing messages remotely
-- Add option to publish unvalidated messages
-
-- REST interface -> not directly in here: we will create a new project, test-bed-rest-service, using this adapter.
 
 # Build
 

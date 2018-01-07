@@ -4,7 +4,7 @@ import { LogLevel } from './log-levels';
 
 export interface IKafkaLoggerOptions {
   producer: Producer | HighLevelProducer;
-  /** Client id: log topic will be 'log-clientId' (all lowercaps) */
+  /** Client id: id will be the key of each payload */
   clientId: string;
 }
 
@@ -13,18 +13,21 @@ export interface IKafkaLoggerOptions {
  * source: https://github.com/jackielihf/winston-k/blob/master/logger.js
  */
 export class KafkaLogger implements ILog {
+  private static LogTopic = '_log';
   private producer: Producer | HighLevelProducer;
-  private topic: string;
+  private id: string | number;
 
   constructor(options: IKafkaLoggerOptions) {
-    this.topic = `log-${options.clientId.toLowerCase()}`;
+    this.id = options.clientId;
     this.producer = options.producer;
-    this.producer.createTopics([this.topic], true, (err, _data) => { if (err) { console.error(err); } });
+    this.producer.createTopics([KafkaLogger.LogTopic], true, (err, _data) => { if (err) { console.error(err); } });
   }
 
   public log(_level: LogLevel, msg: string, callback: (err?: Error, result?: any) => void) {
     const payload: ProduceRequest[] = [{
-      topic: this.topic, messages: msg
+      key: this.id, topic: KafkaLogger.LogTopic, messages: {
+        id: this.id, log: msg
+      }
     }];
     this.producer.send(payload, (err, res) => {
       if (err) {

@@ -347,7 +347,8 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         this.producer.send([{
                 topic: TestBedAdapter.ConfigurationTopic,
-                messages: new kafka_node_1.KeyedMessage(this.config.clientId.toLowerCase(), JSON.stringify(this.config))
+                key: this.config.clientId,
+                messages: this.config
             }], (err, result) => {
             if (err) {
                 this.emitErrorMsg('Producer not ready!');
@@ -378,7 +379,8 @@ class TestBedAdapter extends events_1.EventEmitter {
                     }
                     this.producer.send([{
                             topic: TestBedAdapter.HeartbeatTopic,
-                            messages: new kafka_node_1.KeyedMessage(`${this.config.clientId}`, new Date().toISOString())
+                            key: this.config.clientId,
+                            messages: { alive: new Date().toISOString() }
                         }], (error) => {
                         if (error) {
                             this.log.error(error);
@@ -447,7 +449,7 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
     }
 }
-TestBedAdapter.HeartbeatTopic = 'heartbeat';
-TestBedAdapter.ConfigurationTopic = 'configuration';
+TestBedAdapter.HeartbeatTopic = '_heartbeat';
+TestBedAdapter.ConfigurationTopic = '_configuration';
 exports.TestBedAdapter = TestBedAdapter;
 //# sourceMappingURL=test-bed-adapter.js.map
