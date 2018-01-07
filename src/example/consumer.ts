@@ -14,15 +14,20 @@ class Consumer {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'broker:3501',
       schemaRegistry: 'http://schema_registry:3502',
+      fetchAllSchemas: true,
       clientId: 'Consumer',
       consume: [{
-        topic: 'CAP',
+        topic: 'cap',
         schemaURI: './data/cap/cap.avsc',
         type: 'driver.eu.alert'
       }, {
-        topic: 'log-producer'
-      }, {
-        topic: TestBedAdapter.ConfigurationTopic
+        topic: 'avrokeytest2'
+
+      // }
+      // , {
+      //   topic: 'log-producer'
+      // }, {
+      //   topic: TestBedAdapter.ConfigurationTopic
       }],
       logging: {
         logToConsole: LogLevel.Debug,
@@ -36,9 +41,9 @@ class Consumer {
       this.log.info('Consumer is connected');
       this.getTopics();
     });
-    this.adapter.on('error', err => {
-      this.log.error(`Consumer received an error: ${err}`);
-    });
+    // this.adapter.on('error', err => {
+    //   this.log.error(`Consumer received an error: ${err}`);
+    // });
     this.adapter.connect();
   }
 
@@ -46,7 +51,7 @@ class Consumer {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', err => this.log.error(`Consumer received an error: ${err}`));
     this.adapter.on('offsetOutOfRange', err => this.log.error(`Consumer received an error: ${err}`));
-    this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }, err => {
+    this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
       if (err) { this.log.error(`Consumer received an error: ${err}`); }
     });
   }
@@ -79,6 +84,9 @@ class Consumer {
         break;
       case 'configuration':
         this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
+        break;
+      case 'cap':
+        this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${typeof message.value === 'string' ? message.value : '\n' + JSON.stringify(message.value, null, 2)}`);
         break;
       default:
         this.log.info(`Received message on topic ${message.topic}: ${message.value}`);

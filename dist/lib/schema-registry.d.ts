@@ -1,10 +1,11 @@
 /// <reference types="bluebird" />
 import { ITestBedOptions } from './models/test-bed-options';
 import * as Promise from 'bluebird';
+import { IAvroType } from './declarations/avro';
 export interface ISchema {
     version: number | string;
     topic: string;
-    type?: any;
+    type?: IAvroType;
     schemaType: string;
     schemaTopicRaw: string;
     responseRaw: {
@@ -18,17 +19,59 @@ export interface ISchemaTopic {
 }
 export declare class SchemaRegistry {
     private options;
+    /**
+     * A dict containing the instance of the "avsc" package, and key the SR schema id.
+     * Keys are in the form 'schema-[SCHEMA_ID]'
+     *
+     * @type {Object}
+     */
+    schemaTypeById: {
+        [key: string]: IAvroType;
+    };
+    /**
+     * A dict containing all the key schemas with key the bare topic name and
+     * value the instance of the "avsc" package.
+     *
+     * @type {Object}
+     */
+    keySchemas: {
+        [topic: string]: {
+            type: IAvroType;
+            srId: number;
+        };
+    };
+    /**
+     * A dict containing all the value schemas with key the bare topic name and
+     * value the instance of the "avsc" package. It not only contains schemas for
+     * topics with key/value pairs, but also for topics with only a schema.
+     *
+     * @type {Object}
+     */
+    valueSchemas: {
+        [topic: string]: {
+            type: IAvroType;
+            srId: number;
+        };
+    };
     private log;
     private selectedTopics;
     private fetchAllVersions;
     /** List of schema topics with -value, -key annotations */
     private schemaTopics;
-    private schemaTypeById;
-    private valueSchemas;
+    /**
+     * A dict containing all the value schemas metadata, with key the bare
+     * topic name and value the SR response on that topic:
+     *
+     * 'subject' {string} The full topic name, including the '-value' suffix.
+     * 'version' {number} The version number of the schema.
+     * 'id' {number} The schema id.
+     * 'schema' {string} JSON serialized schema.
+     *
+     * @type {Object}
+     */
     private schemaMeta;
-    private keySchemas;
     constructor(options: ITestBedOptions);
-    init(): Promise<{}>;
+    init(): Promise<ISchema[]>;
     private processSelectedTopics();
     private fetchAllSchemaTopics();
     private suppressAxiosError(err);
@@ -45,13 +88,13 @@ export declare class SchemaRegistry {
      */
     private checkForAllVersions(registeredSchemas);
     /**
-   * Register the provided schema locally using avro.
-   *
-   * @param {Object} schemaObj Schema object as produced by fetchSchema().
-   * @return {Promise(Array.<Object>)} A Promise with the object received
-   *   augmented with the "type" property which stores the parsed avro schema.
-   * @private
-   */
+     * Register the provided schema locally using avro.
+     *
+     * @param {Object} schemaObj Schema object as produced by fetchSchema().
+     * @return {Promise(Array.<Object>)} A Promise with the object received
+     *   augmented with the "type" property which stores the parsed avro schema.
+     * @private
+     */
     private registerSchema(schemaObj);
     /**
      * Fetch all available versions for a subject from the SR.

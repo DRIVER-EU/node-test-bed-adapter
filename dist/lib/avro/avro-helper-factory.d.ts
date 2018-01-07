@@ -1,4 +1,5 @@
 import { IValidator } from '../models/validator';
 import { IEncoder } from '../models/encoder';
 import { IDecoder } from '../models/decoder';
-export declare const avroHelperFactory: (schemaUri: string, type?: string | undefined) => IValidator & IEncoder & IDecoder;
+import { SchemaRegistry } from '../schema-registry';
+export declare const avroHelperFactory: (sr: SchemaRegistry, topic: string) => IValidator & IEncoder & IDecoder;

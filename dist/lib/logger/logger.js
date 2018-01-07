@@ -12,6 +12,7 @@ const log_levels_1 = require("./log-levels");
 class Logger extends events_1.EventEmitter {
     constructor() {
         super();
+        this.loggers = [];
         this.minLevel = log_levels_1.LogLevel.Error;
         this.isInitialized = false;
     }
@@ -25,6 +26,10 @@ class Logger extends events_1.EventEmitter {
         this.loggers = loggers;
         this.minLevel = loggers.reduce((p, c) => c.minLevel < p ? c.minLevel : p, Number.MAX_SAFE_INTEGER);
         this.isInitialized = true;
+    }
+    addLogger(logger) {
+        this.loggers.push(logger);
+        this.minLevel = this.loggers.reduce((p, c) => c.minLevel < p ? c.minLevel : p, Number.MAX_SAFE_INTEGER);
     }
     info(msg, meta) { this.log(log_levels_1.LogLevel.Info, msg, meta); }
     debug(msg, meta) { this.log(log_levels_1.LogLevel.Debug, msg, meta); }

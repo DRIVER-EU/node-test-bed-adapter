@@ -1,5 +1,7 @@
-/// <reference types="node" />
+import { IDecoder } from './decoder';
+import { IEncoder } from './encoder';
 import { OffsetFetchRequest } from 'kafka-node';
+import { IValidator } from './validator';
 /**
  * Topic configuration for consumers or producers.
  */
@@ -9,8 +11,5 @@ export interface ITopic extends OffsetFetchRequest {
     /** A schema may contain many types - indicate which you want to use (usage: namespace.name). */
     type?: string;
 }
-export interface IInitializedTopic extends ITopic {
-    isValid?: (msg: Object) => boolean;
-    encode?: (msg: Object) => any;
-    decode?: (buf: Buffer) => Object;
+export interface IInitializedTopic extends ITopic, IValidator, IEncoder, IDecoder {
 }

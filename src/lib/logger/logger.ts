@@ -21,7 +21,7 @@ export interface ILogger {
  */
 export class Logger extends EventEmitter {
   private static _instance: Logger;
-  private loggers?: ILogger[];
+  private loggers: ILogger[] = [];
   private minLevel = LogLevel.Error;
   private isInitialized = false;
 
@@ -38,6 +38,11 @@ export class Logger extends EventEmitter {
     this.loggers = loggers;
     this.minLevel = loggers.reduce((p, c) => c.minLevel < p ? c.minLevel : p, Number.MAX_SAFE_INTEGER);
     this.isInitialized = true;
+  }
+
+  public addLogger(logger: ILogger) {
+    this.loggers.push(logger);
+    this.minLevel = this.loggers.reduce((p, c) => c.minLevel < p ? c.minLevel : p, Number.MAX_SAFE_INTEGER);
   }
 
   public info(msg?: string, meta?: Object) { this.log(LogLevel.Info, msg, meta); }

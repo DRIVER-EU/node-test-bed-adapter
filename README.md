@@ -101,3 +101,7 @@ The AVRO schema is specified [here](https://avro.apache.org/docs/current/spec.ht
 - In order to register a schema with Confluence's schema registry, the schema file may only define one top-level schema, i.e. although the AVRO specifications allow you to use an array of schema's, the registry needs to know which one you are using. This implies that all referenced schema's needs to be inlined. Please have a look at the avro-schema-parser project to learn more.
 - Internally, Confluence extends the byte encoded messages by prepending a Magic Byte (byte 0) and schema ID (bytes 1-4) to the encoded message. For more information, see [here](https://docs.confluent.io/current/schema-registry/docs/serializer-formatter.html#wire-format). We need to use this too in order for the Kafka REST service, topic viewer, etc. to work.
 - A Javascript implementation can be found [here](https://github.com/waldophotos/kafka-avro). Unfortunately, it depends on the librdkafka client, which does not compile on (my setup of) Windows.
+
+# TODO
+
+Investigate if we can use something like [scribe](https://bluejamesbond.github.io/Scribe.js/) for monitoring our logs (even though the scribe project is abandoned, or so it seems from the commit log).

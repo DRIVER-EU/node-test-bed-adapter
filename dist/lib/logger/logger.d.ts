@@ -19,12 +19,13 @@ export interface ILogger {
  */
 export declare class Logger extends EventEmitter {
     private static _instance;
-    private loggers?;
+    private loggers;
     private minLevel;
     private isInitialized;
     private constructor();
     static readonly instance: Logger;
     initialize(loggers: ILogger[]): void;
+    addLogger(logger: ILogger): void;
     info(msg?: string, meta?: Object): void;
     debug(msg?: string, meta?: Object): void;
     warn(msg?: string, meta?: Object): void;

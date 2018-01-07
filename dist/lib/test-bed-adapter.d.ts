@@ -20,9 +20,10 @@ export declare class TestBedAdapter extends EventEmitter {
     private producerTopics;
     /** Location of the configuration file */
     private configFile;
-    private defaultCallback;
     constructor(config?: ITestBedOptions | string);
     connect(): void;
+    /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
+    private initialize();
     pause(): void;
     resume(): void;
     pauseTopics(topics: string[]): void;
@@ -37,11 +38,10 @@ export declare class TestBedAdapter extends EventEmitter {
      * Add topics (encoding utf8)
      *
      * @param topics Array of topics to add
-     * @param cb Callback
      * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
      */
-    addConsumerTopics(topics: ITopic[] | ITopic, cb: (error: Error, data: any) => void, fromOffset?: boolean): void;
-    addProducerTopics(topics: ITopic | ITopic[], cb: (error: Error, data: any) => void): void;
+    addConsumerTopics(topics?: ITopic | ITopic[]): Promise<ITopic | ITopic[]>;
+    addProducerTopics(topics?: ITopic | ITopic[]): Promise<ITopic[]>;
     /**
      * Load the metadata for all topics (in case of an empty array), or specific ones.
      *
@@ -51,7 +51,9 @@ export declare class TestBedAdapter extends EventEmitter {
     loadMetadataForTopics(topics: string[], cb: (error?: any, results?: ITopicsMetadata) => void): void;
     private initProducer();
     private initLogger();
-    private initConsumer(topics);
+    /** If required, add the Kafka logger too (after the producer has been initialised). */
+    private addKafkaLogger();
+    private initConsumer(topics?);
     private handleMessage(message);
     /**
      * Add the topics to the configuration and initialize the decoders.
@@ -86,4 +88,5 @@ export declare class TestBedAdapter extends EventEmitter {
      * @param configFile configuration file path
      */
     private loadOptionsFromFile(configFile?);
+    private emitErrorMsg(msg, cb?);
 }

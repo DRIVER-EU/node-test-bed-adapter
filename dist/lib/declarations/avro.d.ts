@@ -1,7 +1,5 @@
-// import { IAvroSchema, ISchemaOptions, IForValueOptions } from './avro';
-
-declare module 'avsc' {
-  interface ISchemaOptions {
+/// <reference types="node" />
+export interface ISchemaOptions {
     /**
      * The Avro specification mandates that we fall through to the underlying type if a logical type is invalid.
      * When set, this option will override this behavior and throw an error when a logical type can't be applied.
@@ -43,13 +41,11 @@ declare module 'avsc' {
      * if an ambiguous union is parsed in this case).
      */
     wrapUnions?: boolean | 'auto' | 'never' | 'always';
-  }
-
-  interface IForTypesOptions extends ISchemaOptions {
+}
+export interface IForTypesOptions extends ISchemaOptions {
     strictDefaults?: boolean;
-  }
-
-  interface IForValueOptions extends IForTypesOptions {
+}
+export interface IForValueOptions extends IForTypesOptions {
     /**
      * Temporary type used when an empty array is encountered.
      * It will be discarded as soon as the array's type can be inferred. Defaults to null's type.
@@ -60,9 +56,8 @@ declare module 'avsc' {
      * return an alternate type to use, or undefined to proceed with the default inference logic.
      */
     valueHook: (val: any, opts: IForValueOptions) => any;
-  }
-
-  interface IValidationOptions {
+}
+export interface IValidationOptions {
     /**
      * Function called when an invalid value is encountered.
      * When an invalid value causes its parent values to also be invalid, the latter do not trigger a callback.
@@ -75,13 +70,28 @@ declare module 'avsc' {
      * The default is to ignore any extra attributes.
      */
     noUndeclaredFields?: boolean;
-  }
-
-  interface IAvroDecoded { value: any; offset: number; }
-
-  interface IAvroType {
+}
+export interface IAvroDecoded {
+    value: any;
+    offset: number;
+}
+/**
+ * "Abstract" base Avro type.
+ *
+ * This Type constructor will register any named types to support recursive
+ * schemas. All type values are represented in memory similarly to their JSON
+ * representation, except for:
+ *
+ * + `bytes` and `fixed` which are represented as `Buffer`s.
+ * + `union`s which will be "unwrapped" unless the `wrapUnions` option is set.
+ *
+ *  See individual subclasses for details.
+ */
+export interface IAvroType {
     name: string;
-    forSchema(schema: Object | string, opts: { wrapUnions?: boolean }): IAvroType;
+    forSchema(schema: Object | string, opts: {
+        wrapUnions?: boolean;
+    }): IAvroType;
     isType(): boolean;
     /**
      * Encode the object to the buffer, and return the current buffer position.
@@ -99,23 +109,11 @@ declare module 'avsc' {
      */
     decode: (buf: Buffer, offset?: number, resolver?: (t: IAvroType) => IAvroType) => IAvroDecoded;
     fromBuffer: (buf: Buffer, offset?: number, resolver?: (t: IAvroType) => IAvroType) => IAvroDecoded;
-    }
-
-  interface IAvroSchema extends IAvroType {
+}
+export interface IAvroSchema extends IAvroType {
     branchName: string;
     doc: string;
     name: string;
     aliases: string[];
     types: IAvroType[];
-  }
-
-  const avro: {
-    Type: {
-      /** Instantiate a type for its schema */
-      forSchema: (schema: string, options?: ISchemaOptions) => IAvroType;
-      /** Infer a type from a value. */
-      forValue: (val: any, options: IForValueOptions) => any;
-    }
-  };
-  export = avro;
 }
