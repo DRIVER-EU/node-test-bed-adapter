@@ -1,6 +1,6 @@
 [{
-  "name": "valueNamePair",
-  "namespace": "driver.eu",
+  "name": "ValueNamePair",
+  "namespace": "eu.driver.model.cap",
   "type": "record",
   "fields": [{
     "name": "valueName",
@@ -10,8 +10,8 @@
     "type": "string"
   }]
 }, {
-  "name": "status",
-  "namespace": "driver.eu",
+  "name": "Status",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Actual",
@@ -21,8 +21,8 @@
     "Draft"
   ]
 }, {
-  "name": "msgType",
-  "namespace": "driver.eu",
+  "name": "MsgType",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Alert",
@@ -32,8 +32,8 @@
     "Error"
   ]
 }, {
-  "name": "scope",
-  "namespace": "driver.eu",
+  "name": "Scope",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Public",
@@ -41,8 +41,8 @@
     "Private"
   ]
 }, {
-  "name": "category",
-  "namespace": "driver.eu",
+  "name": "Category",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Geo",
@@ -59,8 +59,8 @@
     "Other"
   ]
 }, {
-  "name": "responseType",
-  "namespace": "driver.eu",
+  "name": "ResponseType",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Shelter",
@@ -74,8 +74,8 @@
     "None"
   ]
 }, {
-  "name": "urgency",
-  "namespace": "driver.eu",
+  "name": "Urgency",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Immediate",
@@ -85,8 +85,8 @@
     "Unknown"
   ]
 }, {
-  "name": "severity",
-  "namespace": "driver.eu",
+  "name": "Severity",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Extreme",
@@ -96,8 +96,8 @@
     "Unknown"
   ]
 }, {
-  "name": "certainty",
-  "namespace": "driver.eu",
+  "name": "Certainty",
+  "namespace": "eu.driver.model.cap",
   "type": "enum",
   "symbols": [
     "Observed",
@@ -107,8 +107,8 @@
     "Unknown"
   ]
 }, {
-  "name": "resource",
-  "namespace": "driver.eu",
+  "name": "Resource",
+  "namespace": "eu.driver.model.cap",
   "type": "record",
   "fields": [{
     "name": "resourceDesc",
@@ -132,8 +132,8 @@
     "default": "null"
   }]
 }, {
-  "name": "area",
-  "namespace": "driver.eu",
+  "name": "Area",
+  "namespace": "eu.driver.model.cap",
   "type": "record",
   "fields": [{
     "name": "areaDesc",
@@ -154,9 +154,9 @@
     "default": null
   }, {
     "name": "geocode",
-    "type": ["null", "driver.eu.valueNamePair", {
+    "type": ["null", "eu.driver.model.cap.ValueNamePair", {
       "type": "array",
-      "items": "driver.eu.valueNamePair"
+      "items": "eu.driver.model.cap.ValueNamePair"
     }],
     "default": null
   }, {
@@ -169,8 +169,8 @@
     "default": null
   }]
 }, {
-  "name": "info",
-  "namespace": "driver.eu",
+  "name": "Info",
+  "namespace": "eu.driver.model.cap",
   "type": "record",
   "fields": [{
     "name": "language",
@@ -178,38 +178,38 @@
     "type": ["string", "null"]
   }, {
     "name": "category",
-    "type": ["driver.eu.category", {
+    "type": ["eu.driver.model.cap.Category", {
       "type": "array",
-      "items": "driver.eu.category"
+      "items": "eu.driver.model.cap.Category"
     }]
   }, {
     "name": "event",
     "type": "string"
   }, {
     "name": "responseType",
-    "type": ["null", "driver.eu.responseType", {
+    "type": ["null", "eu.driver.model.cap.ResponseType", {
       "type": "array",
-      "items": "driver.eu.responseType"
+      "items": "eu.driver.model.cap.ResponseType"
     }],
     "default": null
   }, {
     "name": "urgency",
-    "type": "driver.eu.urgency"
+    "type": "eu.driver.model.cap.Urgency"
   }, {
     "name": "severity",
-    "type": "driver.eu.severity"
+    "type": "eu.driver.model.cap.Severity"
   }, {
     "name": "certainty",
-    "type": "driver.eu.certainty"
+    "type": "eu.driver.model.cap.Certainty"
   }, {
     "name": "audience",
     "type": "string",
     "default": "null"
   }, {
     "name": "eventCode",
-    "type": ["null", "driver.eu.valueNamePair", {
+    "type": ["null", "eu.driver.model.cap.ValueNamePair", {
       "type": "array",
-      "items": "driver.eu.valueNamePair"
+      "items": "eu.driver.model.cap.ValueNamePair"
     }],
     "default": null
   }, {
@@ -254,29 +254,29 @@
     "default": "null"
   }, {
     "name": "parameter",
-    "type": ["null", "driver.eu.valueNamePair", {
+    "type": ["null", "eu.driver.model.cap.ValueNamePair", {
       "type": "array",
-      "items": "driver.eu.valueNamePair"
+      "items": "eu.driver.model.cap.ValueNamePair"
     }],
     "default": null
   }, {
     "name": "resource",
-    "type": ["null", "driver.eu.resource", {
+    "type": ["null", "eu.driver.model.cap.Resource", {
       "type": "array",
-      "items": "driver.eu.resource"
+      "items": "eu.driver.model.cap.Resource"
     }],
     "default": null
   }, {
     "name": "area",
-    "type": ["null", "driver.eu.area", {
+    "type": ["null", "eu.driver.model.cap.Area", {
       "type": "array",
-      "items": "driver.eu.area"
+      "items": "eu.driver.model.cap.Area"
     }],
     "default": null
   }]
 }, {
-  "name": "alert",
-  "namespace": "driver.eu",
+  "name": "Alert",
+  "namespace": "eu.driver.model.cap",
   "doc": "CAP Alert Message (version 1.2)",
   "type": "record",
   "fields": [{
@@ -291,17 +291,17 @@
     "doc": "TODO xs:dateTime Used pattern"
   }, {
     "name": "status",
-    "type": "driver.eu.status"
+    "type": "eu.driver.model.cap.Status"
   }, {
     "name": "msgType",
-    "type": "driver.eu.msgType"
+    "type": "eu.driver.model.cap.MsgType"
   }, {
     "name": "source",
     "type": "string",
     "default": "null"
   }, {
     "name": "scope",
-    "type": "driver.eu.scope"
+    "type": "eu.driver.model.cap.Scope"
   }, {
     "name": "restriction",
     "type": "string",
@@ -331,9 +331,9 @@
     "default": "null"
   }, {
     "name": "info",
-    "type": ["null", "driver.eu.info", {
+    "type": ["null", "eu.driver.model.cap.Info", {
       "type": "array",
-      "items": "driver.eu.info"
+      "items": "eu.driver.model.cap.Info"
     }],
     "default": null
   }]
