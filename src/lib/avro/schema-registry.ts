@@ -1,10 +1,11 @@
-import { ITestBedOptions } from './models/test-bed-options';
+import { TestBedAdapter } from './../test-bed-adapter';
+import { ITestBedOptions } from '../models/test-bed-options';
 import * as Promise from 'bluebird';
 import { default as axios, AxiosRequestConfig } from 'axios';
 import * as url from 'url';
-import { Logger } from '.';
+import { Logger } from '..';
 import * as avro from 'avsc';
-import { IAvroType } from './declarations/avro';
+import { IAvroType } from '../declarations/avro';
 
 export interface ISchema {
   version: number | string;
@@ -67,7 +68,12 @@ export class SchemaRegistry {
     if (options.fetchAllSchemas) { return; }
     const consume = options.consume ? options.consume.map(t => t.topic) : [];
     const produce = options.produce ? options.produce.map(t => t.topic) : [];
-    this.selectedTopics = [...consume, ...produce];
+    this.selectedTopics = [
+      TestBedAdapter.HeartbeatTopic,
+      TestBedAdapter.ConfigurationTopic,
+      TestBedAdapter.LogTopic,
+      ...consume,
+      ...produce];
   }
 
   public init() {

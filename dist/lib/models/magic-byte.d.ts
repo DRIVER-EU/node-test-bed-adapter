@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { SchemaRegistry } from './../schema-registry';
+import { SchemaRegistry } from '../avro/schema-registry';
 import { IAvroType } from '../declarations/avro';
 /**
  * Encode an AVRO value into a message, as expected by Confluent's Kafka Avro deserializer.

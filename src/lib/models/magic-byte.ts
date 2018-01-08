@@ -1,4 +1,4 @@
-import { SchemaRegistry } from './../schema-registry';
+import { SchemaRegistry } from '../avro/schema-registry';
 import { IAvroType, IAvroDecoded } from '../declarations/avro';
 import { Logger } from '..';
 /**
