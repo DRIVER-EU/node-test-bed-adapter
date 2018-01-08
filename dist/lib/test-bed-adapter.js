@@ -1,17 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const schema_registry_1 = require("./schema-registry");
 const fs = require("fs");
 const path = require("path");
+const Promise = require("bluebird");
+const timers_1 = require("timers");
 const file_logger_1 = require("./logger/file-logger");
 const events_1 = require("events");
 const logger_1 = require("./logger/logger");
 const kafka_node_1 = require("kafka-node");
-const timers_1 = require("timers");
+const schema_registry_1 = require("./avro/schema-registry");
 const helpers_1 = require("./utils/helpers");
 const avro_helper_factory_1 = require("./avro/avro-helper-factory");
 const kafka_logger_1 = require("./logger/kafka-logger");
 const console_logger_1 = require("./logger/console-logger");
+const schema_publisher_1 = require("./avro/schema-publisher");
 class TestBedAdapter extends events_1.EventEmitter {
     constructor(config) {
         super();
@@ -30,10 +32,12 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         this.validateOptions(config);
         this.config = this.setDefaultOptions(config);
+        this.schemaPublisher = new schema_publisher_1.SchemaPublisher(this.config);
         this.schemaRegistry = new schema_registry_1.SchemaRegistry(this.config);
     }
     connect() {
         this.initLogger()
+            .then(() => this.schemaPublisher.init())
             .then(() => {
             this.client = new kafka_node_1.KafkaClient(this.config);
             this.client.on('ready', () => {
@@ -55,7 +59,6 @@ class TestBedAdapter extends events_1.EventEmitter {
             .then(() => this.startHeartbeat())
             .then(() => this.addProducerTopics(this.config.produce))
             .then(() => this.initConsumer(this.config.consume))
-            .then(() => this.addConsumerTopics(this.config.consume))
             .then(() => this.emit('ready'))
             .catch(err => this.emitErrorMsg(err));
     }
@@ -345,7 +348,7 @@ class TestBedAdapter extends events_1.EventEmitter {
         if (!this.producer) {
             return;
         }
-        this.producer.send([{
+        this.send([{
                 topic: TestBedAdapter.ConfigurationTopic,
                 key: this.config.clientId,
                 messages: this.config
@@ -369,17 +372,13 @@ class TestBedAdapter extends events_1.EventEmitter {
             this.isConnected = true;
             this.addProducerTopics([{ topic: TestBedAdapter.HeartbeatTopic }, { topic: TestBedAdapter.ConfigurationTopic }])
                 .then(() => {
-                if (this.config.produce) {
-                    this.config.produce.push({ topic: TestBedAdapter.HeartbeatTopic });
-                    this.config.produce.push({ topic: TestBedAdapter.ConfigurationTopic });
-                }
                 this.heartbeatId = setInterval(() => {
                     if (!this.producer) {
                         return this.emitErrorMsg('Producer not ready!', reject);
                     }
-                    this.producer.send([{
-                            topic: TestBedAdapter.HeartbeatTopic,
+                    this.send([{
                             key: this.config.clientId,
+                            topic: TestBedAdapter.HeartbeatTopic,
                             messages: { alive: new Date().toISOString() }
                         }], (error) => {
                         if (error) {
@@ -451,5 +450,6 @@ class TestBedAdapter extends events_1.EventEmitter {
 }
 TestBedAdapter.HeartbeatTopic = '_heartbeat';
 TestBedAdapter.ConfigurationTopic = '_configuration';
+TestBedAdapter.LogTopic = '_log';
 exports.TestBedAdapter = TestBedAdapter;
 //# sourceMappingURL=test-bed-adapter.js.map

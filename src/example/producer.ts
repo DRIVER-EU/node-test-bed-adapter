@@ -15,6 +15,8 @@ class Producer {
       kafkaHost: 'broker:3501',
       schemaRegistry: 'http://schema_registry:3502',
       clientId: this.id,
+      autoRegisterSchemas: true,
+      schemaFolder: './data/schemas',
       produce: [
         { topic: 'cap' },
         { topic: 'avrokeytest2' }
@@ -59,25 +61,25 @@ class Producer {
     //     if (data) { console.log(data); }
     //   });
     // });
-    // this.adapter.send(payloads, (error, data) => {
-    //   if (error) { console.error(error); }
-    //   if (data) { console.log(data); }
-    // });
+    this.adapter.send(payloads, (error, data) => {
+      if (error) { console.error(error); }
+      if (data) { console.log(data); }
+    });
     // this.adapter.send(payloads[0], (error, data) => {
     //   if (error) { console.error(error); }
     //   if (data) { console.log(data); }
     // });
-    this.adapter.send({
-      key: 15,
-      topic: 'avrokeytest2',
-      messages: {
-        name: 'Erik Vullings'
-      },
-      attributes: 1
-    }, (error, data) => {
-      if (error) { console.error(error); }
-      if (data) { console.log(data); }
-    });
+    // this.adapter.send({
+    //   key: 15,
+    //   topic: 'avrokeytest2',
+    //   messages: {
+    //     name: 'Erik Vullings'
+    //   },
+    //   attributes: 1
+    // }, (error, data) => {
+    //   if (error) { console.error(error); }
+    //   if (data) { console.log(data); }
+    // });
   }
 }
 

@@ -1,4 +1,6 @@
 /// <reference types="node" />
+/// <reference types="bluebird" />
+import * as Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import { ProduceRequest } from 'kafka-node';
 import { ITopic } from './models/topic';
@@ -7,7 +9,9 @@ import { ITopicsMetadata } from './declarations/kafka-node-ext';
 export declare class TestBedAdapter extends EventEmitter {
     static HeartbeatTopic: string;
     static ConfigurationTopic: string;
+    static LogTopic: string;
     isConnected: boolean;
+    private schemaPublisher;
     private schemaRegistry;
     private log;
     private client?;

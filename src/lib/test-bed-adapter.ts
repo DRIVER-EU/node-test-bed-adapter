@@ -1,25 +1,29 @@
-import { SchemaRegistry } from './schema-registry';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as Promise from 'bluebird';
+import { clearInterval } from 'timers';
 import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
-import { KafkaClient, Producer, KeyedMessage, Consumer, ProduceRequest, Message } from 'kafka-node';
+import { KafkaClient, Producer, Consumer, ProduceRequest, Message } from 'kafka-node';
 import { ITopic, IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
-import { clearInterval } from 'timers';
+import { SchemaRegistry } from './avro/schema-registry';
 import { clone } from './utils/helpers';
 import { avroHelperFactory } from './avro/avro-helper-factory';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
 import { ILogger } from '.';
 import { ITopicsMetadata } from './declarations/kafka-node-ext';
+import { SchemaPublisher } from './avro/schema-publisher';
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = '_heartbeat';
   public static ConfigurationTopic = '_configuration';
+  public static LogTopic = '_log';
   public isConnected = false;
 
+  private schemaPublisher: SchemaPublisher;
   private schemaRegistry: SchemaRegistry;
   private log = Logger.instance;
   private client?: KafkaClient;
@@ -43,11 +47,13 @@ export class TestBedAdapter extends EventEmitter {
     }
     this.validateOptions(config);
     this.config = this.setDefaultOptions(config);
+    this.schemaPublisher = new SchemaPublisher(this.config);
     this.schemaRegistry = new SchemaRegistry(this.config);
   }
 
   public connect() {
     this.initLogger()
+      .then(() => this.schemaPublisher.init())
       .then(() => {
         this.client = new KafkaClient(this.config);
         this.client.on('ready', () => {
@@ -70,7 +76,7 @@ export class TestBedAdapter extends EventEmitter {
       .then(() => this.startHeartbeat())
       .then(() => this.addProducerTopics(this.config.produce))
       .then(() => this.initConsumer(this.config.consume))
-      .then(() => this.addConsumerTopics(this.config.consume))
+      // .then(() => this.addConsumerTopics(this.config.consume))
       .then(() => this.emit('ready'))
       .catch(err => this.emitErrorMsg(err));
   }
@@ -332,7 +338,7 @@ export class TestBedAdapter extends EventEmitter {
    */
   private configUpdated() {
     if (!this.producer) { return; }
-    this.producer.send([{
+    this.send([{
       topic: TestBedAdapter.ConfigurationTopic,
       key: this.config.clientId,
       messages: this.config
@@ -351,17 +357,13 @@ export class TestBedAdapter extends EventEmitter {
       this.isConnected = true;
       this.addProducerTopics([{ topic: TestBedAdapter.HeartbeatTopic }, { topic: TestBedAdapter.ConfigurationTopic }])
         .then(() => {
-          if (this.config.produce) {
-            this.config.produce.push({ topic: TestBedAdapter.HeartbeatTopic });
-            this.config.produce.push({ topic: TestBedAdapter.ConfigurationTopic });
-          }
           this.heartbeatId = setInterval(() => {
             if (!this.producer) {
               return this.emitErrorMsg('Producer not ready!', reject);
             }
-            this.producer.send([{
-              topic: TestBedAdapter.HeartbeatTopic,
+            this.send([{
               key: this.config.clientId,
+              topic: TestBedAdapter.HeartbeatTopic,
               messages: { alive: new Date().toISOString() }
             }], (error) => {
               if (error) { this.log.error(error); }
