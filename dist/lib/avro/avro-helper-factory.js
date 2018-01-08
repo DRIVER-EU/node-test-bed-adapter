@@ -13,7 +13,8 @@ exports.avroHelperFactory = (sr, topic) => {
     const log = __1.Logger.instance;
     const valueSchema = sr.valueSchemas[topic];
     const keySchema = sr.keySchemas.hasOwnProperty(topic) ? sr.keySchemas[topic] : undefined;
-    const errorHook = (path, part) => log.error(path.join(', ') + '\n' + JSON.stringify(part, null, 2));
+    const errorHook = (path, part) => log.error(`avroHelperFactory() - Topic ${topic}, path ${path.join(', ')}
+    ${JSON.stringify(part, null, 2)}`);
     return {
         /** Check whether the message is valid */
         isValid: (obj) => {

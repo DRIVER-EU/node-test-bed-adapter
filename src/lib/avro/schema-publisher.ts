@@ -4,7 +4,7 @@ import * as url from 'url';
 import * as Promise from 'bluebird';
 import { findFilesInDir } from './../utils/helpers';
 import { ITestBedOptions } from './../models/test-bed-options';
-import { default as axios, AxiosRequestConfig } from 'axios';
+import { default as axios } from 'axios';
 import { Logger } from '..';
 
 /**
@@ -42,8 +42,7 @@ export class SchemaPublisher {
 
   private uploadSchema(schemaFilename: string) {
     return new Promise(resolve => {
-      const schemaTopic = path.basename(schemaFilename)
-        .replace(path.extname(schemaFilename), '');
+      const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
       const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
       const schema = JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
       this.log.debug(`uploadSchema() - Uploading schema from ${schemaFilename} to url: ${uri}`);

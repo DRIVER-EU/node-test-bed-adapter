@@ -17,6 +17,7 @@ First, install the adapter, so you can import / require it in your code.
 ```console
 npm i node-test-bed-adapter
 ```
+In case you have problems installing the adapter, you may have to first run `npm i -g node-gyp`, which is often required to build C++ libraries (in our case, snappy compression).
 
 See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/tree/master/src/example) for an example of a consumer and producer sending CAP messages.
 
@@ -25,14 +26,13 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 ### Completed
 
 - Connect to Kafka
-- Publish heartbeat (topic: heartbeat)
+- Publish heartbeat (topic: connect-status-heartbeat)
 - Create AVRO schema for CAP messages (for testing purposes)
 - Validate AVRO messages
-- Encode/decode object using AVRO helper factory
+- Encode/decode object and keys using AVRO helper factory
 - Setup test framework
 - Create kafka-node mock using proxyquire
-- Publish CAP messages (for testing purposes)
-- Consume CAP messages (for testing purposes)
+- Publish and consume CAP messages (for testing purposes)
 - Test sending messages using GZip compression (set attributes to 1in ProduceRequest payload)
 - Test sending an array of CAP messages - creating a Buffer per message.
 - Logging via Kafka (e.g. [log4j-kafka appender](https://logging.apache.org/log4j/2.x/manual/appenders.html#KafkaAppender)
@@ -48,7 +48,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
   }, see [RFC5424](https://tools.ietf.org/html/rfc5424)
   - Created a KafkaLogger, FileLogger, and ConsoleLogger
 - Configure logger (which ones to use, which debug level, output file)
-- Publish configuration (topic: configuration)
+- Publish configuration (topic: connect-status-configuration)
   - topics you consume
   - topics you produce
   - IP address and port
@@ -59,11 +59,11 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
   - also, it seems that the schema registry does not support sub-schema's, so we need to flatten them. Created a tool for that, [avro-schema-parser](npmjs.org/avro-schema-parser)
   - Schema's are automatically loaded on startup from the registry. Topics that have no corresponding schema are ignored! For a list of schema's, see [here](github.com/DRIVER-EU/avro-schemas).
 - Create AVRO schema for Configuration, Log and Heartbeat message
+- Automatically publish schema's to the registry: using options `schemaFolder` and `autoRegisterSchemas`. See producer.ts in the example folder.
+- Test configuration, log and heartbeat schema's: note that we need to precede them with 'connect-status' in order to show them as system topics, see this [issue](https://github.com/Landoop/kafka-topics-ui/issues/100) and [here](https://github.com/Landoop/kafka-topics-ui/issues/99), and both key and value require a schema, as discussed [here](https://github.com/Landoop/kafka-topics-ui/issues/84).
 
 ### To be done
 
-- Automatically publish schema's to the registry.
-- Test configuration, log and heartbeat schema's
 - Add to Travis CI
 - Pause consuming messages remotely
 - Pause publishing messages remotely

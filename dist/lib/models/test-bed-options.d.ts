@@ -1,5 +1,4 @@
 import { KafkaClientOptions } from 'kafka-node';
-import { ITopic } from './topic';
 import { LogLevel } from '../logger/log-levels';
 export interface ITestBedOptions extends KafkaClientOptions {
     /** Unique ID of this client */
@@ -20,9 +19,9 @@ export interface ITestBedOptions extends KafkaClientOptions {
     /** Hearbeat interval in msec */
     heartbeatInterval?: number;
     /** Topics you want to consume */
-    consume?: ITopic[];
+    consume?: string[];
     /** Topics you want to produce */
-    produce?: ITopic[];
+    produce?: string[];
     /** Specifiy logging options */
     logging?: {
         /** If set, log to file */

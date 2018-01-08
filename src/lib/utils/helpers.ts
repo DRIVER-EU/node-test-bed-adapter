@@ -25,7 +25,6 @@ export const findFilesInDir = (directoryName: string, ext: string) => {
     if (stat.isDirectory()) {
       results = results.concat(findFilesInDir(filename, ext)); // recurse
     } else if (path.extname(filename).toLowerCase() === ext) {
-      console.log('-- found: ', filename);
       results.push(filename);
     }
   });

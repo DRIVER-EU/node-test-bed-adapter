@@ -59,6 +59,7 @@ class TestBedAdapter extends events_1.EventEmitter {
             .then(() => this.startHeartbeat())
             .then(() => this.addProducerTopics(this.config.produce))
             .then(() => this.initConsumer(this.config.consume))
+            .then(() => this.configUpdated())
             .then(() => this.emit('ready'))
             .catch(err => this.emitErrorMsg(err));
     }
@@ -159,7 +160,7 @@ class TestBedAdapter extends events_1.EventEmitter {
             }
             const newTopics = this.initializeProducerTopics(topics);
             if (this.producer && newTopics.length > 0) {
-                this.producer.createTopics(newTopics.map(t => t.topic), true, (error, _data) => {
+                this.producer.createTopics(newTopics, true, (error, _data) => {
                     if (error) {
                         return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
                     }
@@ -284,10 +285,10 @@ class TestBedAdapter extends events_1.EventEmitter {
         let isConfigUpdated = false;
         const newTopics = [];
         topics.forEach(t => {
-            if (this.consumerTopics.hasOwnProperty(t.topic))
+            if (this.consumerTopics.hasOwnProperty(t))
                 return;
-            if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
-                this.log.error(`initializeConsumerTopics - no schema registered for topic ${t.topic}`);
+            if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t)) {
+                this.log.error(`initializeConsumerTopics - no schema registered for topic ${t}`);
                 return;
             }
             newTopics.push(t);
@@ -295,11 +296,11 @@ class TestBedAdapter extends events_1.EventEmitter {
                 isConfigUpdated = true;
                 this.config.consume.push(t);
             }
-            const initializedTopic = helpers_1.clone(t);
-            const avro = avro_helper_factory_1.avroHelperFactory(this.schemaRegistry, t.topic);
+            const initializedTopic = { topic: t };
+            const avro = avro_helper_factory_1.avroHelperFactory(this.schemaRegistry, t);
             initializedTopic.decode = avro.decode;
             initializedTopic.decodeKey = avro.decodeKey;
-            this.consumerTopics[t.topic] = initializedTopic;
+            this.consumerTopics[t] = initializedTopic;
         });
         if (isConfigUpdated) {
             this.configUpdated();
@@ -317,10 +318,10 @@ class TestBedAdapter extends events_1.EventEmitter {
         let isConfigUpdated = false;
         const newTopics = [];
         topics.forEach(t => {
-            if (this.producerTopics.hasOwnProperty(t.topic))
+            if (this.producerTopics.hasOwnProperty(t))
                 return;
-            if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
-                this.log.error(`initializeProducerTopics - no schema registered for topic ${t.topic}`);
+            if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t)) {
+                this.log.error(`initializeProducerTopics - no schema registered for topic ${t}`);
                 return;
             }
             newTopics.push(t);
@@ -328,13 +329,13 @@ class TestBedAdapter extends events_1.EventEmitter {
                 isConfigUpdated = true;
                 this.config.produce.push(t);
             }
-            const initializedTopic = helpers_1.clone(t);
-            const avro = avro_helper_factory_1.avroHelperFactory(this.schemaRegistry, t.topic);
+            const initializedTopic = { topic: t };
+            const avro = avro_helper_factory_1.avroHelperFactory(this.schemaRegistry, t);
             initializedTopic.encode = avro.encode;
             initializedTopic.encodeKey = avro.encodeKey;
             initializedTopic.isValid = avro.isValid;
             initializedTopic.isKeyValid = avro.isKeyValid;
-            this.producerTopics[t.topic] = initializedTopic;
+            this.producerTopics[t] = initializedTopic;
         });
         if (isConfigUpdated) {
             this.configUpdated();
@@ -345,20 +346,23 @@ class TestBedAdapter extends events_1.EventEmitter {
      * Configuration has changed.
      */
     configUpdated() {
-        if (!this.producer) {
-            return;
-        }
-        this.send([{
-                topic: TestBedAdapter.ConfigurationTopic,
-                key: this.config.clientId,
-                messages: this.config
-            }], (err, result) => {
-            if (err) {
-                this.emitErrorMsg('Producer not ready!');
+        return new Promise((resolve, reject) => {
+            if (!this.producer) {
+                return;
             }
-            if (result) {
-                this.log.info(result);
-            }
+            this.send([{
+                    topic: TestBedAdapter.ConfigurationTopic,
+                    key: this.config.clientId,
+                    messages: this.config
+                }], (err, result) => {
+                if (err) {
+                    this.emitErrorMsg('Producer not ready!', reject);
+                }
+                if (result) {
+                    this.log.info(result);
+                }
+                resolve();
+            });
         });
     }
     /**
@@ -370,32 +374,33 @@ class TestBedAdapter extends events_1.EventEmitter {
                 return resolve();
             }
             this.isConnected = true;
-            this.addProducerTopics([{ topic: TestBedAdapter.HeartbeatTopic }, { topic: TestBedAdapter.ConfigurationTopic }])
-                .then(() => {
-                this.heartbeatId = setInterval(() => {
-                    if (!this.producer) {
-                        return this.emitErrorMsg('Producer not ready!', reject);
+            // this.addProducerTopics([TestBedAdapter.HeartbeatTopic, TestBedAdapter.ConfigurationTopic])
+            //   .then(() => {
+            this.heartbeatId = setInterval(() => {
+                if (!this.producer) {
+                    return this.emitErrorMsg('Producer not ready!', reject);
+                }
+                this.send({
+                    attributes: 1,
+                    key: this.config.clientId,
+                    topic: TestBedAdapter.HeartbeatTopic,
+                    messages: [{ id: this.config.clientId, alive: new Date().toISOString() }]
+                }, (error) => {
+                    if (error) {
+                        this.log.error(error);
                     }
-                    this.send([{
-                            key: this.config.clientId,
-                            topic: TestBedAdapter.HeartbeatTopic,
-                            messages: { alive: new Date().toISOString() }
-                        }], (error) => {
-                        if (error) {
-                            this.log.error(error);
-                        }
-                    });
-                }, this.config.heartbeatInterval || 5000);
-                resolve();
-            });
+                });
+            }, this.config.heartbeatInterval || 5000);
+            resolve();
         });
+        // });
     }
     /**
      * Set the default options of the configuration.
      * @param options current configuration
      */
     setDefaultOptions(options) {
-        return Object.assign({
+        const opt = Object.assign({
             kafkaHost: 'broker:3501',
             schemaRegistry: 'schema_registry:3502',
             clientId: '',
@@ -406,6 +411,16 @@ class TestBedAdapter extends events_1.EventEmitter {
             produce: [],
             logging: {}
         }, options);
+        if (opt.produce && opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
+            opt.produce.push(TestBedAdapter.HeartbeatTopic);
+        }
+        if (opt.produce && opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
+            opt.produce.push(TestBedAdapter.ConfigurationTopic);
+        }
+        if (opt.produce && opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
+            opt.produce.push(TestBedAdapter.LogTopic);
+        }
+        return opt;
     }
     /**
      * Validate that all required options are set, or throw an error if not.
@@ -448,8 +463,8 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
     }
 }
-TestBedAdapter.HeartbeatTopic = '_heartbeat';
-TestBedAdapter.ConfigurationTopic = '_configuration';
-TestBedAdapter.LogTopic = '_log';
+TestBedAdapter.HeartbeatTopic = 'connect-status-heartbeat';
+TestBedAdapter.ConfigurationTopic = 'connect-status-configuration';
+TestBedAdapter.LogTopic = 'connect-status-log';
 exports.TestBedAdapter = TestBedAdapter;
 //# sourceMappingURL=test-bed-adapter.js.map

@@ -3,7 +3,6 @@ import { ITestBedOptions } from '../lib/models/test-bed-options';
 import * as proxyquire from 'proxyquire';
 import { EventEmitter } from 'events';
 import { KafkaClient, ProduceRequest } from 'kafka-node';
-import { ITopic } from '../lib/index';
 
 describe('TestBedAdapter', () => {
   let TestBedAdapterMock: typeof TestBedAdapter;
@@ -16,7 +15,7 @@ describe('TestBedAdapter', () => {
   }
 
   class ConsumerMock extends EventEmitter {
-    constructor(_client: KafkaClient, _topics: ITopic[], _options: Object) {
+    constructor(_client: KafkaClient, _topics: string[], _options: Object) {
       super();
       setTimeout(() => this.emit('ready'), 10);
     }
@@ -25,7 +24,7 @@ describe('TestBedAdapter', () => {
   }
 
   class ProducerMock extends EventEmitter {
-    constructor(_client: KafkaClient, _topics: ITopic[], _options: Object) {
+    constructor(_client: KafkaClient, _topics: string[], _options: Object) {
       super();
       setTimeout(() => this.emit('ready'), 10);
     }

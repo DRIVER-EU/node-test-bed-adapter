@@ -24,7 +24,6 @@ exports.findFilesInDir = (directoryName, ext) => {
             results = results.concat(exports.findFilesInDir(filename, ext)); // recurse
         }
         else if (path.extname(filename).toLowerCase() === ext) {
-            console.log('-- found: ', filename);
             results.push(filename);
         }
     });

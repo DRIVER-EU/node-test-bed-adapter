@@ -1,11 +1,10 @@
 /// <reference types="node" />
 /// <reference types="bluebird" />
+import { ITopicsMetadata } from './declarations/kafka-node-ext';
 import * as Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import { ProduceRequest } from 'kafka-node';
-import { ITopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
-import { ITopicsMetadata } from './declarations/kafka-node-ext';
 export declare class TestBedAdapter extends EventEmitter {
     static HeartbeatTopic: string;
     static ConfigurationTopic: string;
@@ -44,8 +43,8 @@ export declare class TestBedAdapter extends EventEmitter {
      * @param topics Array of topics to add
      * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
      */
-    addConsumerTopics(topics?: ITopic | ITopic[]): Promise<ITopic | ITopic[]>;
-    addProducerTopics(topics?: ITopic | ITopic[]): Promise<ITopic[]>;
+    addConsumerTopics(topics?: string | string[]): Promise<string | string[]>;
+    addProducerTopics(topics?: string | string[]): Promise<string[]>;
     /**
      * Load the metadata for all topics (in case of an empty array), or specific ones.
      *

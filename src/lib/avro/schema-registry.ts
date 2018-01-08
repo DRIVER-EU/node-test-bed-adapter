@@ -66,14 +66,9 @@ export class SchemaRegistry {
   constructor(private options: ITestBedOptions) {
     this.fetchAllVersions = options.fetchAllVersions || false;
     if (options.fetchAllSchemas) { return; }
-    const consume = options.consume ? options.consume.map(t => t.topic) : [];
-    const produce = options.produce ? options.produce.map(t => t.topic) : [];
-    this.selectedTopics = [
-      TestBedAdapter.HeartbeatTopic,
-      TestBedAdapter.ConfigurationTopic,
-      TestBedAdapter.LogTopic,
-      ...consume,
-      ...produce];
+    const consume = options.consume ? options.consume : [];
+    const produce = options.produce ? options.produce : [];
+    this.selectedTopics = [...consume, ...produce];
   }
 
   public init() {

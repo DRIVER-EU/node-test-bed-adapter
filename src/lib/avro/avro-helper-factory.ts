@@ -19,7 +19,8 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
   const keySchema = sr.keySchemas.hasOwnProperty(topic) ? sr.keySchemas[topic] : undefined;
 
   const errorHook = (path: string[], part: any) =>
-    log.error(path.join(', ') + '\n' + JSON.stringify(part, null, 2));
+    log.error(`avroHelperFactory() - Topic ${topic}, path ${path.join(', ')}
+    ${JSON.stringify(part, null, 2)}`);
 
   return {
     /** Check whether the message is valid */

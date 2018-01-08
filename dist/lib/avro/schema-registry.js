@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const test_bed_adapter_1 = require("./../test-bed-adapter");
 const Promise = require("bluebird");
 const axios_1 = require("axios");
 const url = require("url");
@@ -51,15 +50,9 @@ class SchemaRegistry {
         if (options.fetchAllSchemas) {
             return;
         }
-        const consume = options.consume ? options.consume.map(t => t.topic) : [];
-        const produce = options.produce ? options.produce.map(t => t.topic) : [];
-        this.selectedTopics = [
-            test_bed_adapter_1.TestBedAdapter.HeartbeatTopic,
-            test_bed_adapter_1.TestBedAdapter.ConfigurationTopic,
-            test_bed_adapter_1.TestBedAdapter.LogTopic,
-            ...consume,
-            ...produce
-        ];
+        const consume = options.consume ? options.consume : [];
+        const produce = options.produce ? options.produce : [];
+        this.selectedTopics = [...consume, ...produce];
     }
     init() {
         this.log.info('init() - Initializing SR will fetch all schemas from SR');

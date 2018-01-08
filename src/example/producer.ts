@@ -17,12 +17,11 @@ class Producer {
       clientId: this.id,
       autoRegisterSchemas: true,
       schemaFolder: './data/schemas',
-      produce: [
-        { topic: 'cap' },
-        { topic: 'avrokeytest2' }
+      produce: ['cap'
+        // , { topic: 'avrokeytest2' }
       ],
       logging: {
-        logToConsole: LogLevel.Debug
+        logToConsole: LogLevel.Info
       }
     });
     this.adapter.on('error', e => console.error(e));

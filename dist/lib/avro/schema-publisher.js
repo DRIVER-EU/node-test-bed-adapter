@@ -39,8 +39,7 @@ class SchemaPublisher {
     }
     uploadSchema(schemaFilename) {
         return new Promise(resolve => {
-            const schemaTopic = path.basename(schemaFilename)
-                .replace(path.extname(schemaFilename), '');
+            const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
             const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
             const schema = JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
             this.log.debug(`uploadSchema() - Uploading schema from ${schemaFilename} to url: ${uri}`);

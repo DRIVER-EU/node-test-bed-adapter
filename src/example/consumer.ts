@@ -14,21 +14,9 @@ class Consumer {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'broker:3501',
       schemaRegistry: 'http://schema_registry:3502',
-      fetchAllSchemas: true,
+      fetchAllSchemas: false,
       clientId: 'Consumer',
-      consume: [{
-        topic: 'cap',
-        schemaURI: './data/cap/cap.avsc',
-        type: 'driver.eu.alert'
-      }, {
-        topic: 'avrokeytest2'
-
-      // }
-      // , {
-      //   topic: 'log-producer'
-      // }, {
-      //   topic: TestBedAdapter.ConfigurationTopic
-      }],
+      consume: ['cap', 'avrokeytest2'],
       logging: {
         logToConsole: LogLevel.Debug,
         logToFile: LogLevel.Debug,
@@ -51,7 +39,7 @@ class Consumer {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', err => this.log.error(`Consumer received an error: ${err}`));
     this.adapter.on('offsetOutOfRange', err => this.log.error(`Consumer received an error: ${err}`));
-    this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
+    this.adapter.addConsumerTopics(TestBedAdapter.HeartbeatTopic).catch(err => {
       if (err) { this.log.error(`Consumer received an error: ${err}`); }
     });
   }
