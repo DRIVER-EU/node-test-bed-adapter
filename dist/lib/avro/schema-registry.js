@@ -50,7 +50,7 @@ class SchemaRegistry {
         if (options.fetchAllSchemas) {
             return;
         }
-        const consume = options.consume ? options.consume : [];
+        const consume = options.consume ? options.consume.map(c => c.topic) : [];
         const produce = options.produce ? options.produce : [];
         this.selectedTopics = [...consume, ...produce];
     }

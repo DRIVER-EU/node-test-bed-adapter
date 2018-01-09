@@ -29,7 +29,7 @@ class SchemaPublisher {
     init() {
         return new Promise((resolve, reject) => {
             if (!this.isInitialized) {
-                reject('SchemaPublisher.init() - is not initialized!');
+                return resolve();
             }
             const files = helpers_1.findFilesInDir(this.schemaFolder, '.avsc');
             Promise.map(files, f => this.uploadSchema(f))

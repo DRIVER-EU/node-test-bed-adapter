@@ -3,7 +3,7 @@
 import { ITopicsMetadata } from './declarations/kafka-node-ext';
 import * as Promise from 'bluebird';
 import { EventEmitter } from 'events';
-import { ProduceRequest } from 'kafka-node';
+import { ProduceRequest, OffsetFetchRequest } from 'kafka-node';
 import { ITestBedOptions } from './models/test-bed-options';
 import { IAvroType } from './declarations/avro';
 export declare class TestBedAdapter extends EventEmitter {
@@ -64,7 +64,7 @@ export declare class TestBedAdapter extends EventEmitter {
      * @param topics Array of topics to add
      * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
      */
-    addConsumerTopics(topics?: string | string[]): Promise<string | string[]>;
+    addConsumerTopics(topics?: OffsetFetchRequest | OffsetFetchRequest[]): Promise<OffsetFetchRequest[]>;
     addProducerTopics(topics?: string | string[]): Promise<string[]>;
     /**
      * Load the metadata for all topics (in case of an empty array), or specific ones.
@@ -77,7 +77,7 @@ export declare class TestBedAdapter extends EventEmitter {
     private initLogger();
     /** If required, add the Kafka logger too (after the producer has been initialised). */
     private addKafkaLogger();
-    private initConsumer(topics?);
+    private initConsumer();
     private handleMessage(message);
     /**
      * Add the topics to the configuration and initialize the decoders.

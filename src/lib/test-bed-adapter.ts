@@ -6,7 +6,7 @@ import { clearInterval } from 'timers';
 import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
-import { KafkaClient, Producer, Consumer, ProduceRequest, Message } from 'kafka-node';
+import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest } from 'kafka-node';
 import { IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
 import { SchemaRegistry } from './avro/schema-registry';
@@ -88,7 +88,8 @@ export class TestBedAdapter extends EventEmitter {
       .then(() => this.addKafkaLogger())
       .then(() => this.startHeartbeat())
       .then(() => this.addProducerTopics(this.config.produce))
-      .then(() => this.initConsumer(this.config.consume))
+      .then(() => this.initConsumer())
+      .then(() => this.addConsumerTopics(this.config.consume))
       .then(() => this.configUpdated())
       .then(() => this.emit('ready'))
       .catch(err => this.emitErrorMsg(err));
@@ -147,8 +148,8 @@ export class TestBedAdapter extends EventEmitter {
    * @param topics Array of topics to add
    * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
    */
-  public addConsumerTopics(topics?: string | string[]) {
-    return new Promise<string | string[]>((resolve, reject) => {
+  public addConsumerTopics(topics?: OffsetFetchRequest | OffsetFetchRequest[]) {
+    return new Promise<OffsetFetchRequest[]>((resolve, reject) => {
       if (!topics) { return resolve(); }
       topics = topics instanceof Array ? topics : [topics];
       if (topics.length === 0) { return resolve(); }
@@ -250,12 +251,12 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
-  private initConsumer(topics: string[] = []) {
+  private initConsumer() {
     return new Promise((resolve, reject) => {
       if (!this.client) {
         return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
       }
-      this.consumer = new Consumer(this.client, topics, { encoding: 'buffer', autoCommit: true });
+      this.consumer = new Consumer(this.client, [], { encoding: 'buffer', autoCommit: true });
       this.consumer.on('message', message => this.handleMessage(message));
       this.consumer.on('error', error => this.emitErrorMsg(error));
       this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
@@ -269,10 +270,8 @@ export class TestBedAdapter extends EventEmitter {
     if (this.consumerTopics.hasOwnProperty(topic)) {
       const consumerTopic = this.consumerTopics[topic];
       if (consumerTopic.decode) {
-        // const buf = new Buffer(message.value, 'binary');
         message.value = consumerTopic.decode(message.value as any) as any;
         if (consumerTopic.decodeKey && (message.key as any) instanceof Buffer) {
-          // const keyBuf = new Buffer(message.key as any, 'binary');
           message.key = consumerTopic.decodeKey(message.key as any) as any;
         }
       } else {
@@ -286,26 +285,26 @@ export class TestBedAdapter extends EventEmitter {
    * Add the topics to the configuration and initialize the decoders.
    * @param topics topics to add
    */
-  private initializeConsumerTopics(topics?: string[]) {
+  private initializeConsumerTopics(topics?: OffsetFetchRequest[]) {
     if (!topics) { return []; }
     let isConfigUpdated = false;
-    const newTopics: string[] = [];
+    const newTopics: OffsetFetchRequest[] = [];
     topics.forEach(t => {
-      if (this.consumerTopics.hasOwnProperty(t)) return;
-      if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t)) {
-        this.log.error(`initializeConsumerTopics - no schema registered for topic ${t}`);
+      if (this.consumerTopics.hasOwnProperty(t.topic)) return;
+      if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
+        this.log.error(`initializeConsumerTopics - no schema registered for topic ${t.topic}`);
         return;
       }
       newTopics.push(t);
-      if (this.config.consume && this.config.consume.indexOf(t) < 0) {
+      if (this.config.consume && this.config.consume.filter(fr => fr.topic === t.topic).length === 0) {
         isConfigUpdated = true;
         this.config.consume.push(t);
       }
-      const initializedTopic = { topic: t } as IInitializedTopic;
-      const avro = avroHelperFactory(this.schemaRegistry, t);
+      const initializedTopic = clone(t) as IInitializedTopic;
+      const avro = avroHelperFactory(this.schemaRegistry, t.topic);
       initializedTopic.decode = avro.decode;
       initializedTopic.decodeKey = avro.decodeKey;
-      this.consumerTopics[t] = initializedTopic;
+      this.consumerTopics[t.topic] = initializedTopic;
     });
     if (isConfigUpdated) {
       this.configUpdated();

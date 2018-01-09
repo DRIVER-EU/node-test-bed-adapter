@@ -1,4 +1,3 @@
-import { TestBedAdapter } from './../test-bed-adapter';
 import { ITestBedOptions } from '../models/test-bed-options';
 import * as Promise from 'bluebird';
 import { default as axios, AxiosRequestConfig } from 'axios';
@@ -66,7 +65,7 @@ export class SchemaRegistry {
   constructor(private options: ITestBedOptions) {
     this.fetchAllVersions = options.fetchAllVersions || false;
     if (options.fetchAllSchemas) { return; }
-    const consume = options.consume ? options.consume : [];
+    const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
     this.selectedTopics = [...consume, ...produce];
   }
@@ -144,7 +143,7 @@ export class SchemaRegistry {
         this.keySchemas[schemaObj.topic] = {
           type: schemaObj.type as IAvroType,
           srId: schemaObj.responseRaw.id
-        }
+        };
       } else {
         this.valueSchemas[schemaObj.topic] = {
           type: schemaObj.type as IAvroType,

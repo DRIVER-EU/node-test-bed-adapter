@@ -1,4 +1,4 @@
-import { KafkaClientOptions } from 'kafka-node';
+import { KafkaClientOptions, OffsetFetchRequest } from 'kafka-node';
 import { LogLevel } from '../logger/log-levels';
 export interface ITestBedOptions extends KafkaClientOptions {
     /** Unique ID of this client */
@@ -19,7 +19,7 @@ export interface ITestBedOptions extends KafkaClientOptions {
     /** Hearbeat interval in msec */
     heartbeatInterval?: number;
     /** Topics you want to consume */
-    consume?: string[];
+    consume?: OffsetFetchRequest[];
     /** Topics you want to produce */
     produce?: string[];
     /** Specifiy logging options */

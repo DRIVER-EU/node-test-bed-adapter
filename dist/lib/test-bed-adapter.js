@@ -68,7 +68,8 @@ class TestBedAdapter extends events_1.EventEmitter {
             .then(() => this.addKafkaLogger())
             .then(() => this.startHeartbeat())
             .then(() => this.addProducerTopics(this.config.produce))
-            .then(() => this.initConsumer(this.config.consume))
+            .then(() => this.initConsumer())
+            .then(() => this.addConsumerTopics(this.config.consume))
             .then(() => this.configUpdated())
             .then(() => this.emit('ready'))
             .catch(err => this.emitErrorMsg(err));
@@ -251,12 +252,12 @@ class TestBedAdapter extends events_1.EventEmitter {
             resolve();
         });
     }
-    initConsumer(topics = []) {
+    initConsumer() {
         return new Promise((resolve, reject) => {
             if (!this.client) {
                 return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
             }
-            this.consumer = new kafka_node_1.Consumer(this.client, topics, { encoding: 'buffer', autoCommit: true });
+            this.consumer = new kafka_node_1.Consumer(this.client, [], { encoding: 'buffer', autoCommit: true });
             this.consumer.on('message', message => this.handleMessage(message));
             this.consumer.on('error', error => this.emitErrorMsg(error));
             this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
@@ -271,10 +272,8 @@ class TestBedAdapter extends events_1.EventEmitter {
         if (this.consumerTopics.hasOwnProperty(topic)) {
             const consumerTopic = this.consumerTopics[topic];
             if (consumerTopic.decode) {
-                // const buf = new Buffer(message.value, 'binary');
                 message.value = consumerTopic.decode(message.value);
                 if (consumerTopic.decodeKey && message.key instanceof Buffer) {
-                    // const keyBuf = new Buffer(message.key as any, 'binary');
                     message.key = consumerTopic.decodeKey(message.key);
                 }
             }
@@ -295,22 +294,22 @@ class TestBedAdapter extends events_1.EventEmitter {
         let isConfigUpdated = false;
         const newTopics = [];
         topics.forEach(t => {
-            if (this.consumerTopics.hasOwnProperty(t))
+            if (this.consumerTopics.hasOwnProperty(t.topic))
                 return;
-            if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t)) {
-                this.log.error(`initializeConsumerTopics - no schema registered for topic ${t}`);
+            if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
+                this.log.error(`initializeConsumerTopics - no schema registered for topic ${t.topic}`);
                 return;
             }
             newTopics.push(t);
-            if (this.config.consume && this.config.consume.indexOf(t) < 0) {
+            if (this.config.consume && this.config.consume.filter(fr => fr.topic === t.topic).length === 0) {
                 isConfigUpdated = true;
                 this.config.consume.push(t);
             }
-            const initializedTopic = { topic: t };
-            const avro = avro_helper_factory_1.avroHelperFactory(this.schemaRegistry, t);
+            const initializedTopic = helpers_1.clone(t);
+            const avro = avro_helper_factory_1.avroHelperFactory(this.schemaRegistry, t.topic);
             initializedTopic.decode = avro.decode;
             initializedTopic.decodeKey = avro.decodeKey;
-            this.consumerTopics[t] = initializedTopic;
+            this.consumerTopics[t.topic] = initializedTopic;
         });
         if (isConfigUpdated) {
             this.configUpdated();
