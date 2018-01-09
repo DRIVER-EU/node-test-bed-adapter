@@ -1,14 +1,14 @@
 # node-test-bed-adapter
 
-This is a test-bed adapter for node.js: it allows you to easily connect javascript and typescript services to the Apache Kafka test-bed via Node.js. Although it is specifically created for connecting to our [test-bed](https://github.com/DRIVER-EU/test-bed), it should work for any Apache Kafka version too.
+This is the test-bed adapter for node.js: it allows you to easily connect javascript and typescript services to the Apache Kafka test-bed via Node.js. Although it is specifically created for connecting to our [test-bed](https://github.com/DRIVER-EU/test-bed), it should work for any Apache Kafka version too.
 
 The implementation is a wrapper around [kafka-node](https://www.npmjs.com/package/kafka-node), offering support for:
-- AVRO schema's and messages
+- AVRO schema's and messages: both key's and values should have a schema as explained [here](https:/github.com/DRIVER-EU/avro-schemas)
 - Logging via console, file and via Kafka: you can set for each log provider the log level (e.g. error or debug)
 - Management
-  - Heartbeat (topic: heartbeat), so you know which clients are online
-  - Logging (topic: log-clientID): when Kafka Logging is enabled in the options
-  - Configuration (topic: configuration), so you can see which topics clients consume and produce
+  - Heartbeat (topic: connect-status-heartbeat), so you know which clients are online
+  - Logging (topic: connect-status-log): when Kafka Logging is enabled in the options
+  - Configuration (topic: connect-status-configuration), so you can see which topics clients consume and produce
 
 ## Usage
 
