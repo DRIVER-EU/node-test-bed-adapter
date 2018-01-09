@@ -51,6 +51,16 @@ class TestBedAdapter extends events_1.EventEmitter {
             });
         });
     }
+    /**
+     * A dictionary containing a clone of all the key schemas with key the bare topic name and
+     * value the instance of the AVRO schema and schema ID.
+     */
+    get keySchemas() { return helpers_1.clone(this.schemaRegistry.keySchemas); }
+    /**
+     * A dictionary containing a clone of all the value schemas with key the bare topic name and
+     * value the instance of the AVRO schema and schema ID.
+     */
+    get valueSchemas() { return helpers_1.clone(this.schemaRegistry.valueSchemas); }
     /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
     initialize() {
         this.schemaRegistry.init()

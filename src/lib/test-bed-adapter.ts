@@ -16,6 +16,7 @@ import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
 import { ILogger } from '.';
 import { SchemaPublisher } from './avro/schema-publisher';
+import { IAvroType } from './declarations/avro';
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'connect-status-heartbeat';
@@ -67,6 +68,18 @@ export class TestBedAdapter extends EventEmitter {
         });
       });
   }
+
+  /**
+   * A dictionary containing a clone of all the key schemas with key the bare topic name and
+   * value the instance of the AVRO schema and schema ID.
+   */
+  public get keySchemas(): { [topic: string]: { type: IAvroType; srId: number; } } { return clone(this.schemaRegistry.keySchemas); }
+
+  /**
+   * A dictionary containing a clone of all the value schemas with key the bare topic name and
+   * value the instance of the AVRO schema and schema ID.
+   */
+  public get valueSchemas(): { [topic: string]: { type: IAvroType; srId: number; } } { return clone(this.schemaRegistry.valueSchemas); }
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {

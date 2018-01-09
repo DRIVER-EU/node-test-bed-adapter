@@ -5,6 +5,7 @@ import * as Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import { ProduceRequest } from 'kafka-node';
 import { ITestBedOptions } from './models/test-bed-options';
+import { IAvroType } from './declarations/avro';
 export declare class TestBedAdapter extends EventEmitter {
     static HeartbeatTopic: string;
     static ConfigurationTopic: string;
@@ -25,6 +26,26 @@ export declare class TestBedAdapter extends EventEmitter {
     private configFile;
     constructor(config?: ITestBedOptions | string);
     connect(): void;
+    /**
+     * A dictionary containing a clone of all the key schemas with key the bare topic name and
+     * value the instance of the AVRO schema and schema ID.
+     */
+    readonly keySchemas: {
+        [topic: string]: {
+            type: IAvroType;
+            srId: number;
+        };
+    };
+    /**
+     * A dictionary containing a clone of all the value schemas with key the bare topic name and
+     * value the instance of the AVRO schema and schema ID.
+     */
+    readonly valueSchemas: {
+        [topic: string]: {
+            type: IAvroType;
+            srId: number;
+        };
+    };
     /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
     private initialize();
     pause(): void;
