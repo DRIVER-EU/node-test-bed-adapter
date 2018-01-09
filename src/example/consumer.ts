@@ -16,7 +16,7 @@ class Consumer {
       schemaRegistry: 'http://schema_registry:3502',
       fetchAllSchemas: false,
       clientId: 'Consumer',
-      consume: ['cap', 'avrokeytest2'],
+      consume: [{ topic: 'cap' }],
       logging: {
         logToConsole: LogLevel.Debug,
         logToFile: LogLevel.Debug,
@@ -39,7 +39,7 @@ class Consumer {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', err => this.log.error(`Consumer received an error: ${err}`));
     this.adapter.on('offsetOutOfRange', err => this.log.error(`Consumer received an error: ${err}`));
-    this.adapter.addConsumerTopics(TestBedAdapter.HeartbeatTopic).catch(err => {
+    this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
       if (err) { this.log.error(`Consumer received an error: ${err}`); }
     });
   }
