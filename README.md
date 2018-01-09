@@ -64,6 +64,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 
 ### To be done
 
+- Add support for [LogicalType](https://avro.apache.org/docs/current/spec.html#Logical+Types), e.g. Timestamp (millisecond precision), e.g. { "type": "long", "logicalType": "timestamp-millis" }, where the long stores the number of milliseconds from the unix epoch, 1 January 1970 00:00:00.000 UTC.
 - Add to Travis CI
 - Pause consuming messages remotely
 - Pause publishing messages remotely
