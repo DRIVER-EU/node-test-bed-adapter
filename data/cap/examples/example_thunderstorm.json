@@ -24,7 +24,7 @@
     "contact": "BARUFFALDI/JUSKIE",
     "area": {
       "areaDesc": "EXTREME NORTH CENTRAL TUOLUMNE COUNTY IN CALIFORNIA, EXTREME NORTHEASTERN CALAVERAS COUNTY IN CALIFORNIA, SOUTHWESTERN ALPINE COUNTY IN CALIFORNIA",
-      "polygon": "38.47,-120.14 38.34,-119.95 38.52,-119.74 38.62,-119.89 38.47,-120.14",
+      "polygon": "51.47,4.14 51.34,3.95 51.52,3.74 51.62,3.89 51.47,4.14",
       "geocode": [{
           "valueName": "SAME",
           "value": "006109"
