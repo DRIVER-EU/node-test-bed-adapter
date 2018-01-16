@@ -64,7 +64,7 @@ export class TestBedAdapter extends EventEmitter {
             this.initialize();
           });
           this.client.on('error', (error) => {
-            this.emitErrorMsg(error);
+            this.emitErrorMsg(error, reject);
           });
           this.client.on('reconnect', () => {
             this.emit('reconnect');
@@ -92,15 +92,17 @@ export class TestBedAdapter extends EventEmitter {
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {
     this.schemaRegistry.init()
-      .then(() => this.initProducer())
-      .then(() => this.addKafkaLogger())
-      .then(() => this.startHeartbeat())
-      .then(() => this.addProducerTopics(this.config.produce))
-      .then(() => this.initConsumer())
-      .then(() => this.addConsumerTopics(this.config.consume))
-      .then(() => this.configUpdated())
+      .then(() => {return this.initProducer(); } )
+      .then(() => {return this.addKafkaLogger(); } )
+      .then(() => {return this.startHeartbeat(); } )
+      .then(() => {return this.addProducerTopics(this.config.produce); } )
+      .then(() => {return this.initConsumer(); } )
+      .then(() => {return this.addConsumerTopics(this.config.consume); } )
+      .then(() => {return this.configUpdated(); } )
       .then(() => this.emit('ready'))
-      .catch(err => this.emitErrorMsg(err));
+      .catch(err => {
+        this.emitErrorMsg(err);
+      });
   }
 
   public pause() {
@@ -132,8 +134,9 @@ export class TestBedAdapter extends EventEmitter {
   public send(payloads: ProduceRequest | ProduceRequest[], cb: (error: any, data: any) => any) {
     if (!this.producer) { return this.emitErrorMsg('Producer not ready!'); }
     payloads = payloads instanceof Array ? payloads : [payloads];
+    let payloadsClone = JSON.parse(JSON.stringify(payloads));
     const pl: ProduceRequest[] = [];
-    payloads.forEach(payload => {
+    payloadsClone.forEach((payload: ProduceRequest) => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) { return cb(`Topic not found: please register first!`, null); };
       const topic = this.producerTopics[payload.topic];
       if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
@@ -208,12 +211,12 @@ export class TestBedAdapter extends EventEmitter {
   // PRIVATE METHODS
 
   private initProducer() {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       if (!this.client) {
-        return this.emitErrorMsg('Client not ready!');
+        return this.emitErrorMsg('Client not ready!', reject);
       }
       this.producer = new Producer(this.client);
-      this.producer.on('error', error => this.emitErrorMsg(error));
+      this.producer.on('error', error => this.emitErrorMsg(error, reject));
       resolve();
     });
   }
@@ -266,7 +269,7 @@ export class TestBedAdapter extends EventEmitter {
       }
       this.consumer = new Consumer(this.client, [], { encoding: 'buffer', autoCommit: true });
       this.consumer.on('message', message => this.handleMessage(message));
-      this.consumer.on('error', error => this.emitErrorMsg(error));
+      this.consumer.on('error', error => this.emitErrorMsg(error, reject));
       this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
       resolve();
     });
@@ -390,7 +393,7 @@ export class TestBedAdapter extends EventEmitter {
           topic: TestBedAdapter.HeartbeatTopic,
           messages: [{ id: this.config.clientId, alive: new Date().toISOString() }]
         }, (error) => {
-          if (error) { this.log.error(error); }
+          if (error) { this.emitErrorMsg(error, reject); }
         });
       }, this.config.heartbeatInterval || 5000);
       resolve();
