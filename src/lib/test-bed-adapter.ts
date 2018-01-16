@@ -52,7 +52,7 @@ export class TestBedAdapter extends EventEmitter {
     this.schemaRegistry = new SchemaRegistry(this.config);
   }
 
-  public connect() {
+  public connect(): Promise<{}> {
     return new Promise((resolve, reject) => {
       this.initLogger()
         .then(() => {

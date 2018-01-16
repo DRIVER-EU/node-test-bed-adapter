@@ -33,12 +33,16 @@ class SchemaPublisher {
             }
             const files = helpers_1.findFilesInDir(this.schemaFolder, '.avsc');
             Promise.map(files, f => this.uploadSchema(f))
-                .then(() => resolve())
-                .catch(err => reject(err));
+                .then(() => {
+                resolve();
+            })
+                .catch(err => {
+                reject(err);
+            });
         });
     }
     uploadSchema(schemaFilename) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
             const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
             const schema = JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
@@ -51,18 +55,18 @@ class SchemaPublisher {
                 resolve(response.data);
             })
                 .catch(err => {
-                this.suppressAxiosError(err);
-                resolve();
+                this.suppressAxiosError(err, resolve, reject);
             });
         });
     }
-    suppressAxiosError(err) {
+    suppressAxiosError(err, resolve, reject) {
         if (!err.response) {
             // not an axios error, bail early
+            reject(err);
             throw err;
         }
         this.log.debug('suppressAxiosError() - http error, will continue operation.', { error: err.message, url: err.config.url });
-        return null;
+        resolve();
     }
 }
 exports.SchemaPublisher = SchemaPublisher;

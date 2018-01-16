@@ -36,18 +36,26 @@ class TestBedAdapter extends events_1.EventEmitter {
         this.schemaRegistry = new schema_registry_1.SchemaRegistry(this.config);
     }
     connect() {
-        this.initLogger()
-            .then(() => this.schemaPublisher.init())
-            .then(() => {
-            this.client = new kafka_node_1.KafkaClient(this.config);
-            this.client.on('ready', () => {
-                this.initialize();
-            });
-            this.client.on('error', (error) => {
-                this.emitErrorMsg(error);
-            });
-            this.client.on('reconnect', () => {
-                this.emit('reconnect');
+        return new Promise((resolve, reject) => {
+            this.initLogger()
+                .then(() => {
+                return this.schemaPublisher.init();
+            })
+                .then(() => {
+                this.client = new kafka_node_1.KafkaClient(this.config);
+                this.client.on('ready', () => {
+                    this.initialize();
+                });
+                this.client.on('error', (error) => {
+                    this.emitErrorMsg(error);
+                });
+                this.client.on('reconnect', () => {
+                    this.emit('reconnect');
+                });
+                resolve();
+            }).catch((err) => {
+                this.log.error(`Error initializing test-bed-adapter: ${err}`);
+                reject(err);
             });
         });
     }
@@ -212,7 +220,7 @@ class TestBedAdapter extends events_1.EventEmitter {
         });
     }
     initLogger() {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const loggers = [];
             const logOptions = this.config.logging;
             if (logOptions) {
@@ -415,10 +423,13 @@ class TestBedAdapter extends events_1.EventEmitter {
             clientId: '',
             autoConnect: true,
             sslOptions: false,
+            requestTimeout: 10000,
             heartbeatInterval: 5000,
             consume: [],
             produce: [],
-            logging: {}
+            logging: {},
+            maxConnectionRetries: 10,
+            retryTimeout: 5
         }, options);
         if (opt.produce && opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
             opt.produce.push(TestBedAdapter.HeartbeatTopic);
@@ -463,6 +474,9 @@ class TestBedAdapter extends events_1.EventEmitter {
             return JSON.parse(fs.readFileSync(configFile, { encoding: 'utf8' }));
         }
         throw new Error(`Error loading options! Either supply them as parameter or as a configuration file at ${configFile}.`);
+    }
+    getConfig() {
+        return JSON.parse(JSON.stringify(this.config));
     }
     emitErrorMsg(msg, cb) {
         this.log.error(msg);

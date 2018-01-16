@@ -25,7 +25,7 @@ export declare class TestBedAdapter extends EventEmitter {
     /** Location of the configuration file */
     private configFile;
     constructor(config?: ITestBedOptions | string);
-    connect(): void;
+    connect(): Promise<{}>;
     /**
      * A dictionary containing a clone of all the key schemas with key the bare topic name and
      * value the instance of the AVRO schema and schema ID.
@@ -112,5 +112,6 @@ export declare class TestBedAdapter extends EventEmitter {
      * @param configFile configuration file path
      */
     private loadOptionsFromFile(configFile?);
+    getConfig(): any;
     private emitErrorMsg(msg, cb?);
 }

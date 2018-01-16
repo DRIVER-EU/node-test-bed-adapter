@@ -18,5 +18,5 @@ export declare class SchemaPublisher {
     constructor(options: ITestBedOptions);
     init(): Promise<{}>;
     private uploadSchema(schemaFilename);
-    private suppressAxiosError(err);
+    private suppressAxiosError(err, resolve, reject);
 }
