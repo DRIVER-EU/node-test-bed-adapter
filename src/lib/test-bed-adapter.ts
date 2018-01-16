@@ -53,20 +53,28 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public connect() {
-    this.initLogger()
-      .then(() => this.schemaPublisher.init())
-      .then(() => {
-        this.client = new KafkaClient(this.config);
-        this.client.on('ready', () => {
-          this.initialize();
+    return new Promise((resolve, reject) => {
+      this.initLogger()
+        .then(() => {
+          return this.schemaPublisher.init();
+        })
+        .then(() => {
+          this.client = new KafkaClient(this.config);
+          this.client.on('ready', () => {
+            this.initialize();
+          });
+          this.client.on('error', (error) => {
+            this.emitErrorMsg(error);
+          });
+          this.client.on('reconnect', () => {
+            this.emit('reconnect');
+          });
+          resolve();
+        }).catch((err) => {
+          this.log.error(`Error initializing test-bed-adapter: ${err}`);
+          reject(err);
         });
-        this.client.on('error', (error) => {
-          this.emitErrorMsg(error);
-        });
-        this.client.on('reconnect', () => {
-          this.emit('reconnect');
-        });
-      });
+    });
   }
 
   /**
@@ -211,7 +219,7 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private initLogger() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const loggers: ILogger[] = [];
       const logOptions = this.config.logging;
       if (logOptions) {
@@ -401,10 +409,13 @@ export class TestBedAdapter extends EventEmitter {
       clientId: '',
       autoConnect: true,
       sslOptions: false,
+      requestTimeout: 10000,
       heartbeatInterval: 5000,
       consume: [],
       produce: [],
-      logging: {}
+      logging: {},
+      maxConnectionRetries: 10,
+      retryTimeout: 5
     } as ITestBedOptions, options);
     if (opt.produce && opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) { opt.produce.push(TestBedAdapter.HeartbeatTopic); }
     if (opt.produce && opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) { opt.produce.push(TestBedAdapter.ConfigurationTopic); }
@@ -433,6 +444,10 @@ export class TestBedAdapter extends EventEmitter {
     // this.log(configFile);
     if (fs.existsSync(configFile)) { return JSON.parse(fs.readFileSync(configFile, { encoding: 'utf8' })) as ITestBedOptions; }
     throw new Error(`Error loading options! Either supply them as parameter or as a configuration file at ${configFile}.`);
+  }
+
+  public getConfig() {
+    return JSON.parse(JSON.stringify(this.config));
   }
 
   private emitErrorMsg(msg: string, cb?: (msg: string) => void) {

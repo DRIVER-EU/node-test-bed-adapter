@@ -35,4 +35,8 @@ export interface ITestBedOptions extends KafkaClientOptions {
     /** If set, log to Kafka */
     logToKafka?: LogLevel;
   };
+  /** How often should the adapter try to reconnect to the kafka server if the first time fails */
+  maxConnectionRetries?: number;
+  /** How many seconds should the adapter wait before trying to reconnect to the kafka server if the first time fails */
+  retryTimeout?: number;
 }

@@ -4,16 +4,18 @@ import * as amberAlert from '../../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.json';
 import * as thunderstormAlert from '../../data/cap/examples/example_thunderstorm.json';
 import * as homelandSecurityAlert from '../../data/cap/examples/example_homeland_security.json';
+import { setTimeout } from 'timers';
 
 class Producer {
   private id = 'NodeTestProducer';
   private adapter: TestBedAdapter;
   private log = Logger.instance;
+  private retries: number = 0;
 
   constructor() {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'broker:3501',
-      schemaRegistry: 'http://schema_registry:3502',
+      schemaRegistry: 'schema_registry:3502',
       clientId: this.id,
       autoRegisterSchemas: true,
       schemaFolder: './data/schemas',
@@ -22,14 +24,32 @@ class Producer {
       ],
       logging: {
         logToConsole: LogLevel.Info
-      }
+      },
+      maxConnectionRetries: 10,
+      retryTimeout: 5
     });
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
       this.log.info('Producer is connected');
       this.sendcap();
     });
-    this.adapter.connect();
+    this.connectAdapter();
+  }
+
+  private connectAdapter() {
+    this.adapter.connect()
+    .then(() => {
+      this.log.info(`Initialized test-bed-adapter correctly`);
+    })
+    .catch(err => {
+      this.log.error(`Initializing test-bed-adapter failed: ${err}`);
+      if (this.retries < this.adapter.getConfig().maxConnectionRetries) {
+        this.retries += 1;
+        let timeout = this.adapter.getConfig().retryTimeout;
+        this.log.info(`Retrying to connect in ${timeout} seconds (retry #${this.retries})`);
+        setTimeout(() => this.connectAdapter(), timeout * 1000);
+      }
+    });
   }
 
   private sendcap() {

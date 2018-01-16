@@ -9,12 +9,14 @@ import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem } from '../lib/ind
 class Consumer {
   private adapter: TestBedAdapter;
   private log = Logger.instance;
+  private retries: number = 0;
 
   constructor() {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'broker:3501',
-      schemaRegistry: 'http://schema_registry:3502',
+      schemaRegistry: 'schema_registry:3502',
       fetchAllSchemas: false,
+      autoRegisterSchemas: true,
       clientId: 'Consumer',
       consume: [{ topic: 'cap' }],
       logging: {
@@ -32,7 +34,23 @@ class Consumer {
     // this.adapter.on('error', err => {
     //   this.log.error(`Consumer received an error: ${err}`);
     // });
-    this.adapter.connect();
+    this.connectAdapter();
+  }
+
+  private connectAdapter() {
+    this.adapter.connect()
+    .then(() => {
+      this.log.info(`Initialized test-bed-adapter correctly`);
+    })
+    .catch(err => {
+      this.log.error(`Initializing test-bed-adapter failed: ${err}`);
+      if (this.retries < this.adapter.getConfig().maxConnectionRetries) {
+        this.retries += 1;
+        let timeout = this.adapter.getConfig().retryTimeout;
+        this.log.info(`Retrying to connect in ${timeout} seconds (retry #${this.retries})`);
+        setTimeout(() => this.connectAdapter(), timeout * 1000);
+      }
+    });
   }
 
   private subscribe() {
