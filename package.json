@@ -34,7 +34,7 @@
     "axios": "^0.17.1",
     "bluebird": "^3.5.1",
     "jasmine-ts": "^0.2.1",
-    "kafka-node": "github:rinzeb/kafka-node#3e7a56acf28564e43ef7eac79f203af39926ec47",
+    "kafka-node": "github:rinzeb/kafka-node#3dff67935546d94e72f2e529b69ea653b1c5b949",
     "url": "^0.11.0"
   },
   "devDependencies": {

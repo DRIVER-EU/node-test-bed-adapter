@@ -590,9 +590,9 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-"kafka-node@github:rinzeb/kafka-node#3e7a56acf28564e43ef7eac79f203af39926ec47":
+"kafka-node@github:rinzeb/kafka-node#3dff67935546d94e72f2e529b69ea653b1c5b949":
   version "2.3.2"
-  resolved "https://codeload.github.com/rinzeb/kafka-node/tar.gz/3e7a56acf28564e43ef7eac79f203af39926ec47"
+  resolved "https://codeload.github.com/rinzeb/kafka-node/tar.gz/3dff67935546d94e72f2e529b69ea653b1c5b949"
   dependencies:
     async "^2.5.0"
     binary "~0.3.0"
