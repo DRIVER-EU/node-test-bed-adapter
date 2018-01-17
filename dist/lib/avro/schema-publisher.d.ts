@@ -17,6 +17,7 @@ export declare class SchemaPublisher {
     private log;
     constructor(options: ITestBedOptions);
     init(): Promise<{}>;
+    private isSchemaRegistryAvailable();
     private uploadSchema(schemaFilename);
     private suppressAxiosError(err);
 }

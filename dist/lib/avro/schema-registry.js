@@ -56,13 +56,37 @@ class SchemaRegistry {
     }
     init() {
         this.log.info('init() - Initializing SR will fetch all schemas from SR');
-        return this.fetchTopics()
+        return this.isSchemaRegistryAvailable()
+            .then(() => this.fetchTopics())
             .then(t => this.storeTopics(t))
             .map((t) => this.fetchLatestVersion(t), { concurrency: 10 })
             .filter(t => t ? true : false)
             .map((t) => this.fetchSchema(t), { concurrency: 10 })
             .map((t) => this.registerSchemaLatest(t))
             .then((t) => this.checkForAllVersions(t));
+    }
+    isSchemaRegistryAvailable() {
+        const MAX_RETRIES = 10;
+        return new Promise(resolve => {
+            const srUrl = this.options.schemaRegistry;
+            let retries = MAX_RETRIES;
+            const intervalId = setInterval(() => {
+                axios_1.default.get(srUrl)
+                    .then(() => {
+                    this.log.info(`isSchemaRegistryAvailable - Accessed schema registry in ${MAX_RETRIES - retries}x.`);
+                    clearInterval(intervalId);
+                    resolve();
+                })
+                    .catch(() => {
+                    retries--;
+                    this.log.warn(`isSchemaRegistryAvailable - Access schema registry at ${srUrl}. Retried ${MAX_RETRIES - retries}x.`);
+                    if (retries === 0) {
+                        this.log.error(`isSchemaRegistryAvailable - Cannot access schema registry at ${srUrl}. Retried ${MAX_RETRIES}x. Exiting...`);
+                        process.exit(1);
+                    }
+                });
+            }, 5000);
+        });
     }
     processSelectedTopics() {
         return new Promise(resolve => {

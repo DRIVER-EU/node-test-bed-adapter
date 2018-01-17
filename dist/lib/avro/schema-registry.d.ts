@@ -72,6 +72,7 @@ export declare class SchemaRegistry {
     private schemaMeta;
     constructor(options: ITestBedOptions);
     init(): Promise<ISchema[]>;
+    private isSchemaRegistryAvailable();
     private processSelectedTopics();
     private fetchAllSchemaTopics();
     private suppressAxiosError(err);

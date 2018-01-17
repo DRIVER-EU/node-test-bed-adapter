@@ -33,10 +33,37 @@ export class SchemaPublisher {
   public init() {
     return new Promise((resolve, reject) => {
       if (!this.isInitialized) { return resolve(); }
-      const files = findFilesInDir(this.schemaFolder, '.avsc');
-      Promise.map(files, f => this.uploadSchema(f))
-        .then(() => resolve())
-        .catch(err => reject(err));
+      this.isSchemaRegistryAvailable()
+        .then(() => {
+          const files = findFilesInDir(this.schemaFolder, '.avsc');
+          Promise.map(files, f => this.uploadSchema(f))
+            .then(() => resolve())
+            .catch(err => reject(err));
+        });
+    });
+  }
+
+  private isSchemaRegistryAvailable() {
+    const MAX_RETRIES = 10;
+    return new Promise(resolve => {
+      const srUrl = this.schemaRegistryUrl;
+      let retries = MAX_RETRIES;
+      const intervalId = setInterval(() => {
+        axios.get(srUrl)
+          .then(() => {
+            this.log.info(`isSchemaRegistryAvailable - Accessed schema registry in ${MAX_RETRIES - retries}x.`);
+            clearInterval(intervalId);
+            resolve();
+          })
+          .catch(() => {
+            retries--;
+            this.log.warn(`isSchemaRegistryAvailable - Access schema registry at ${srUrl}. Retried ${MAX_RETRIES - retries}x.`);
+            if (retries === 0) {
+              this.log.error(`isSchemaRegistryAvailable - Cannot access schema registry at ${srUrl}. Retried ${MAX_RETRIES}x. Exiting...`);
+              process.exit(1);
+            }
+          });
+      }, 5000);
     });
   }
 
