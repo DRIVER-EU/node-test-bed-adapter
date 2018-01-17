@@ -105,7 +105,7 @@ class Consumer {
         this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
         break;
       case 'cap':
-        this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${typeof message.value === 'string' ? message.value : '\n' + JSON.stringify(message.value, null, 2)}`);
+        this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${typeof message.value === 'string' ? message.value : '\n' + JSON.stringify(message.value, null, 2).substr(0, 100)}`);
         break;
       default:
         this.log.info(`Received message on topic ${message.topic}: ${message.value}`);

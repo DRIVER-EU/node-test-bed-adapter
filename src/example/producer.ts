@@ -54,22 +54,22 @@ class Producer {
 
   private sendcap() {
     const payloads: ProduceRequest[] = [{
-      key: this.id,
+      key: {id: this.id},
       topic: 'cap',
       messages: amberAlert,
       attributes: 1 // Gzip
     }, {
-      key: this.id,
+      key: {id: this.id},
       topic: 'cap',
       messages: earthquakeAlert,
       attributes: 1 // Gzip
     }, {
-      key: this.id,
+      key: {id: this.id},
       topic: 'cap',
       messages: thunderstormAlert,
       attributes: 1 // Gzip
     }, {
-      key: this.id,
+      key: {id: this.id},
       topic: 'cap',
       messages: homelandSecurityAlert,
       attributes: 1 // Gzip

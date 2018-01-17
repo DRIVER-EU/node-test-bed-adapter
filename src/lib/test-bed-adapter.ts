@@ -364,7 +364,7 @@ export class TestBedAdapter extends EventEmitter {
       if (!this.producer) { return; }
       this.send([{
         topic: TestBedAdapter.ConfigurationTopic,
-        key: this.config.clientId,
+        key: {id: this.config.clientId},
         messages: this.config
       }], (err, result) => {
         if (err) { this.emitErrorMsg('Producer not ready!', reject); }
@@ -389,7 +389,7 @@ export class TestBedAdapter extends EventEmitter {
         }
         this.send({
           attributes: 1,
-          key: this.config.clientId,
+          key: {id: this.config.clientId},
           topic: TestBedAdapter.HeartbeatTopic,
           messages: [{ id: this.config.clientId, alive: new Date().toISOString() }]
         }, (error) => {

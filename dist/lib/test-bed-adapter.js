@@ -372,7 +372,7 @@ class TestBedAdapter extends events_1.EventEmitter {
             }
             this.send([{
                     topic: TestBedAdapter.ConfigurationTopic,
-                    key: this.config.clientId,
+                    key: { id: this.config.clientId },
                     messages: this.config
                 }], (err, result) => {
                 if (err) {
@@ -402,7 +402,7 @@ class TestBedAdapter extends events_1.EventEmitter {
                 }
                 this.send({
                     attributes: 1,
-                    key: this.config.clientId,
+                    key: { id: this.config.clientId },
                     topic: TestBedAdapter.HeartbeatTopic,
                     messages: [{ id: this.config.clientId, alive: new Date().toISOString() }]
                 }, (error) => {
