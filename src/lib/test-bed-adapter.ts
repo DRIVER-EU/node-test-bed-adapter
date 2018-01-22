@@ -128,6 +128,7 @@ export class TestBedAdapter extends EventEmitter {
     payloads.forEach(payload => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) { return cb(`Topic not found: please register first!`, null); };
       const topic = this.producerTopics[payload.topic];
+      if (!payload.key) { payload.key = { id: this.config.clientId }; }
       if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
         if (topic.encodeKey) { payload.key = topic.encodeKey(payload.key); }
         payload.messages = topic.encode(payload.messages);
@@ -353,7 +354,6 @@ export class TestBedAdapter extends EventEmitter {
       if (!this.producer) { return; }
       this.send([{
         topic: TestBedAdapter.ConfigurationTopic,
-        key: this.config.clientId,
         messages: this.config
       }], (err, result) => {
         if (err) { this.emitErrorMsg('Producer not ready!', reject); }
@@ -370,15 +370,12 @@ export class TestBedAdapter extends EventEmitter {
     return new Promise((resolve, reject) => {
       if (this.isConnected) { return resolve(); }
       this.isConnected = true;
-      // this.addProducerTopics([TestBedAdapter.HeartbeatTopic, TestBedAdapter.ConfigurationTopic])
-      //   .then(() => {
       this.heartbeatId = setInterval(() => {
         if (!this.producer) {
           return this.emitErrorMsg('Producer not ready!', reject);
         }
         this.send({
           attributes: 1,
-          key: this.config.clientId,
           topic: TestBedAdapter.HeartbeatTopic,
           messages: [{ id: this.config.clientId, alive: new Date().toISOString() }]
         }, (error) => {

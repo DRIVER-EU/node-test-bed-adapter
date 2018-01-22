@@ -14,7 +14,7 @@ class KafkaLogger {
     }
     log(_level, msg, callback) {
         const payload = [{
-                key: this.id, topic: KafkaLogger.LogTopic, messages: {
+                topic: KafkaLogger.LogTopic, messages: {
                     id: this.id, log: msg
                 }
             }];

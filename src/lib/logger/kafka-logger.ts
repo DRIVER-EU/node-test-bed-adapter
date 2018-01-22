@@ -25,7 +25,7 @@ export class KafkaLogger implements ILog {
 
   public log(_level: LogLevel, msg: string, callback: (err?: Error, result?: any) => void) {
     const payload: ProduceRequest[] = [{
-      key: this.id, topic: KafkaLogger.LogTopic, messages: {
+      topic: KafkaLogger.LogTopic, messages: {
         id: this.id, log: msg
       }
     }];
