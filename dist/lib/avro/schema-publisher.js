@@ -22,6 +22,8 @@ class SchemaPublisher {
         this.log = __1.Logger.instance;
         this.schemaRegistryUrl = options.schemaRegistry;
         this.schemaFolder = path.resolve(process.cwd(), (options.schemaFolder || ''));
+        this.retryTimeout = (options.retryTimeout ? options.retryTimeout : 5);
+        this.maxConnectionRetries = (options.maxConnectionRetries ? options.maxConnectionRetries : 10);
         if (options.schemaFolder && options.autoRegisterSchemas) {
             this.isInitialized = true;
         }
@@ -41,7 +43,8 @@ class SchemaPublisher {
         });
     }
     isSchemaRegistryAvailable() {
-        const MAX_RETRIES = 10;
+        const MAX_RETRIES = this.maxConnectionRetries;
+        const RETRY_TIMEOUT = this.retryTimeout * 1000;
         return new Promise(resolve => {
             const srUrl = this.schemaRegistryUrl;
             let retries = MAX_RETRIES;
@@ -54,17 +57,17 @@ class SchemaPublisher {
                 })
                     .catch(() => {
                     retries--;
-                    this.log.warn(`isSchemaRegistryAvailable - Access schema registry at ${srUrl}. Retried ${MAX_RETRIES - retries}x.`);
+                    this.log.warn(`isSchemaRegistryAvailable - Failed to access schema registry at ${srUrl}. Retried ${MAX_RETRIES - retries}x.`);
                     if (retries === 0) {
                         this.log.error(`isSchemaRegistryAvailable - Cannot access schema registry at ${srUrl}. Retried ${MAX_RETRIES}x. Exiting...`);
                         process.exit(1);
                     }
                 });
-            }, 5000);
+            }, RETRY_TIMEOUT);
         });
     }
     uploadSchema(schemaFilename) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
             const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
             const schema = JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
@@ -77,18 +80,18 @@ class SchemaPublisher {
                 resolve(response.data);
             })
                 .catch(err => {
-                this.suppressAxiosError(err);
-                resolve();
+                this.suppressAxiosError(err, resolve, reject);
             });
         });
     }
-    suppressAxiosError(err) {
+    suppressAxiosError(err, resolve, reject) {
         if (!err.response) {
             // not an axios error, bail early
+            reject(err);
             throw err;
         }
         this.log.debug('suppressAxiosError() - http error, will continue operation.', { error: err.message, url: err.config.url });
-        return null;
+        resolve();
     }
 }
 exports.SchemaPublisher = SchemaPublisher;

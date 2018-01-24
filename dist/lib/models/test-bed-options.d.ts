@@ -22,6 +22,10 @@ export interface ITestBedOptions extends KafkaClientOptions {
     consume?: OffsetFetchRequest[];
     /** Topics you want to produce */
     produce?: string[];
+    /** How often should the adapter try to reconnect to the kafka server if the first time fails */
+    maxConnectionRetries?: number;
+    /** How many seconds should the adapter wait before trying to reconnect to the kafka server if the first time fails */
+    retryTimeout?: number;
     /** Specifiy logging options */
     logging?: {
         /** If set, log to file */

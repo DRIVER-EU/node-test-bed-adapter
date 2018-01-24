@@ -15,9 +15,11 @@ export declare class SchemaPublisher {
     private schemaFolder;
     private isInitialized;
     private log;
+    private maxConnectionRetries;
+    private retryTimeout;
     constructor(options: ITestBedOptions);
     init(): Promise<{}>;
     private isSchemaRegistryAvailable();
     private uploadSchema(schemaFilename);
-    private suppressAxiosError(err);
+    private suppressAxiosError(err, resolve, reject);
 }

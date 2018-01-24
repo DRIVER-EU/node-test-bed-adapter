@@ -52,21 +52,28 @@ export class TestBedAdapter extends EventEmitter {
     this.schemaRegistry = new SchemaRegistry(this.config);
   }
 
-  public connect() {
-    this.initLogger()
-      .then(() => this.schemaPublisher.init())
-      .then(() => {
-        this.client = new KafkaClient(this.config);
-        this.client.on('ready', () => {
-          this.initialize();
+  public connect(): Promise<{}> {
+    return new Promise((resolve, reject) => {
+      this.initLogger()
+        .then(() => {
+          return this.schemaPublisher.init();
+        })
+        .then(() => {
+          this.client = new KafkaClient(this.config);
+          this.client.on('ready', () => {
+            this.initialize();
+          });
+          this.client.on('error', (error) => {
+            this.emitErrorMsg(error);
+          });
+          this.client.on('reconnect', () => {
+            this.emit('reconnect');
+          });
+          resolve();
+        }).catch((err) => {
+            this.emitErrorMsg(`Error initializing test-bed-adapter: ${err}`, reject);
         });
-        this.client.on('error', (error) => {
-          this.emitErrorMsg(error);
-        });
-        this.client.on('reconnect', () => {
-          this.emit('reconnect');
-        });
-      });
+    });
   }
 
   /**
@@ -401,7 +408,9 @@ export class TestBedAdapter extends EventEmitter {
       heartbeatInterval: 5000,
       consume: [],
       produce: [],
-      logging: {}
+      logging: {},
+      maxConnectionRetries: 10,
+      connectTimeout: 5
     } as ITestBedOptions, options);
     if (opt.produce && opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) { opt.produce.push(TestBedAdapter.HeartbeatTopic); }
     if (opt.produce && opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) { opt.produce.push(TestBedAdapter.ConfigurationTopic); }
