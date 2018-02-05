@@ -35,7 +35,7 @@
     "axios": "^0.17.1",
     "bluebird": "^3.5.1",
     "jasmine-ts": "^0.2.1",
-    "kafka-node": "PHameete/kafka-node#kip-103-support-internal-and-external-traffic",
+    "kafka-node": "^2.3.2",
     "url": "^0.11.0"
   },
   "devDependencies": {
