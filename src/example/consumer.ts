@@ -13,7 +13,7 @@ class Consumer {
   constructor() {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'localhost:3501',
-      schemaRegistry: 'http://localhost:3502',
+      schemaRegistry: 'localhost:3502',
       fetchAllSchemas: false,
       clientId: 'Consumer',
       consume: [{ topic: 'cap' }],
