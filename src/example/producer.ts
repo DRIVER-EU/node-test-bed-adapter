@@ -12,8 +12,8 @@ class Producer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
-      kafkaHost: 'broker:3501',
-      schemaRegistry: 'schema_registry:3502',
+      kafkaHost: 'localhost:3501',
+      schemaRegistry: 'localhost:3502',
       clientId: this.id,
       autoRegisterSchemas: true,
       schemaFolder: './data/schemas',
