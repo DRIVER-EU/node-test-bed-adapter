@@ -1,7 +1,7 @@
 /// <reference types="node" />
 /// <reference types="bluebird" />
-import { ITopicsMetadata } from './declarations/kafka-node-ext';
 import * as Promise from 'bluebird';
+import { ITopicsMetadata } from './declarations/kafka-node-ext';
 import { EventEmitter } from 'events';
 import { ProduceRequest, OffsetFetchRequest } from 'kafka-node';
 import { ITestBedOptions } from './models/test-bed-options';

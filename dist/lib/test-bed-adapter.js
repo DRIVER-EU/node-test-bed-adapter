@@ -53,7 +53,8 @@ class TestBedAdapter extends events_1.EventEmitter {
                     this.emit('reconnect');
                 });
                 resolve();
-            }).catch((err) => {
+            })
+                .catch((err) => {
                 this.emitErrorMsg(`Error initializing test-bed-adapter: ${err}`, reject);
             });
         });
@@ -62,15 +63,20 @@ class TestBedAdapter extends events_1.EventEmitter {
      * A dictionary containing a clone of all the key schemas with key the bare topic name and
      * value the instance of the AVRO schema and schema ID.
      */
-    get keySchemas() { return helpers_1.clone(this.schemaRegistry.keySchemas); }
+    get keySchemas() {
+        return helpers_1.clone(this.schemaRegistry.keySchemas);
+    }
     /**
      * A dictionary containing a clone of all the value schemas with key the bare topic name and
      * value the instance of the AVRO schema and schema ID.
      */
-    get valueSchemas() { return helpers_1.clone(this.schemaRegistry.valueSchemas); }
+    get valueSchemas() {
+        return helpers_1.clone(this.schemaRegistry.valueSchemas);
+    }
     /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
     initialize() {
-        this.schemaRegistry.init()
+        this.schemaRegistry
+            .init()
             .then(() => this.initProducer())
             .then(() => this.addKafkaLogger())
             .then(() => this.startHeartbeat())
@@ -79,7 +85,7 @@ class TestBedAdapter extends events_1.EventEmitter {
             .then(() => this.addConsumerTopics(this.config.consume))
             .then(() => this.configUpdated())
             .then(() => this.emit('ready'))
-            .catch(err => this.emitErrorMsg(err));
+            .catch((err) => this.emitErrorMsg(err));
     }
     pause() {
         if (!this.consumer) {
@@ -120,20 +126,19 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         payloads = payloads instanceof Array ? payloads : [payloads];
         const pl = [];
-        payloads.forEach(payload => {
+        payloads.forEach((payload) => {
             if (!this.producerTopics.hasOwnProperty(payload.topic)) {
                 return cb(`Topic not found: please register first!`, null);
             }
-            ;
             const topic = this.producerTopics[payload.topic];
             if (!payload.key) {
                 payload.key = {
-                    distributionID: this.config.clientId + "-1",
+                    distributionID: this.config.clientId + '-1',
                     senderID: this.config.clientId,
                     dateTimeSent: 0,
                     dateTimeExpires: 0,
-                    distributionStatus: "Test",
-                    distributionKind: "Report"
+                    distributionStatus: 'Test',
+                    distributionKind: 'Report'
                 };
             }
             if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
@@ -149,7 +154,9 @@ class TestBedAdapter extends events_1.EventEmitter {
     /**
      * Returns (a clone of) the configuration options.
      */
-    get configuration() { return helpers_1.clone(this.config); }
+    get configuration() {
+        return helpers_1.clone(this.config);
+    }
     /**
      * Add topics (encoding utf8)
      *
@@ -219,17 +226,17 @@ class TestBedAdapter extends events_1.EventEmitter {
     }
     // PRIVATE METHODS
     initProducer() {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             if (!this.client) {
                 return this.emitErrorMsg('Client not ready!');
             }
             this.producer = new kafka_node_1.Producer(this.client);
-            this.producer.on('error', error => this.emitErrorMsg(error));
+            this.producer.on('error', (error) => this.emitErrorMsg(error));
             resolve();
         });
     }
     initLogger() {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const loggers = [];
             const logOptions = this.config.logging;
             if (logOptions) {
@@ -252,7 +259,7 @@ class TestBedAdapter extends events_1.EventEmitter {
     }
     /** If required, add the Kafka logger too (after the producer has been initialised). */
     addKafkaLogger() {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             if (!this.producer) {
                 return resolve();
             }
@@ -275,9 +282,9 @@ class TestBedAdapter extends events_1.EventEmitter {
                 return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
             }
             this.consumer = new kafka_node_1.Consumer(this.client, [], { encoding: 'buffer', autoCommit: true });
-            this.consumer.on('message', message => this.handleMessage(message));
-            this.consumer.on('error', error => this.emitErrorMsg(error));
-            this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
+            this.consumer.on('message', (message) => this.handleMessage(message));
+            this.consumer.on('error', (error) => this.emitErrorMsg(error));
+            this.consumer.on('offsetOutOfRange', (error) => this.emit('offsetOutOfRange', error));
             resolve();
         });
     }
@@ -310,7 +317,7 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         let isConfigUpdated = false;
         const newTopics = [];
-        topics.forEach(t => {
+        topics.forEach((t) => {
             if (this.consumerTopics.hasOwnProperty(t.topic))
                 return;
             if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
@@ -318,7 +325,7 @@ class TestBedAdapter extends events_1.EventEmitter {
                 return;
             }
             newTopics.push(t);
-            if (this.config.consume && this.config.consume.filter(fr => fr.topic === t.topic).length === 0) {
+            if (this.config.consume && this.config.consume.filter((fr) => fr.topic === t.topic).length === 0) {
                 isConfigUpdated = true;
                 this.config.consume.push(t);
             }
@@ -343,7 +350,7 @@ class TestBedAdapter extends events_1.EventEmitter {
         }
         let isConfigUpdated = false;
         const newTopics = [];
-        topics.forEach(t => {
+        topics.forEach((t) => {
             if (this.producerTopics.hasOwnProperty(t))
                 return;
             if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t)) {
@@ -376,10 +383,12 @@ class TestBedAdapter extends events_1.EventEmitter {
             if (!this.producer) {
                 return;
             }
-            this.send([{
+            this.send([
+                {
                     topic: TestBedAdapter.ConfigurationTopic,
                     messages: this.config
-                }], (err, result) => {
+                }
+            ], (err, result) => {
                 if (err) {
                     this.emitErrorMsg('Producer not ready!', reject);
                 }
