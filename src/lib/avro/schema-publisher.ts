@@ -1,3 +1,4 @@
+import { findMissingKeyFiles } from './../utils/helpers';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
@@ -6,6 +7,7 @@ import { findFilesInDir } from '../utils/helpers';
 import { ITestBedOptions } from '../models/test-bed-options';
 import { default as axios } from 'axios';
 import { Logger } from '..';
+import { defaultKeySchema } from './default-key-schema';
 
 /**
  * Helper class to publish schema's to the schema registry.
@@ -41,7 +43,8 @@ export class SchemaPublisher {
       }
       this.isSchemaRegistryAvailable().then(() => {
         const files = findFilesInDir(this.schemaFolder, '.avsc');
-        Promise.map(files, (f) => this.uploadSchema(f)).then(() => resolve()).catch((err) => reject(err));
+        const missing = findMissingKeyFiles(files);
+        Promise.map([...files, ...missing], (f, i) => this.uploadSchema(f, i >= files.length)).then(() => resolve()).catch((err) => reject(err));
       });
     });
   }
@@ -77,11 +80,11 @@ export class SchemaPublisher {
     });
   }
 
-  private uploadSchema(schemaFilename: string) {
+  private uploadSchema(schemaFilename: string, useDefaultKeySchema: boolean) {
     return new Promise((resolve, reject) => {
       const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
       const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
-      const schema = JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
+      const schema = useDefaultKeySchema ? defaultKeySchema : JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
       this.log.debug(`uploadSchema() - Uploading schema from ${schemaFilename} to url: ${uri}`);
 
       return Promise.resolve(

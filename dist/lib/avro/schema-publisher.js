@@ -1,11 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const helpers_1 = require("./../utils/helpers");
 const fs = require("fs");
 const path = require("path");
 const url = require("url");
 const Promise = require("bluebird");
+const helpers_2 = require("../utils/helpers");
 const axios_1 = require("axios");
 const __1 = require("..");
+const default_key_schema_1 = require("./default-key-schema");
 /**
  * Helper class to publish schema's to the schema registry.
  *
@@ -33,8 +36,9 @@ class SchemaPublisher {
                 return resolve();
             }
             this.isSchemaRegistryAvailable().then(() => {
-                const files = helpers_1.findFilesInDir(this.schemaFolder, '.avsc');
-                Promise.map(files, (f) => this.uploadSchema(f)).then(() => resolve()).catch((err) => reject(err));
+                const files = helpers_2.findFilesInDir(this.schemaFolder, '.avsc');
+                const missing = helpers_1.findMissingKeyFiles(files);
+                Promise.map([...files, ...missing], (f, i) => this.uploadSchema(f, i >= files.length)).then(() => resolve()).catch((err) => reject(err));
             });
         });
     }
@@ -64,11 +68,11 @@ class SchemaPublisher {
             }, RETRY_TIMEOUT);
         });
     }
-    uploadSchema(schemaFilename) {
+    uploadSchema(schemaFilename, useDefaultKeySchema) {
         return new Promise((resolve, reject) => {
             const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
             const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
-            const schema = JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
+            const schema = useDefaultKeySchema ? default_key_schema_1.defaultKeySchema : JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
             this.log.debug(`uploadSchema() - Uploading schema from ${schemaFilename} to url: ${uri}`);
             return Promise.resolve(axios_1.default.post(uri, { schema: JSON.stringify(schema) }, {
                 headers: { 'Content-type': 'application/vnd.schemaregistry.v1+json' }

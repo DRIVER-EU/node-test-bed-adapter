@@ -7,3 +7,11 @@ export declare const clone: <T>(model: T) => T;
  * @return Result files with path string in an array
  */
 export declare const findFilesInDir: (directoryName: string, ext: string) => string[];
+/**
+ * Look for schema files that represent a value, but without a corresponding key file, i.e.
+ * a schema file names <topic>-value.avsc should also have a <topic>-key.avsc.
+ *
+ * @param files Found schema files
+ * @return missing key schema files
+ */
+export declare const findMissingKeyFiles: (files: string[]) => string[];

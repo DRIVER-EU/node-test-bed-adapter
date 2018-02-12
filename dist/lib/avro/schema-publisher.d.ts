@@ -20,6 +20,6 @@ export declare class SchemaPublisher {
     constructor(options: ITestBedOptions);
     init(): Promise<{}>;
     private isSchemaRegistryAvailable();
-    private uploadSchema(schemaFilename);
+    private uploadSchema(schemaFilename, useDefaultKeySchema);
     private suppressAxiosError(err, resolve, reject);
 }
