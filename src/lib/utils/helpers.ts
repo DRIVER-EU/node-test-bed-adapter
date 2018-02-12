@@ -30,3 +30,21 @@ export const findFilesInDir = (directoryName: string, ext: string) => {
   });
   return results;
 };
+
+/**
+ * Look for schema files that represent a value, but without a corresponding key file, i.e.
+ * a schema file names <topic>-value.avsc should also have a <topic>-key.avsc.
+ *
+ * @param files Found schema files
+ * @return missing key schema files
+ */
+export const findMissingKeyFiles = (files: string[]) => {
+  return files
+    .filter(f => path.basename(f).indexOf('-value.avsc') >= 0)
+    .reduce((p, c) => {
+    const keyFile = c.replace('-value.avsc', '-key.avsc');
+    if (files.filter(f => f.indexOf(keyFile) >= 0).length > 0) { return p; }
+    p.push(keyFile);
+    return p;
+  }, [] as string[]);
+};
