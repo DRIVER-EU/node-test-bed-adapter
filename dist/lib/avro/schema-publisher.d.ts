@@ -1,6 +1,6 @@
 /// <reference types="bluebird" />
 import * as Promise from 'bluebird';
-import { ITestBedOptions } from './../models/test-bed-options';
+import { ITestBedOptions } from '../models/test-bed-options';
 /**
  * Helper class to publish schema's to the schema registry.
  *
