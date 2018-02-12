@@ -135,7 +135,15 @@ export class TestBedAdapter extends EventEmitter {
     payloads.forEach(payload => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) { return cb(`Topic not found: please register first!`, null); };
       const topic = this.producerTopics[payload.topic];
-      if (!payload.key) { payload.key = { id: this.config.clientId }; }
+      if (!payload.key) { payload.key = {
+        distributionID: this.config.clientId + "-1",
+        senderID: this.config.clientId,
+        dateTimeSent: 0, 
+        dateTimeExpires: 0, 
+        distributionStatus: "Test",
+        distributionKind: "Report"
+        }; 
+      }
       if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
         if (topic.encodeKey) { payload.key = topic.encodeKey(payload.key); }
         payload.messages = topic.encode(payload.messages);

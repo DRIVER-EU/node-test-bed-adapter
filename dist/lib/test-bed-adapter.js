@@ -127,7 +127,14 @@ class TestBedAdapter extends events_1.EventEmitter {
             ;
             const topic = this.producerTopics[payload.topic];
             if (!payload.key) {
-                payload.key = { id: this.config.clientId };
+                payload.key = {
+                    distributionID: this.config.clientId + "-1",
+                    senderID: this.config.clientId,
+                    dateTimeSent: 0,
+                    dateTimeExpires: 0,
+                    distributionStatus: "Test",
+                    distributionKind: "Report"
+                };
             }
             if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
                 if (topic.encodeKey) {
