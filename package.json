@@ -35,7 +35,7 @@
     "axios": "^0.17.1",
     "bluebird": "^3.5.1",
     "jasmine-ts": "^0.2.1",
-    "kafka-node": "^2.3.2",
+    "kafka-node": "^2.4.1",
     "typescript": "^2.8.0-dev.20180211",
     "url": "^0.11.0"
   },

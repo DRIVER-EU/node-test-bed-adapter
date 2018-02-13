@@ -596,9 +596,9 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-kafka-node@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/kafka-node/-/kafka-node-2.3.2.tgz#0c950bab8ef5ae30b922d9b4c1b8d9db593e66c1"
+kafka-node@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/kafka-node/-/kafka-node-2.4.1.tgz#449e5a697c3cf4e5f3bf6c10374017c08dcaf19b"
   dependencies:
     async "^2.5.0"
     binary "~0.3.0"

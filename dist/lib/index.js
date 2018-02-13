@@ -7,4 +7,5 @@ __export(require("./avro/avro-helper-factory"));
 __export(require("./logger/log-levels"));
 __export(require("./logger/logger"));
 __export(require("./test-bed-adapter"));
+__export(require("./utils/helpers"));
 //# sourceMappingURL=index.js.map
