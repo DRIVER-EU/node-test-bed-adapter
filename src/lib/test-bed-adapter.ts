@@ -10,7 +10,7 @@ import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRe
 import { IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
 import { SchemaRegistry } from './avro/schema-registry';
-import { clone } from './utils/helpers';
+import { clone, uuid4 } from './utils/helpers';
 import { avroHelperFactory } from './avro/avro-helper-factory';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
@@ -159,7 +159,7 @@ export class TestBedAdapter extends EventEmitter {
       const topic = this.producerTopics[payload.topic];
       if (!payload.key) {
         payload.key = {
-          distributionID: this.config.clientId + '-1',
+          distributionID: uuid4(),
           senderID: this.config.clientId,
           dateTimeSent: 0,
           dateTimeExpires: 0,

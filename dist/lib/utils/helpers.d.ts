@@ -15,3 +15,11 @@ export declare const findFilesInDir: (directoryName: string, ext: string) => str
  * @return missing key schema files
  */
 export declare const findMissingKeyFiles: (files: string[]) => string[];
+/**
+ * Create a RFC4122 version 4 GUID
+ *
+ * @see https://stackoverflow.com/a/2117523/319711
+ *
+ * @returns RFC4122 version 4 compliant GUID
+ */
+export declare const uuid4: () => string;

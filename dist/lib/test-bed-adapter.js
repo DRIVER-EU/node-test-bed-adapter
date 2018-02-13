@@ -133,7 +133,7 @@ class TestBedAdapter extends events_1.EventEmitter {
             const topic = this.producerTopics[payload.topic];
             if (!payload.key) {
                 payload.key = {
-                    distributionID: this.config.clientId + '-1',
+                    distributionID: helpers_1.uuid4(),
                     senderID: this.config.clientId,
                     dateTimeSent: 0,
                     dateTimeExpires: 0,
