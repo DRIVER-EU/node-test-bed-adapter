@@ -61,14 +61,14 @@ export class SchemaRegistry {
    * @type {Object}
    */
   private schemaMeta: { [key: string]: any } = {};
-  private wrapUnions: boolean = false;
+  private wrapUnions: boolean | 'auto' | 'never' | 'always' = 'auto';
 
   constructor(private options: ITestBedOptions) {
     this.fetchAllVersions = options.fetchAllVersions || false;
     if (options.fetchAllSchemas) { return; }
     const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
-    this.wrapUnions = (options.hasOwnProperty('wrapUnions') ? !!options.wrapUnions : false);
+    this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(options.hasOwnProperty('wrapUnions') ? options.wrapUnions : 'auto');
     this.selectedTopics = [...consume, ...produce];
   }
 

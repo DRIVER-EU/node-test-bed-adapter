@@ -8,7 +8,7 @@ export interface ITestBedOptions extends KafkaClientOptions {
     /** Uri for the schema registry, e.g. schema_registry:3502 */
     schemaRegistry: string;
     /** Avro parser setting: whether to wrap union types in schema*/
-    wrapUnions?: boolean;
+    wrapUnions?: boolean | 'auto' | 'never' | 'always';
     /** If true, automatically register schema's on startup */
     autoRegisterSchemas?: boolean;
     /** If autoRegisterSchemas is true, contains the folder with *.avsc schema's to register */

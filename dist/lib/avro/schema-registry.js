@@ -46,14 +46,14 @@ class SchemaRegistry {
          * @type {Object}
          */
         this.schemaMeta = {};
-        this.wrapUnions = false;
+        this.wrapUnions = 'auto';
         this.fetchAllVersions = options.fetchAllVersions || false;
         if (options.fetchAllSchemas) {
             return;
         }
         const consume = options.consume ? options.consume.map(c => c.topic) : [];
         const produce = options.produce ? options.produce : [];
-        this.wrapUnions = (options.hasOwnProperty('wrapUnions') ? !!options.wrapUnions : false);
+        this.wrapUnions = (options.hasOwnProperty('wrapUnions') ? options.wrapUnions : 'auto');
         this.selectedTopics = [...consume, ...produce];
     }
     init() {
