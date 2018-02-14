@@ -46,12 +46,14 @@ class SchemaRegistry {
          * @type {Object}
          */
         this.schemaMeta = {};
+        this.wrapUnions = false;
         this.fetchAllVersions = options.fetchAllVersions || false;
         if (options.fetchAllSchemas) {
             return;
         }
         const consume = options.consume ? options.consume.map(c => c.topic) : [];
         const produce = options.produce ? options.produce : [];
+        this.wrapUnions = (options.hasOwnProperty('wrapUnions') ? !!options.wrapUnions : false);
         this.selectedTopics = [...consume, ...produce];
     }
     init() {
@@ -125,7 +127,7 @@ class SchemaRegistry {
         return new Promise(resolve => {
             this.log.debug(`registerSchemaLatest() - Registering schema: ${schemaObj.topic}`);
             try {
-                schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: false });
+                schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
             }
             catch (ex) {
                 this.log.warn('registerSchemaLatest() - Error parsing schema... moving on:', {
@@ -211,7 +213,7 @@ class SchemaRegistry {
         return new Promise(resolve => {
             this.log.debug('registerSchema() - Registering schema:', schemaObj.topic);
             try {
-                schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: true });
+                schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
             }
             catch (ex) {
                 this.log.warn('registerSchema() - Error parsing schema:', {
