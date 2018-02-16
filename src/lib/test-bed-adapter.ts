@@ -480,6 +480,7 @@ export class TestBedAdapter extends EventEmitter {
         schemaRegistry: 'schema_registry:3502',
         clientId: '',
         autoConnect: true,
+        wrapUnions: 'auto',
         sslOptions: false,
         heartbeatInterval: 5000,
         consume: [],

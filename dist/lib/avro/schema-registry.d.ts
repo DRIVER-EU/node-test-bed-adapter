@@ -70,6 +70,7 @@ export declare class SchemaRegistry {
      * @type {Object}
      */
     private schemaMeta;
+    private wrapUnions;
     constructor(options: ITestBedOptions);
     init(): Promise<ISchema[]>;
     private isSchemaRegistryAvailable();

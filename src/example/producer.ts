@@ -16,6 +16,7 @@ class Producer {
       schemaRegistry: 'localhost:3502',
       clientId: this.id,
       autoRegisterSchemas: true,
+      wrapUnions: false,
       schemaFolder: './data/schemas',
       produce: ['cap'
         // , { topic: 'avrokeytest2' }

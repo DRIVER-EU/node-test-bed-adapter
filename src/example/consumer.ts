@@ -15,6 +15,7 @@ class Consumer {
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
       fetchAllSchemas: false,
+      wrapUnions: false,
       clientId: 'Consumer',
       consume: [{ topic: 'cap' }],
       logging: {
