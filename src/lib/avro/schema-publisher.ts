@@ -116,7 +116,7 @@ export class SchemaPublisher {
       reject(err);
       throw err;
     }
-    this.log.debug('suppressAxiosError() - http error, will continue operation.', {
+    this.log.warn('suppressAxiosError() - http error, will continue operation.', {
       error: err.message,
       url: err.config.url
     });
