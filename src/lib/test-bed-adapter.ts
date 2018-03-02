@@ -6,7 +6,7 @@ import { clearInterval } from 'timers';
 import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
-import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest } from 'kafka-node';
+import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest, Topic } from 'kafka-node';
 import { IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
 import { SchemaRegistry } from './avro/schema-registry';
@@ -17,10 +17,14 @@ import { ConsoleLogger } from './logger/console-logger';
 import { ILogger } from '.';
 import { SchemaPublisher } from './avro/schema-publisher';
 import { IAvroType } from './declarations/avro';
+import { TimeService } from './services/time-service';
+import { ITimeMessage } from './models/time-message';
+import { IHeartbeat } from './models/heartbeat';
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'connect-status-heartbeat';
   public static ConfigurationTopic = 'connect-status-configuration';
+  public static TimeTopic = 'connect-status-time';
   public static LogTopic = 'connect-status-log';
   public isConnected = false;
 
@@ -37,6 +41,8 @@ export class TestBedAdapter extends EventEmitter {
   private producerTopics: { [topic: string]: IInitializedTopic } = {};
   /** Location of the configuration file */
   private configFile = 'config/test-bed-config.json';
+  private callbacks: { [topic: string]: (error: string, message: Message) => void } = {};
+  private timeService = new TimeService();
 
   constructor(config?: ITestBedOptions | string) {
     super();
@@ -190,8 +196,16 @@ export class TestBedAdapter extends EventEmitter {
    *
    * @param topics Array of topics to add
    * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
+   * @param cb optional callback method to invoke when a message is received
    */
-  public addConsumerTopics(topics?: OffsetFetchRequest | OffsetFetchRequest[]) {
+  public addConsumerTopics(topics?: OffsetFetchRequest | OffsetFetchRequest[], cb?: (error: string, message: Message) => void) {
+    const registerCallback = (topics: string[] | Topic[]) => {
+      if (!cb) { return; }
+      (topics as any[])
+      .map(t => typeof t === 'string' ? t : (t as Topic).topic)
+      .forEach(t => this.callbacks[t] = cb);
+    };
+
     return new Promise<OffsetFetchRequest[]>((resolve, reject) => {
       if (!topics) {
         return resolve();
@@ -207,6 +221,7 @@ export class TestBedAdapter extends EventEmitter {
             return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
           }
           this.log.info(`Added topics: ${added}`);
+          registerCallback(added);
           resolve(newTopics);
         });
       }
@@ -253,6 +268,11 @@ export class TestBedAdapter extends EventEmitter {
       cb(null, results);
     });
   }
+
+  /**
+   * Get the simulation time as Date.
+   */
+  public get simTime() { return this.timeService.simTime; }
 
   // PRIVATE METHODS
 
@@ -339,7 +359,15 @@ export class TestBedAdapter extends EventEmitter {
         message.value = message.value.toString(); // decode buffer to string for normal messages
       }
     }
-    this.emit('message', message);
+    switch (topic) {
+      default:
+        this.emit('message', message);
+        break;
+      case TestBedAdapter.TimeTopic:
+        const timeMessage = JSON.parse(message.value as string) as ITimeMessage;
+        this.timeService.setSimTime(timeMessage);
+        break;
+    }
   }
 
   /**
@@ -387,7 +415,7 @@ export class TestBedAdapter extends EventEmitter {
     const newTopics: string[] = [];
     topics.forEach((t) => {
       if (this.producerTopics.hasOwnProperty(t)) return;
-      if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t)) {
+      if (!(this.schemaRegistry.valueSchemas.hasOwnProperty(t) || this.schemaRegistry.valueSchemas.hasOwnProperty(t + '-value'))) {
         this.log.error(`initializeProducerTopics - no schema registered for topic ${t}`);
         return;
       }
@@ -455,7 +483,7 @@ export class TestBedAdapter extends EventEmitter {
           {
             attributes: 1,
             topic: TestBedAdapter.HeartbeatTopic,
-            messages: [ { id: this.config.clientId, alive: new Date().toISOString() } ]
+            messages: [ { id: this.config.clientId, alive: Date.now() } as IHeartbeat ]
           },
           (error) => {
             if (error) {
@@ -491,14 +519,19 @@ export class TestBedAdapter extends EventEmitter {
       } as ITestBedOptions,
       options
     );
-    if (opt.produce && opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
-      opt.produce.push(TestBedAdapter.HeartbeatTopic);
-    }
-    if (opt.produce && opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
-      opt.produce.push(TestBedAdapter.ConfigurationTopic);
-    }
-    if (opt.produce && opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
-      opt.produce.push(TestBedAdapter.LogTopic);
+    if (opt.produce) {
+      if (opt.produce.indexOf(TestBedAdapter.TimeTopic) < 0) {
+        opt.produce.push(TestBedAdapter.TimeTopic);
+      }
+      if (opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
+        opt.produce.push(TestBedAdapter.HeartbeatTopic);
+      }
+      if (opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
+        opt.produce.push(TestBedAdapter.ConfigurationTopic);
+      }
+      if (opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
+        opt.produce.push(TestBedAdapter.LogTopic);
+      }
     }
     return opt;
   }
