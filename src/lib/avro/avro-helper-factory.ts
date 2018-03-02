@@ -15,8 +15,8 @@ const removeNulls = (_key: string, value: any) => (value === 'null' || value ===
  */
 export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
   const log = Logger.instance;
-  const valueSchema = sr.valueSchemas[topic];
-  const keySchema = sr.keySchemas.hasOwnProperty(topic) ? sr.keySchemas[topic] : undefined;
+  const valueSchema = sr.valueSchemas[topic] || sr.valueSchemas[topic + '-value'];
+  const keySchema = sr.keySchemas[topic] || sr.keySchemas[topic + '-key'] ;
 
   const errorHook = (path: string[], part: any) =>
     log.error(`avroHelperFactory() - Topic ${topic}, path ${path.join(', ')}
