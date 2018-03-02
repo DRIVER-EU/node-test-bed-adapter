@@ -5,10 +5,11 @@ import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.jso
 import * as thunderstormAlert from '../../data/cap/examples/example_thunderstorm.json';
 import * as homelandSecurityAlert from '../../data/cap/examples/example_homeland_security.json';
 
+const log = Logger.instance;
+
 class Producer {
   private id = 'NodeTestProducer';
   private adapter: TestBedAdapter;
-  private log = Logger.instance;
 
   constructor() {
     this.adapter = new TestBedAdapter({
@@ -27,7 +28,8 @@ class Producer {
     });
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
-      this.log.info('Producer is connected');
+      log.info(`Current simulation time: ${this.adapter.simTime}`);
+      log.info('Producer is connected');
       this.sendcap();
     });
     this.adapter.connect();
