@@ -6,3 +6,4 @@ export * from './models/topic';
 export * from './models/test-bed-options';
 export * from './test-bed-adapter';
 export * from './utils/helpers';
+export { IDefaultKey } from './avro/default-key-schema';
