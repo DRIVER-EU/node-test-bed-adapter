@@ -58,6 +58,5 @@ typings/
 .env
 
 # repo specific
-dist/test
-dist/example
+dist
 log.txt
