@@ -6,20 +6,30 @@ import { clearInterval } from 'timers';
 import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
-import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest, Topic } from 'kafka-node';
+import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest, Topic, HighLevelProducer } from 'kafka-node';
+import { ITimeMessage } from './models/time-message';
+import { IHeartbeat } from './models/heartbeat';
 import { IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
 import { SchemaRegistry } from './avro/schema-registry';
-import { clone, uuid4 } from './utils/helpers';
+import { SchemaPublisher } from './avro/schema-publisher';
+import { IDefaultKey } from './avro/default-key-schema';
 import { avroHelperFactory } from './avro/avro-helper-factory';
+import { clone, uuid4 } from './utils/helpers';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
-import { ILogger } from '.';
-import { SchemaPublisher } from './avro/schema-publisher';
+import { ILogger, IAdapterMessage } from '.';
 import { IAvroType } from './declarations/avro';
 import { TimeService } from './services/time-service';
-import { ITimeMessage } from './models/time-message';
-import { IHeartbeat } from './models/heartbeat';
+
+export declare interface TestBedAdapter {
+  on(event: 'ready', listener: () => void): this;
+  on(event: 'reconnect', listener: () => void): this;
+  on(event: 'error', listener: (error: string) => void): this;
+  on(event: 'offsetOutOfRange', listener: (error: string) => void): this;
+  on(event: 'raw', listener: (message: Message) => void): this;
+  on(event: 'message', listener: (message: IAdapterMessage) => void): this;
+}
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'connect-status-heartbeat';
@@ -198,12 +208,17 @@ export class TestBedAdapter extends EventEmitter {
    * @param fromOffset if true, the consumer will fetch message from the specified offset, otherwise it will fetch message from the last commited offset of the topic.
    * @param cb optional callback method to invoke when a message is received
    */
-  public addConsumerTopics(topics?: OffsetFetchRequest | OffsetFetchRequest[], cb?: (error: string, message: Message) => void) {
+  public addConsumerTopics(
+    topics?: OffsetFetchRequest | OffsetFetchRequest[],
+    cb?: (error: string, message: Message) => void
+  ) {
     const registerCallback = (topics: string[] | Topic[]) => {
-      if (!cb) { return; }
+      if (!cb) {
+        return;
+      }
       (topics as any[])
-      .map(t => typeof t === 'string' ? t : (t as Topic).topic)
-      .forEach(t => this.callbacks[t] = cb);
+        .map((t) => (typeof t === 'string' ? t : (t as Topic).topic))
+        .forEach((t) => (this.callbacks[t] = cb));
     };
 
     return new Promise<OffsetFetchRequest[]>((resolve, reject) => {
@@ -272,7 +287,9 @@ export class TestBedAdapter extends EventEmitter {
   /**
    * Get the simulation time as Date.
    */
-  public get simTime() { return this.timeService.simTime; }
+  public get simTime() {
+    return this.timeService.simTime;
+  }
 
   // PRIVATE METHODS
 
@@ -344,27 +361,26 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private handleMessage(message: Message) {
-    const { topic, value } = message;
+    const { topic, value, key, offset, partition, highWaterOffset } = message;
     if (!value) {
       return;
     }
-    if (this.consumerTopics.hasOwnProperty(topic)) {
-      const consumerTopic = this.consumerTopics[topic];
-      if (consumerTopic.decode) {
-        message.value = consumerTopic.decode(message.value as any) as any;
-        if (consumerTopic.decodeKey && (message.key as any) instanceof Buffer) {
-          message.key = consumerTopic.decodeKey(message.key as any) as any;
-        }
-      } else {
-        message.value = message.value.toString(); // decode buffer to string for normal messages
-      }
+    if (!this.consumerTopics.hasOwnProperty(topic)) {
+      this.emit('raw', message);
     }
+    const consumerTopic = this.consumerTopics[topic];
+    const decodedValue = consumerTopic.decode
+      ? consumerTopic.decode(message.value as Buffer) as Object | Object[]
+      : message.value.toString();
+    const decodedKey = consumerTopic.decodeKey && (message.key as any) instanceof Buffer
+      ? consumerTopic.decodeKey(message.key as any) as IDefaultKey
+      : key ? key : '';
     switch (topic) {
       default:
-        this.emit('message', message);
+        this.emit('message', { topic, offset, partition, highWaterOffset, value: decodedValue, key: decodedKey } as IAdapterMessage);
         break;
       case TestBedAdapter.TimeTopic:
-        const timeMessage = JSON.parse(message.value as string) as ITimeMessage;
+        const timeMessage = decodedValue as ITimeMessage;
         this.timeService.setSimTime(timeMessage);
         break;
     }
@@ -415,7 +431,12 @@ export class TestBedAdapter extends EventEmitter {
     const newTopics: string[] = [];
     topics.forEach((t) => {
       if (this.producerTopics.hasOwnProperty(t)) return;
-      if (!(this.schemaRegistry.valueSchemas.hasOwnProperty(t) || this.schemaRegistry.valueSchemas.hasOwnProperty(t + '-value'))) {
+      if (
+        !(
+          this.schemaRegistry.valueSchemas.hasOwnProperty(t) ||
+          this.schemaRegistry.valueSchemas.hasOwnProperty(t + '-value')
+        )
+      ) {
         this.log.error(`initializeProducerTopics - no schema registered for topic ${t}`);
         return;
       }

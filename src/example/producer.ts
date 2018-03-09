@@ -16,8 +16,9 @@ class Producer {
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
       clientId: this.id,
+      fetchAllSchemas: true,
       autoRegisterSchemas: true,
-      wrapUnions: false,
+      wrapUnions: 'auto',
       schemaFolder: './data/schemas',
       produce: ['cap'
         // , { topic: 'avrokeytest2' }

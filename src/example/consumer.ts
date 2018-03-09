@@ -4,7 +4,7 @@
 // kafkaLogging.setLoggerProvider(consoleLoggerProvider);
 
 import { Message } from 'kafka-node';
-import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem } from '../lib/index';
+import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem, IAdapterMessage } from '../lib/index';
 
 class Consumer {
   private adapter: TestBedAdapter;
@@ -39,7 +39,6 @@ class Consumer {
   private subscribe() {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', err => this.log.error(`Consumer received an error: ${err}`));
-    this.adapter.on('offsetOutOfRange', err => this.log.error(`Consumer received an error: ${err}`));
     this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
       if (err) { this.log.error(`Consumer received an error: ${err}`); }
     });
@@ -66,19 +65,20 @@ class Consumer {
     });
   }
 
-  private handleMessage(message: Message) {
+  private handleMessage(message: IAdapterMessage) {
+    const stringify = (m: string | Object) => typeof m === 'string' ? m : JSON.stringify(m, null, 2);
     switch (message.topic.toLowerCase()) {
       case 'heartbeat':
-        this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
+        this.log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
       case 'configuration':
-        this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${message.value}`);
+        this.log.info(`Received configuration message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
       case 'cap':
-        this.log.info(`Received message on topic ${message.topic} with key ${message.key}: ${typeof message.value === 'string' ? message.value : '\n' + JSON.stringify(message.value, null, 2)}`);
+        this.log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
       default:
-        this.log.info(`Received message on topic ${message.topic}: ${message.value}`);
+        this.log.info(`Received ${message.topic} message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
     }
   }
