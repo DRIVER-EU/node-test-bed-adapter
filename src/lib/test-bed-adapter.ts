@@ -177,6 +177,7 @@ export class TestBedAdapter extends EventEmitter {
     }
     payloads = payloads instanceof Array ? payloads : [ payloads ];
     const pl: ProduceRequest[] = [];
+    let hasError = false;
     payloads.forEach((payload) => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) {
         return cb(`Topic not found: please register first!`, null);
@@ -198,8 +199,13 @@ export class TestBedAdapter extends EventEmitter {
         }
         payload.messages = topic.encode(payload.messages);
         pl.push(payload);
+      } else {
+        hasError = true;
       }
     });
+    if (hasError) {
+      return cb('Error validating message', null);
+    }
     this.producer.send(pl, cb);
   }
 
