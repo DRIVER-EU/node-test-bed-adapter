@@ -1,3 +1,4 @@
+import { IDefaultKey } from './default-key-schema';
 import { toMessageBuffer, fromMessageBuffer } from './../models/magic-byte';
 import { IValidator } from '../models/validator';
 import { IEncoder } from '../models/encoder';
@@ -45,11 +46,11 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
       return keySchema ? keySchema.type.isValid(key, { errorHook }) : true;
     },
     /** Encode the key */
-    encodeKey: (key: Object) => {
+    encodeKey: (key: IDefaultKey) => {
       return keySchema ? toMessageBuffer(key, keySchema.type, keySchema.srId) : key;
     },
     /** Decode the key */
-    decodeKey: (buf: Buffer | string | number) => {
+    decodeKey: (buf: Buffer): IDefaultKey => {
       return keySchema && buf instanceof Buffer ? fromMessageBuffer(keySchema.type, buf, sr).value : buf;
     },
     /** Convert the object to a string */
