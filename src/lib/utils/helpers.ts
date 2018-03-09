@@ -73,6 +73,4 @@ export const uuid4 = () => {
  * @param obj Any object
  * @see https://stackoverflow.com/a/32108184/319711
  */
-export const isEmptyObject = (obj: Object) => {
-  return Object.keys(obj).length === 0 && obj.constructor === Object;
-};
+export const isEmptyObject = (obj: Object) => Object.keys(obj).length === 0 && obj.constructor === Object;
