@@ -6,7 +6,16 @@ import { clearInterval } from 'timers';
 import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
-import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest, Topic, HighLevelProducer } from 'kafka-node';
+import {
+  KafkaClient,
+  Producer,
+  Consumer,
+  ProduceRequest,
+  Message,
+  OffsetFetchRequest,
+  Topic,
+  HighLevelProducer
+} from 'kafka-node';
 import { ITimeMessage } from './models/time-message';
 import { IHeartbeat } from './models/heartbeat';
 import { IInitializedTopic } from './models/topic';
@@ -15,14 +24,14 @@ import { SchemaRegistry } from './avro/schema-registry';
 import { SchemaPublisher } from './avro/schema-publisher';
 import { IDefaultKey } from './avro/default-key-schema';
 import { avroHelperFactory } from './avro/avro-helper-factory';
-import { clone, uuid4 } from './utils/helpers';
+import { clone, uuid4, isEmptyObject } from './utils/helpers';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
 import { ILogger, IAdapterMessage } from '.';
 import { IAvroType } from './declarations/avro';
 import { TimeService } from './services/time-service';
 
-export declare interface TestBedAdapter {
+export interface TestBedAdapter {
   on(event: 'ready', listener: () => void): this;
   on(event: 'reconnect', listener: () => void): this;
   on(event: 'error', listener: (error: string) => void): this;
@@ -173,15 +182,15 @@ export class TestBedAdapter extends EventEmitter {
         return cb(`Topic not found: please register first!`, null);
       }
       const topic = this.producerTopics[payload.topic];
-      if (!payload.key) {
+      if (!payload.key || isEmptyObject(payload.key)) {
         payload.key = {
           distributionID: uuid4(),
           senderID: this.config.clientId,
-          dateTimeSent: 0,
+          dateTimeSent: Date.now(),
           dateTimeExpires: 0,
           distributionStatus: 'Test',
-          distributionKind: 'Report'
-        };
+          distributionKind: 'Unknown'
+        } as IDefaultKey;
       }
       if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
         if (topic.encodeKey) {
@@ -372,12 +381,20 @@ export class TestBedAdapter extends EventEmitter {
     const decodedValue = consumerTopic.decode
       ? consumerTopic.decode(message.value as Buffer) as Object | Object[]
       : message.value.toString();
-    const decodedKey = consumerTopic.decodeKey && (message.key as any) instanceof Buffer
-      ? consumerTopic.decodeKey(message.key as any) as IDefaultKey
-      : key ? key : '';
+    const decodedKey =
+      consumerTopic.decodeKey && (message.key as any) instanceof Buffer
+        ? consumerTopic.decodeKey(message.key as any) as IDefaultKey
+        : key ? key : '';
     switch (topic) {
       default:
-        this.emit('message', { topic, offset, partition, highWaterOffset, value: decodedValue, key: decodedKey } as IAdapterMessage);
+        this.emit('message', {
+          topic,
+          offset,
+          partition,
+          highWaterOffset,
+          value: decodedValue,
+          key: decodedKey
+        } as IAdapterMessage);
         break;
       case TestBedAdapter.TimeTopic:
         const timeMessage = decodedValue as ITimeMessage;
