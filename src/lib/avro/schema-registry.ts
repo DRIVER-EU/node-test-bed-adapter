@@ -139,16 +139,6 @@ export class SchemaRegistry {
     });
   }
 
-  private suppressAxiosError(err: { response: string; message: string; config: { url: string }; }) {
-    if (!err.response) {
-      // not an axios error, bail early
-      throw err;
-    }
-    this.log.debug('suppressAxiosError() - http error, will continue operation.',
-      { error: err.message, url: err.config.url });
-    return null;
-  }
-
   private registerSchemaLatest(schemaObj: ISchema) {
     return new Promise<ISchema>(resolve => {
       this.log.debug(`registerSchemaLatest() - Registering schema: ${schemaObj.topic}`);
@@ -369,6 +359,16 @@ export class SchemaRegistry {
         })
         .catch(this.handleAxiosError);
     });
+  }
+
+  private suppressAxiosError(err: { response: string; message: string; config: { url: string }; }) {
+    if (!err.response) {
+      // not an axios error, bail early
+      throw err;
+    }
+    this.log.debug('suppressAxiosError() - http error, will continue operation.',
+      { error: err.message, url: err.config.url });
+    return null;
   }
 
   private handleAxiosError(err: { port: string; message: string, config: { url: string } }) {
