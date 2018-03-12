@@ -127,7 +127,7 @@ export class TestBedAdapter extends EventEmitter {
       .then(() => this.startHeartbeat())
       .then(() => this.addProducerTopics(this.config.produce))
       .then(() => this.initConsumer())
-      .then(() => this.addConsumerTopics(this.config.consume))
+      .then(() => this.addConsumerTopics(this.config.consume, this.config.fromOffset))
       .then(() => this.configUpdated())
       .then(() => this.emit('ready'))
       .catch((err) => this.emitErrorMsg(err));
