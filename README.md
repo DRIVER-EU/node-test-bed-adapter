@@ -27,7 +27,6 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 
 - Connect to Kafka
 - Publish heartbeat (topic: connect-status-heartbeat)
-- Create AVRO schema for CAP messages (for testing purposes)
 - Validate AVRO messages
 - Encode/decode object and keys using AVRO helper factory
 - Setup test framework
@@ -43,8 +42,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
     warn: 1,
     info: 2,
     verbose: 3,
-    debug: 4,
-    silly: 5
+    debug: 4
   }, see [RFC5424](https://tools.ietf.org/html/rfc5424)
   - Created a KafkaLogger, FileLogger, and ConsoleLogger
 - Configure logger (which ones to use, which debug level, output file)
