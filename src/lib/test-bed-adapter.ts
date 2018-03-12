@@ -367,7 +367,7 @@ export class TestBedAdapter extends EventEmitter {
       if (!this.client) {
         return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
       }
-      this.consumer = new Consumer(this.client, [], { encoding: 'buffer', autoCommit: true });
+      this.consumer = new Consumer(this.client, [], { encoding: 'buffer', keyEncoding: 'buffer', autoCommit: true });
       this.consumer.on('message', (message) => this.handleMessage(message));
       this.consumer.on('error', (error) => this.emitErrorMsg(error));
       this.consumer.on('offsetOutOfRange', (error) => this.emit('offsetOutOfRange', error));
@@ -554,6 +554,7 @@ export class TestBedAdapter extends EventEmitter {
         autoConnect: true,
         wrapUnions: 'auto',
         sslOptions: false,
+        fromOffset: false,
         heartbeatInterval: 5000,
         consume: [],
         produce: [],
