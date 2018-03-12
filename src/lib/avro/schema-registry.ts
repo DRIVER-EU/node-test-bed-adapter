@@ -73,7 +73,7 @@ export class SchemaRegistry {
   }
 
   public init() {
-    this.log.info('init() - Initializing SR will fetch all schemas from SR');
+    this.log.info(`init() - Initializing SR will fetch ${this.options.fetchAllVersions ? 'all' : 'requested consumer and producer'} schemas from SR`);
 
     return this.isSchemaRegistryAvailable()
       .then(() => this.fetchTopics())
