@@ -4,6 +4,7 @@ export * from './logger/log-levels';
 export * from './logger/logger';
 export * from './models/topic';
 export * from './models/test-bed-options';
+export * from './models/configuration';
 export * from './test-bed-adapter';
 export * from './utils/helpers';
 export { IAdapterMessage } from './models/adapter-message';

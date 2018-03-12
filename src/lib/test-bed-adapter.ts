@@ -27,9 +27,10 @@ import { avroHelperFactory } from './avro/avro-helper-factory';
 import { clone, uuid4, isEmptyObject } from './utils/helpers';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
-import { ILogger, IAdapterMessage } from '.';
+import { ILogger, IAdapterMessage, LogLevel } from '.';
 import { IAvroType } from './declarations/avro';
 import { TimeService } from './services/time-service';
+import { IConfiguration } from './models/configuration';
 
 export interface TestBedAdapter {
   on(event: 'ready', listener: () => void): this;
@@ -41,6 +42,7 @@ export interface TestBedAdapter {
 }
 
 export class TestBedAdapter extends EventEmitter {
+  public static HeartbeatInterval = 5000;
   public static HeartbeatTopic = 'connect-status-heartbeat';
   public static ConfigurationTopic = 'connect-status-configuration';
   public static TimeTopic = 'connect-status-time';
@@ -490,11 +492,25 @@ export class TestBedAdapter extends EventEmitter {
       if (!this.producer) {
         return;
       }
+      const msg: IConfiguration = {
+        clientId: this.config.clientId,
+        kafkaHost: this.config.kafkaHost,
+        schemaRegistry: this.config.schemaRegistry,
+        heartbeatInterval: this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval,
+        consume: this.config.consume,
+        produce: this.config.produce,
+        logging: this.config.logging ? {
+          logToConsole: this.config.logging.logToConsole,
+          logToKafka: this.config.logging.logToKafka,
+          logToFile: this.config.logging.logToFile,
+          logFile: this.config.logging.logFile,
+        } : undefined
+      };
       this.send(
         [
           {
             topic: TestBedAdapter.ConfigurationTopic,
-            messages: this.config
+            messages: msg
           }
         ],
         (err, result) => {
@@ -555,7 +571,7 @@ export class TestBedAdapter extends EventEmitter {
         wrapUnions: 'auto',
         sslOptions: false,
         fromOffset: false,
-        heartbeatInterval: 5000,
+        heartbeatInterval: TestBedAdapter.HeartbeatInterval,
         consume: [],
         produce: [],
         logging: {},
