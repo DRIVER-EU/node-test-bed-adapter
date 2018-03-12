@@ -14,8 +14,6 @@ export interface ITestBedOptions extends KafkaClientOptions {
   autoRegisterSchemas?: boolean;
   /** If autoRegisterSchemas is true, contains the folder with *.avsc schema's to register */
   schemaFolder?: string;
-  /** If set true, use the topics offset to retreive messages */
-  fromOffset?: boolean;
   /** If true (default false), fetch all schema versions (and not only the latest) */
   fetchAllVersions?: boolean;
   /** If true (default false), fetch all schema's (and not only the consume and produce topics) */

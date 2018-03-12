@@ -224,7 +224,7 @@ export class TestBedAdapter extends EventEmitter {
    * @param cb optional callback method to invoke when a message is received
    */
   public addConsumerTopics(
-    topics?: OffsetFetchRequest | OffsetFetchRequest[],
+    topics?: OffsetFetchRequest | OffsetFetchRequest[], fromOffset = false,
     cb?: (error: string, message: Message) => void
   ) {
     const registerCallback = (topics: string[] | Topic[]) => {
@@ -253,7 +253,7 @@ export class TestBedAdapter extends EventEmitter {
           this.log.info(`Added topics: ${added}`);
           registerCallback(added);
           resolve(newTopics);
-        });
+        }, fromOffset);
       }
     });
   }
