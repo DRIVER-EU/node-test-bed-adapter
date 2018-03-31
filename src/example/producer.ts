@@ -17,14 +17,15 @@ class Producer {
       schemaRegistry: 'localhost:3502',
       clientId: this.id,
       fetchAllSchemas: true,
-      autoRegisterSchemas: true,
+      autoRegisterSchemas: false,
       wrapUnions: 'auto',
       schemaFolder: './data/schemas',
-      produce: ['cap'
+      produce: ['standard_cap'
         // , { topic: 'avrokeytest2' }
       ],
       logging: {
-        logToConsole: LogLevel.Info
+        logToConsole: LogLevel.Info,
+        logToKafka: LogLevel.Debug
       }
     });
     this.adapter.on('error', e => console.error(e));
@@ -38,19 +39,19 @@ class Producer {
 
   private sendcap() {
     const payloads: ProduceRequest[] = [{
-      topic: 'cap',
+      topic: 'standard_cap',
       messages: amberAlert,
       attributes: 1 // Gzip
     }, {
-      topic: 'cap',
+      topic: 'standard_cap',
       messages: earthquakeAlert,
       attributes: 1 // Gzip
     }, {
-      topic: 'cap',
+      topic: 'standard_cap',
       messages: thunderstormAlert,
       attributes: 1 // Gzip
     }, {
-      topic: 'cap',
+      topic: 'standard_cap',
       messages: homelandSecurityAlert,
       attributes: 1 // Gzip
     }];
@@ -64,6 +65,9 @@ class Producer {
       if (error) { console.error(error); }
       if (data) { console.log(data); }
     });
+
+    log.error('This is an error message for testing purposes');
+
     // this.adapter.send(payloads[0], (error, data) => {
     //   if (error) { console.error(error); }
     //   if (data) { console.log(data); }
