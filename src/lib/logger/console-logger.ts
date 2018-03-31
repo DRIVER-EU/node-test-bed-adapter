@@ -9,6 +9,7 @@ import { LogLevel } from './log-levels';
 export class ConsoleLogger implements ILog {
   log(level: LogLevel, msg: string, _callback?: (err: any, result: any) => void) {
     switch (level) {
+      case LogLevel.Critical:
       case LogLevel.Error:
         console.error('\x1b[1;31m%s\x1b[0m', msg);
         break;
