@@ -1,4 +1,5 @@
 import { OffsetFetchRequest } from 'kafka-node';
+import { LogLevelType } from '..';
 
 export interface IConfiguration {
   clientId: string;
@@ -8,9 +9,9 @@ export interface IConfiguration {
   consume?: OffsetFetchRequest[];
   produce?: string[];
   logging?: {
-    logToConsole?: number;
-    logToKafka?: number;
-    logToFile?: number;
+    logToConsole?: LogLevelType;
+    logToKafka?: LogLevelType;
+    logToFile?: LogLevelType;
     logFile?: string;
   }
 }

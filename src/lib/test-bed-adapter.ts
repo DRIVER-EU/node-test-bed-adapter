@@ -6,6 +6,8 @@ import { clearInterval } from 'timers';
 import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
+import { ISendResponse } from './models/adapter-message';
+import { LogLevelToType } from './logger/log-levels';
 import {
   KafkaClient,
   Producer,
@@ -43,10 +45,10 @@ export interface TestBedAdapter {
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatInterval = 5000;
-  public static HeartbeatTopic = 'connect-status-heartbeat';
+  public static HeartbeatTopic = 'system_heartbeat';
   public static ConfigurationTopic = 'connect-status-configuration';
-  public static TimeTopic = 'connect-status-time';
-  public static LogTopic = 'connect-status-log';
+  public static TimeTopic = 'system_timing';
+  public static LogTopic = 'system_logging';
   public isConnected = false;
 
   private schemaPublisher: SchemaPublisher;
@@ -173,7 +175,7 @@ export class TestBedAdapter extends EventEmitter {
     this.client.close();
   }
 
-  public send(payloads: ProduceRequest | ProduceRequest[], cb: (error: any, data: any) => any) {
+  public send(payloads: ProduceRequest | ProduceRequest[], cb: (error?: any, data?: ISendResponse) => any) {
     if (!this.producer) {
       return this.emitErrorMsg('Producer not ready!');
     }
@@ -182,7 +184,7 @@ export class TestBedAdapter extends EventEmitter {
     let hasError = false;
     payloads.forEach((payload) => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) {
-        return cb(`Topic not found: please register first!`, null);
+        return cb(`Topic ${payload.topic} not found: please register first! ${JSON.stringify(payload)}`, undefined);
       }
       const topic = this.producerTopics[payload.topic];
       if (!payload.key || isEmptyObject(payload.key)) {
@@ -204,11 +206,11 @@ export class TestBedAdapter extends EventEmitter {
       } else {
         hasError = true;
       }
+      this.producer && this.producer.send(pl, cb);
     });
     if (hasError) {
-      return cb('Error validating message', null);
+      return cb('Error validating message', undefined);
     }
-    this.producer.send(pl, cb);
   }
 
   /**
@@ -226,7 +228,8 @@ export class TestBedAdapter extends EventEmitter {
    * @param cb optional callback method to invoke when a message is received
    */
   public addConsumerTopics(
-    topics?: OffsetFetchRequest | OffsetFetchRequest[], fromOffset = false,
+    topics?: OffsetFetchRequest | OffsetFetchRequest[],
+    fromOffset = false,
     cb?: (error: string, message: Message) => void
   ) {
     const registerCallback = (topics: string[] | Topic[]) => {
@@ -248,14 +251,18 @@ export class TestBedAdapter extends EventEmitter {
       }
       const newTopics = this.initializeConsumerTopics(topics);
       if (this.consumer && newTopics.length > 0) {
-        this.consumer.addTopics(newTopics, (error, added) => {
-          if (error) {
-            return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
-          }
-          this.log.info(`Added topics: ${added}`);
-          registerCallback(added);
-          resolve(newTopics);
-        }, fromOffset);
+        this.consumer.addTopics(
+          newTopics,
+          (error, added) => {
+            if (error) {
+              return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
+            }
+            this.log.info(`Added topics: ${added}`);
+            registerCallback(added);
+            resolve(newTopics);
+          },
+          fromOffset
+        );
       }
     });
   }
@@ -354,7 +361,7 @@ export class TestBedAdapter extends EventEmitter {
       if (logOptions && logOptions.logToKafka) {
         this.log.addLogger({
           logger: new KafkaLogger({
-            producer: this.producer,
+            adapter: this,
             clientId: this.config.clientId
           }),
           minLevel: logOptions.logToKafka
@@ -499,12 +506,14 @@ export class TestBedAdapter extends EventEmitter {
         heartbeatInterval: this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval,
         consume: this.config.consume,
         produce: this.config.produce,
-        logging: this.config.logging ? {
-          logToConsole: this.config.logging.logToConsole,
-          logToKafka: this.config.logging.logToKafka,
-          logToFile: this.config.logging.logToFile,
-          logFile: this.config.logging.logFile,
-        } : undefined
+        logging: this.config.logging
+          ? {
+              logToConsole: LogLevelToType(this.config.logging.logToConsole),
+              logToKafka: LogLevelToType(this.config.logging.logToKafka),
+              logToFile: LogLevelToType(this.config.logging.logToFile),
+              logFile: this.config.logging.logFile
+            }
+          : undefined
       };
       this.send(
         [
@@ -513,14 +522,13 @@ export class TestBedAdapter extends EventEmitter {
             messages: msg
           }
         ],
-        (err, result) => {
+        (err?: string, result?: ISendResponse) => {
           if (err) {
-            this.emitErrorMsg('Producer not ready!', reject);
-          }
-          if (result) {
+            this.emitErrorMsg(err, reject);
+          } else if (result) {
             this.log.info(result);
+            resolve();
           }
-          resolve();
         }
       );
     });

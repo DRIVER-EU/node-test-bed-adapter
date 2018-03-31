@@ -8,3 +8,7 @@ export interface IAdapterMessage {
   partition?: number;
   highWaterOffset?: number;
 }
+
+export interface ISendResponse {
+  [topic: string]: { [partition: number]: number };
+}
