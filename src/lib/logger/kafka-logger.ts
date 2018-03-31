@@ -1,9 +1,11 @@
+import { TestBedAdapter } from '../test-bed-adapter';
+import { ILogMessage } from './../models/log-message';
 import { ILog } from './logger';
 import { Producer, HighLevelProducer, ProduceRequest } from 'kafka-node';
-import { LogLevel } from './log-levels';
+import { LogLevel, LogLevelToType } from './log-levels';
 
 export interface IKafkaLoggerOptions {
-  producer: Producer | HighLevelProducer;
+  adapter: TestBedAdapter;
   /** Client id: id will be the key of each payload */
   clientId: string;
 }
@@ -13,26 +15,39 @@ export interface IKafkaLoggerOptions {
  * source: https://github.com/jackielihf/winston-k/blob/master/logger.js
  */
 export class KafkaLogger implements ILog {
-  private static LogTopic = '_log';
-  private producer: Producer | HighLevelProducer;
+  private static LogTopic = 'system_logging';
+  private adapter: TestBedAdapter;
   private id: string | number;
+  private isInitialized = false;
 
   constructor(options: IKafkaLoggerOptions) {
     this.id = options.clientId;
-    this.producer = options.producer;
-    this.producer.createTopics([KafkaLogger.LogTopic], true, (err, _data) => { if (err) { console.error(err); } });
+    this.adapter = options.adapter;
+    this.adapter.addProducerTopics(KafkaLogger.LogTopic).then(() => (this.isInitialized = true));
   }
 
-  public log(_level: LogLevel, msg: string, callback: (err?: Error, result?: any) => void) {
-    const payload: ProduceRequest[] = [{
-      topic: KafkaLogger.LogTopic, messages: {
-        id: this.id, log: msg
+  public log(level: LogLevel, msg: string, callback: (err?: Error, result?: any) => void) {
+    if (this.isInitialized === false) {
+      return;
+    }
+    const payload: ProduceRequest[] = [
+      {
+        topic: KafkaLogger.LogTopic,
+        messages: {
+          id: this.id,
+          level: LogLevelToType(level),
+          dateTimeSent: Date.now(),
+          log: msg
+        } as ILogMessage
       }
-    }];
-    this.producer.send(payload, (err, res) => {
+    ];
+    this.adapter.send(payload, (err, res) => {
       if (err) {
-        if (typeof err === 'string') { err = `[KAFKA] ${err}`; }
-        else if (err.hasOwnProperty('message')) { err.message = `[KAFKA] ${err.message}`; }
+        if (typeof err === 'string') {
+          err = `[KAFKA] ${err}`;
+        } else if (err.hasOwnProperty('message')) {
+          err.message = `[KAFKA] ${err.message}`;
+        }
         return callback(err, null);
       }
       callback(undefined, res);
