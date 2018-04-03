@@ -44,7 +44,9 @@ export class SchemaPublisher {
       this.isSchemaRegistryAvailable().then(() => {
         const files = findFilesInDir(this.schemaFolder, '.avsc');
         const missing = findMissingKeyFiles(files);
-        Promise.map([...files, ...missing], (f, i) => this.uploadSchema(f, i >= files.length)).then(() => resolve()).catch((err) => reject(err));
+        Promise.map([ ...files, ...missing ], (f, i) => this.uploadSchema(f, i >= files.length))
+          .then(() => resolve())
+          .catch((err) => reject(err));
       });
     });
   }
@@ -84,7 +86,9 @@ export class SchemaPublisher {
     return new Promise((resolve, reject) => {
       const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
       const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
-      const schema = useDefaultKeySchema ? defaultKeySchema : JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
+      const schema = useDefaultKeySchema
+        ? defaultKeySchema
+        : JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
       this.log.debug(`uploadSchema() - Uploading schema from ${schemaFilename} to url: ${uri}`);
 
       return Promise.resolve(
@@ -116,7 +120,8 @@ export class SchemaPublisher {
       reject(err);
       throw err;
     }
-    this.log.warn('suppressAxiosError() - http error, will continue operation.', {
+    this.log.warn({
+      message: 'suppressAxiosError() - http error, will continue operation.',
       error: err.message,
       url: err.config.url
     });

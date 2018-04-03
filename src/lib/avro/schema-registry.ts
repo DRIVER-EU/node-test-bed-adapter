@@ -14,11 +14,14 @@ export interface ISchema {
   schemaTopicRaw: string;
   responseRaw: {
     schema: string;
-    id: number
+    id: number;
   };
 }
 
-export interface ISchemaTopic { version: string; schemaTopic: string; }
+export interface ISchemaTopic {
+  version: string;
+  schemaTopic: string;
+}
 
 export class SchemaRegistry {
   /**
@@ -34,7 +37,7 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public keySchemas: { [topic: string]: { type: IAvroType; srId: number; } } = {};
+  public keySchemas: { [topic: string]: { type: IAvroType; srId: number } } = {};
   /**
    * A dict containing all the value schemas with key the bare topic name and
    * value the instance of the "avsc" package. It not only contains schemas for
@@ -42,7 +45,7 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public valueSchemas: { [topic: string]: { type: IAvroType; srId: number; } } = {};
+  public valueSchemas: { [topic: string]: { type: IAvroType; srId: number } } = {};
 
   private log = Logger.instance;
   private selectedTopics: string[] = [];
@@ -65,21 +68,29 @@ export class SchemaRegistry {
 
   constructor(private options: ITestBedOptions) {
     this.fetchAllVersions = options.fetchAllVersions || false;
-    if (options.fetchAllSchemas) { return; }
-    const consume = options.consume ? options.consume.map(c => c.topic) : [];
+    if (options.fetchAllSchemas) {
+      return;
+    }
+    const consume = options.consume ? options.consume.map((c) => c.topic) : [];
     const produce = options.produce ? options.produce : [];
-    this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(options.hasOwnProperty('wrapUnions') ? options.wrapUnions : 'auto');
-    this.selectedTopics = [...consume, ...produce];
+    this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(options.hasOwnProperty('wrapUnions')
+      ? options.wrapUnions
+      : 'auto');
+    this.selectedTopics = [ ...consume, ...produce ];
   }
 
   public init() {
-    this.log.info(`init() - Initializing SR will fetch ${this.options.fetchAllVersions ? 'all' : 'requested consumer and producer'} schemas from SR`);
+    this.log.info(
+      `init() - Initializing SR will fetch ${this.options.fetchAllVersions
+        ? 'all'
+        : 'requested consumer and producer'} schemas from SR`
+    );
 
     return this.isSchemaRegistryAvailable()
       .then(() => this.fetchTopics())
-      .then(t => this.storeTopics(t))
+      .then((t) => this.storeTopics(t))
       .map((t: string) => this.fetchLatestVersion(t), { concurrency: 10 })
-      .filter(t => t ? true : false)
+      .filter((t) => (t ? true : false))
       .map((t: ISchemaTopic) => this.fetchSchema(t), { concurrency: 10 })
       .map((t: ISchema) => this.registerSchemaLatest(t))
       .then((t: ISchema[]) => this.checkForAllVersions(t));
@@ -87,11 +98,12 @@ export class SchemaRegistry {
 
   private isSchemaRegistryAvailable() {
     const MAX_RETRIES = 10;
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const srUrl = this.options.schemaRegistry;
       let retries = MAX_RETRIES;
       const intervalId = setInterval(() => {
-        axios.get(srUrl)
+        axios
+          .get(srUrl)
           .then(() => {
             this.log.info(`isSchemaRegistryAvailable - Accessed schema registry in ${MAX_RETRIES - retries}x.`);
             clearInterval(intervalId);
@@ -99,9 +111,13 @@ export class SchemaRegistry {
           })
           .catch(() => {
             retries--;
-            this.log.warn(`isSchemaRegistryAvailable - Access schema registry at ${srUrl}. Retried ${MAX_RETRIES - retries}x.`);
+            this.log.warn(
+              `isSchemaRegistryAvailable - Access schema registry at ${srUrl}. Retried ${MAX_RETRIES - retries}x.`
+            );
             if (retries === 0) {
-              this.log.error(`isSchemaRegistryAvailable - Cannot access schema registry at ${srUrl}. Retried ${MAX_RETRIES}x. Exiting...`);
+              this.log.error(
+                `isSchemaRegistryAvailable - Cannot access schema registry at ${srUrl}. Retried ${MAX_RETRIES}x. Exiting...`
+              );
               process.exit(1);
             }
           });
@@ -110,10 +126,10 @@ export class SchemaRegistry {
   }
 
   private processSelectedTopics() {
-    return new Promise<string[]>(resolve => {
+    return new Promise<string[]>((resolve) => {
       const topics: string[] = [];
 
-      this.selectedTopics.forEach(selectedTopic => {
+      this.selectedTopics.forEach((selectedTopic) => {
         topics.push(selectedTopic + '-value');
         topics.push(selectedTopic + '-key');
       });
@@ -123,7 +139,7 @@ export class SchemaRegistry {
   }
 
   private fetchAllSchemaTopics() {
-    return new Promise<string[]>(resolve => {
+    return new Promise<string[]>((resolve) => {
       const fetchAllTopicsUrl = url.resolve(this.options.schemaRegistry, '/subjects');
       this.log.debug(`fetchAllSchemaTopics() - Fetching all schemas using url: ${fetchAllTopicsUrl}`);
 
@@ -132,7 +148,7 @@ export class SchemaRegistry {
           this.log.info(`fetchAllSchemaTopics() - Fetched total schemas: ${response.data.length}.`);
           resolve(response.data);
         })
-        .catch(err => {
+        .catch((err) => {
           this.suppressAxiosError(err);
           resolve([]);
         });
@@ -140,13 +156,14 @@ export class SchemaRegistry {
   }
 
   private registerSchemaLatest(schemaObj: ISchema) {
-    return new Promise<ISchema>(resolve => {
+    return new Promise<ISchema>((resolve) => {
       this.log.debug(`registerSchemaLatest() - Registering schema: ${schemaObj.topic}`);
 
       try {
         schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
       } catch (ex) {
-        this.log.warn('registerSchemaLatest() - Error parsing schema... moving on:', {
+        this.log.warn({
+          message: 'registerSchemaLatest() - Error parsing schema... moving on:',
           topic: schemaObj.schemaTopicRaw,
           error: ex.message
         });
@@ -178,21 +195,24 @@ export class SchemaRegistry {
   }
 
   private fetchLatestVersion(schemaTopic: string) {
-    return new Promise<ISchemaTopic>(resolve => {
-      const fetchLatestVersionUrl = url.resolve(this.options.schemaRegistry, `/subjects/${schemaTopic}/versions/latest`);
+    return new Promise<ISchemaTopic>((resolve) => {
+      const fetchLatestVersionUrl = url.resolve(
+        this.options.schemaRegistry,
+        `/subjects/${schemaTopic}/versions/latest`
+      );
 
       this.log.debug(`fetchLatestVersion() - Fetching latest topic version from url:\n${fetchLatestVersionUrl}`);
 
       return Promise.resolve(axios.get(fetchLatestVersionUrl))
         .then((response) => {
-          this.log.debug('fetchLatestVersion() - Fetched latest topic version from url:', fetchLatestVersionUrl);
+          this.log.debug('fetchLatestVersion() - Fetched latest topic version from url: ' + fetchLatestVersionUrl);
 
           resolve({
             version: response.data.version,
-            schemaTopic: schemaTopic,
+            schemaTopic: schemaTopic
           } as ISchemaTopic);
         })
-        .catch(err => {
+        .catch((err) => {
           this.suppressAxiosError(err);
           resolve();
         });
@@ -208,7 +228,7 @@ export class SchemaRegistry {
    * @private
    */
   private checkForAllVersions(registeredSchemas: ISchema[]) {
-    return new Promise<ISchema[]>(resolve => {
+    return new Promise<ISchema[]>((resolve) => {
       if (!this.fetchAllVersions) {
         resolve(registeredSchemas);
       }
@@ -216,7 +236,7 @@ export class SchemaRegistry {
       // Fetch and register all past versions for each schema.
       return Promise.resolve(this.schemaTopics)
         .map((t: ISchemaTopic) => this.fetchAllSchemaVersions(t), { concurrency: 10 })
-        .filter((t: ISchemaTopic[]) => t ? true : false)
+        .filter((t: ISchemaTopic[]) => (t ? true : false))
         .then((t: ISchemaTopic[][]) => this.flattenResults(t))
         .map((t: ISchemaTopic) => this.fetchSchema(t), { concurrency: 10 })
         .map((t: ISchema) => this.registerSchema(t))
@@ -235,13 +255,14 @@ export class SchemaRegistry {
    * @private
    */
   private registerSchema(schemaObj: ISchema) {
-    return new Promise<ISchema>(resolve => {
-      this.log.debug('registerSchema() - Registering schema:', schemaObj.topic);
+    return new Promise<ISchema>((resolve) => {
+      this.log.debug('registerSchema() - Registering schema: ' + schemaObj.topic);
 
       try {
         schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
       } catch (ex) {
-        this.log.warn('registerSchema() - Error parsing schema:', {
+        this.log.warn({
+          message: 'registerSchema() - Error parsing schema:',
           topic: schemaObj.schemaTopicRaw,
           error: ex.message
         });
@@ -258,7 +279,6 @@ export class SchemaRegistry {
     });
   }
 
-
   /**
    * Fetch all available versions for a subject from the SR.
    *
@@ -267,25 +287,29 @@ export class SchemaRegistry {
    * @private
    */
   private fetchAllSchemaVersions(schemaTopic: ISchemaTopic) {
-    return new Promise<ISchemaTopic[]>(resolve => {
+    return new Promise<ISchemaTopic[]>((resolve) => {
       const fetchVersionsUrl = url.resolve(this.options.schemaRegistry, '/subjects/' + schemaTopic + '/versions');
 
-      this.log.debug('fetchAllSchemaVersions() - Fetching schema versions:', fetchVersionsUrl);
+      this.log.debug('fetchAllSchemaVersions() - Fetching schema versions: ' + fetchVersionsUrl);
 
-      return Promise.resolve(axios.get(fetchVersionsUrl, {
-        headers: {
-          'Accept': 'application/vnd.schemaregistry.v1+json'
-        }
-      } as AxiosRequestConfig))
+      return Promise.resolve(
+        axios.get(fetchVersionsUrl, {
+          headers: {
+            Accept: 'application/vnd.schemaregistry.v1+json'
+          }
+        } as AxiosRequestConfig)
+      )
         .then((response) => {
-          this.log.debug('fetchAllSchemaVersions() - Fetched schema versions:', fetchVersionsUrl);
+          this.log.debug('fetchAllSchemaVersions() - Fetched schema versions: ' + fetchVersionsUrl);
 
-          resolve(response.data.map((version: string) => ({
-            version: version,
-            schemaTopic: schemaTopic,
-          })));
+          resolve(
+            response.data.map((version: string) => ({
+              version: version,
+              schemaTopic: schemaTopic
+            }))
+          );
         })
-        .catch(err => {
+        .catch((err) => {
           this.suppressAxiosError(err);
           resolve();
         });
@@ -300,10 +324,10 @@ export class SchemaRegistry {
    * @private
    */
   private flattenResults(results: ISchemaTopic[][]) {
-    return new Promise<ISchemaTopic[]>(resolve => {
+    return new Promise<ISchemaTopic[]>((resolve) => {
       const flattenedResults: ISchemaTopic[] = [];
       results.map((schemaVersions: ISchemaTopic[]) => {
-        schemaVersions.forEach(schemaVersion => {
+        schemaVersions.forEach((schemaVersion) => {
           flattenedResults.push(schemaVersion);
         });
       });
@@ -328,14 +352,17 @@ export class SchemaRegistry {
   }
 
   private fetchSchema(topicMeta: ISchemaTopic, config?: AxiosRequestConfig) {
-    return new Promise<ISchema>(resolve => {
+    return new Promise<ISchema>((resolve) => {
       config = Object.assign({
         headers: {
-          'Accept': 'application/vnd.schemaregistry.v1+json'
-        }, config
+          Accept: 'application/vnd.schemaregistry.v1+json'
+        },
+        config
       } as AxiosRequestConfig);
       const schemaTopic = topicMeta.schemaTopic;
-      if (!schemaTopic) { return resolve(); }
+      if (!schemaTopic) {
+        return resolve();
+      }
       const version = topicMeta.version;
       const parts = schemaTopic.split('-');
       const schemaType = parts.pop();
@@ -354,29 +381,32 @@ export class SchemaRegistry {
             responseRaw: response.data,
             schemaType: schemaType,
             schemaTopicRaw: schemaTopic,
-            topic: topic,
+            topic: topic
           } as ISchema);
         })
         .catch(this.handleAxiosError);
     });
   }
 
-  private suppressAxiosError(err: { response: string; message: string; config: { url: string }; }) {
+  private suppressAxiosError(err: { response: string; message: string; config: { url: string } }) {
     if (!err.response) {
       // not an axios error, bail early
       throw err;
     }
-    this.log.debug('suppressAxiosError() - http error, will continue operation.',
-      { error: err.message, url: err.config.url });
+    this.log.debug({
+      message: 'suppressAxiosError() - http error, will continue operation.',
+      error: err.message,
+      url: err.config.url
+    });
     return null;
   }
 
-  private handleAxiosError(err: { port: string; message: string, config: { url: string } }) {
+  private handleAxiosError(err: { port: string; message: string; config: { url: string } }) {
     if (!err.port) {
       // not an axios error, bail early
       throw err;
     }
-    this.log.warn('handleAxiosError() - http error:', { message: err.message, url: err.config.url });
+    this.log.warn({ message: 'handleAxiosError() - http error:', error: err.message, url: err.config.url });
     throw err;
-  };
+  }
 }
