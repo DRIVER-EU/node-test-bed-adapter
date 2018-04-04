@@ -17,7 +17,7 @@ class Producer {
       schemaRegistry: 'localhost:3502',
       clientId: this.id,
       fetchAllSchemas: true,
-      autoRegisterSchemas: false,
+      autoRegisterSchemas: true,
       wrapUnions: 'auto',
       schemaFolder: './data/schemas',
       produce: ['standard_cap'
