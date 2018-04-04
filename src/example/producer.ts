@@ -24,7 +24,7 @@ class Producer {
         // , { topic: 'avrokeytest2' }
       ],
       logging: {
-        logToConsole: LogLevel.Info,
+        logToConsole: LogLevel.Debug,
         logToKafka: LogLevel.Warn
       }
     });
@@ -62,11 +62,12 @@ class Producer {
     //   });
     // });
     this.adapter.send(payloads, (error, data) => {
-      if (error) { console.error(error); }
-      if (data) { console.log(data); }
+      if (error) { log.error(error); }
+      if (data) { log.debug(data); }
     });
 
-    log.error('This is an error message for testing purposes');
+    log.error('This is an not an error message, sent only for testing purposes');
+    log.critical('This is an not a critical error message, sent only for testing purposes');
 
     // this.adapter.send(payloads[0], (error, data) => {
     //   if (error) { console.error(error); }
