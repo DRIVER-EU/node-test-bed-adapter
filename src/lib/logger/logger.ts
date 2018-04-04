@@ -76,11 +76,11 @@ export class Logger extends EventEmitter {
   }
 
   private log(level: LogLevel, msg: string | Object) {
-    if (!this.isInitialized || level > this.minLevel || !this.loggers) {
+    if (!this.isInitialized || level < this.minLevel || !this.loggers) {
       return;
     }
     const message = typeof msg === 'object' ? JSON.stringify(msg) : msg;
-    this.loggers.filter((logger) => level <= logger.minLevel).forEach((logger) =>
+    this.loggers.filter((logger) => level >= logger.minLevel).forEach((logger) =>
       logger.logger.log(level, message, (err, result) => {
         if (err) {
           this.emit('error', err);
