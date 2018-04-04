@@ -495,7 +495,7 @@ export class TestBedAdapter extends EventEmitter {
    * Configuration has changed.
    */
   private configUpdated() {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve) => {
       if (!this.producer) {
         return;
       }
@@ -524,11 +524,11 @@ export class TestBedAdapter extends EventEmitter {
         ],
         (err?: string, result?: ISendResponse) => {
           if (err) {
-            this.emitErrorMsg(err, reject);
+            this.emitErrorMsg(err);
           } else if (result) {
             this.log.info(result);
-            resolve();
           }
+          resolve();
         }
       );
     });
