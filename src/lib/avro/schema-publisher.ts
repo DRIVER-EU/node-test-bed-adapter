@@ -89,7 +89,7 @@ export class SchemaPublisher {
       const schema = useDefaultKeySchema
         ? defaultKeySchema
         : JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
-      this.log.debug(`uploadSchema() - Uploading schema from ${schemaFilename} to url: ${uri}`);
+      this.log.info(`uploadSchema() - Uploading schema from ${schemaFilename} to url: ${uri}`);
 
       return Promise.resolve(
         axios.post(
