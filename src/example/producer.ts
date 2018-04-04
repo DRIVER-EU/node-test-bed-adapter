@@ -25,7 +25,7 @@ class Producer {
       ],
       logging: {
         logToConsole: LogLevel.Info,
-        logToKafka: LogLevel.Debug
+        logToKafka: LogLevel.Warn
       }
     });
     this.adapter.on('error', e => console.error(e));
