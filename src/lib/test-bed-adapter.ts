@@ -46,7 +46,7 @@ export interface TestBedAdapter {
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatInterval = 5000;
   public static HeartbeatTopic = 'system_heartbeat';
-  public static ConfigurationTopic = 'connect-status-configuration';
+  public static ConfigurationTopic = 'system_configuration';
   public static TimeTopic = 'system_timing';
   public static LogTopic = 'system_logging';
   public isConnected = false;
@@ -508,9 +508,9 @@ export class TestBedAdapter extends EventEmitter {
         produce: this.config.produce,
         logging: this.config.logging
           ? {
-              logToConsole: LogLevelToType(this.config.logging.logToConsole),
-              logToKafka: LogLevelToType(this.config.logging.logToKafka),
-              logToFile: LogLevelToType(this.config.logging.logToFile),
+              logToConsole: this.config.logging.logToConsole,
+              logToKafka: this.config.logging.logToKafka,
+              logToFile: this.config.logging.logToFile,
               logFile: this.config.logging.logFile
             }
           : undefined
