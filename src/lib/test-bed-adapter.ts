@@ -206,10 +206,11 @@ export class TestBedAdapter extends EventEmitter {
       } else {
         hasError = true;
       }
-      this.producer && this.producer.send(pl, cb);
     });
     if (hasError) {
       return cb('Error validating message', undefined);
+    } else {
+      this.producer && this.producer.send(pl, cb);
     }
   }
 
