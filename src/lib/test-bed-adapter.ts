@@ -585,7 +585,7 @@ export class TestBedAdapter extends EventEmitter {
         produce: [],
         logging: {},
         maxConnectionRetries: 10,
-        connectTimeout: 5
+        connectTimeout: 5000
       } as ITestBedOptions,
       options
     );

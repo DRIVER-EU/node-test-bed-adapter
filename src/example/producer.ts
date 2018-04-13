@@ -1,4 +1,4 @@
-import { ProduceRequest } from 'kafka-node';
+import { ProduceRequest, KafkaClient } from 'kafka-node';
 import { TestBedAdapter, Logger, LogLevel } from '../lib/index';
 import * as amberAlert from '../../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.json';
@@ -13,11 +13,13 @@ class Producer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
+      // kafkaHost: '134.221.20.200:3501',
       kafkaHost: 'localhost:3501',
+      // schemaRegistry: '134.221.20.200:3502',
       schemaRegistry: 'localhost:3502',
       clientId: this.id,
       fetchAllSchemas: true,
-      autoRegisterSchemas: true,
+      autoRegisterSchemas: false,
       wrapUnions: 'auto',
       schemaFolder: './data/schemas',
       produce: ['standard_cap'
@@ -69,6 +71,13 @@ class Producer {
     log.error('This is an not an error message, sent only for testing purposes');
     log.critical('This is an not a critical error message, sent only for testing purposes');
 
+    const vs = this.adapter.valueSchemas;
+    for (const key in vs) {
+      if (!vs.hasOwnProperty(key)) { continue; }
+      const schema = vs[key];
+      console.log(`Schema for ${key}:`);
+      console.log(JSON.stringify(schema, null, 2));
+    }
     // this.adapter.send(payloads[0], (error, data) => {
     //   if (error) { console.error(error); }
     //   if (data) { console.log(data); }

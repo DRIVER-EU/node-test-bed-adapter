@@ -31,6 +31,7 @@ export class SchemaRegistry {
    * @type {Object}
    */
   public schemaTypeById: { [key: string]: IAvroType } = {};
+
   /**
    * A dict containing all the key schemas with key the bare topic name and
    * value the instance of the "avsc" package.
@@ -38,10 +39,11 @@ export class SchemaRegistry {
    * @type {Object}
    */
   public keySchemas: { [topic: string]: { type: IAvroType; srId: number } } = {};
+
   /**
-   * A dict containing all the value schemas with key the bare topic name and
-   * value the instance of the "avsc" package. It not only contains schemas for
-   * topics with key/value pairs, but also for topics with only a schema.
+   * A dict containing all the value schemas with value the instance of the "avsc" package.
+   * It not only contains schemas for topics with key/value pairs, but also for topics with
+   * only a schema.
    *
    * @type {Object}
    */

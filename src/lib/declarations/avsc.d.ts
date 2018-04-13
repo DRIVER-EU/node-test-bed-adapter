@@ -106,7 +106,7 @@ declare module 'avsc' {
     doc: string;
     name: string;
     aliases: string[];
-    types: IAvroType[];
+    type: IAvroType[];
   }
 
   const avro: {
