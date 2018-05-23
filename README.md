@@ -10,6 +10,10 @@ The implementation is a wrapper around [kafka-node](https://www.npmjs.com/packag
   - Logging (topic: connect-status-log): when Kafka Logging is enabled in the options.
   - Configuration (topic: connect-status-configuration), so you can see which topics clients consume and produce.
 
+## Pre-requisites
+Clearly, you need to install [node.js](https://nodejs.org). After that, in order to build and install the adapter on WINDOWS, run
+`npm install --global --production windows-build-tool` in a command prompt as an admin user. Most likely, you will also need to [install .NET 2 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=19988), and `npm i -g node-gyp`.
+
 ## Usage
 
 First, install the adapter, so you can import / require it in your code.
