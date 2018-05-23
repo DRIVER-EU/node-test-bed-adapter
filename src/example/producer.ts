@@ -13,20 +13,18 @@ class Producer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
-      kafkaHost: '134.221.20.200:3501',
-      // kafkaHost: 'localhost:3501',
-      schemaRegistry: '134.221.20.200:3502',
-      // schemaRegistry: 'localhost:3502',
+      // kafkaHost: '134.221.20.200:3501',
+      kafkaHost: 'localhost:3501',
+      // schemaRegistry: '134.221.20.200:3502',
+      schemaRegistry: 'localhost:3502',
       clientId: this.id,
       fetchAllSchemas: true,
       autoRegisterSchemas: true,
       wrapUnions: 'auto',
       schemaFolder: './data/schemas',
-      produce: ['standard_cap'
-        // , { topic: 'avrokeytest2' }
-      ],
+      produce: ['standard_cap'],
       logging: {
-        logToConsole: LogLevel.Debug,
+        logToConsole: LogLevel.Info,
         logToKafka: LogLevel.Warn
       }
     });

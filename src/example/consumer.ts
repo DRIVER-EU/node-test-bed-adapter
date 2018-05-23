@@ -6,9 +6,10 @@
 import { Message } from 'kafka-node';
 import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem, IAdapterMessage } from '../lib/index';
 
+const log = Logger.instance;
+
 class Consumer {
   private adapter: TestBedAdapter;
-  private log = Logger.instance;
 
   constructor() {
     this.adapter = new TestBedAdapter({
@@ -17,36 +18,33 @@ class Consumer {
       fetchAllSchemas: false,
       wrapUnions: false,
       clientId: 'Consumer',
-      consume: [{ topic: 'cap' }],
+      consume: [{ topic: 'standard_cap', offset: 0 }],
       logging: {
-        logToConsole: LogLevel.Debug,
-        logToFile: LogLevel.Debug,
-        logToKafka: LogLevel.Debug,
+        logToConsole: LogLevel.Info,
+        logToFile: LogLevel.Info,
+        logToKafka: LogLevel.Info,
         logFile: 'log.txt'
       }
     });
     this.adapter.on('ready', () => {
       this.subscribe();
-      this.log.info('Consumer is connected');
-      this.getTopics();
+      log.info('Consumer is connected');
+      // this.getTopics();
     });
-    // this.adapter.on('error', err => {
-    //   this.log.error(`Consumer received an error: ${err}`);
-    // });
+    this.adapter.on('error', err => log.error(`Consumer received an error: ${err}`));
     this.adapter.connect();
   }
 
   private subscribe() {
     this.adapter.on('message', message => this.handleMessage(message));
-    this.adapter.on('error', err => this.log.error(`Consumer received an error: ${err}`));
-    this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
-      if (err) { this.log.error(`Consumer received an error: ${err}`); }
-    });
+    // this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
+    //   if (err) { log.error(`Consumer received an error: ${err}`); }
+    // });
   }
 
   private getTopics() {
     this.adapter.loadMetadataForTopics([], (error, results) => {
-      if (error) { return this.log.error(error); }
+      if (error) { return log.error(error); }
       if (results && results.length > 0) {
         results.forEach(result => {
           if (result.hasOwnProperty('metadata')) {
@@ -68,17 +66,17 @@ class Consumer {
   private handleMessage(message: IAdapterMessage) {
     const stringify = (m: string | Object) => typeof m === 'string' ? m : JSON.stringify(m, null, 2);
     switch (message.topic.toLowerCase()) {
-      case 'heartbeat':
-        this.log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+      case 'system_heartbeat':
+        log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
-      case 'configuration':
-        this.log.info(`Received configuration message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+      case 'system_configuration':
+        log.info(`Received configuration message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
-      case 'cap':
-        this.log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+      case 'standard_cap':
+        log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
       default:
-        this.log.info(`Received ${message.topic} message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+        log.info(`Received ${message.topic} message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
     }
   }
