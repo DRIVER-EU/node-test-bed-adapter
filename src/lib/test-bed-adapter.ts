@@ -7,7 +7,6 @@ import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
 import { ISendResponse } from './models/adapter-message';
-import { LogLevelToType } from './logger/log-levels';
 import {
   KafkaClient,
   Producer,
@@ -15,8 +14,7 @@ import {
   ProduceRequest,
   Message,
   OffsetFetchRequest,
-  Topic,
-  HighLevelProducer
+  Topic
 } from 'kafka-node';
 import { ITimeMessage } from './models/time-message';
 import { IHeartbeat } from './models/heartbeat';
