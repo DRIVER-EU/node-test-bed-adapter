@@ -13,16 +13,20 @@ class Consumer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
-      kafkaHost: 'localhost:3501',
-      schemaRegistry: 'localhost:3502',
+      // kafkaHost: 'localhost:3501',
+      // schemaRegistry: 'localhost:3502',
+      kafkaHost: 'driver-testbed.eu:3501',
+      schemaRegistry: 'driver-testbed.eu:3502',
       fetchAllSchemas: false,
-      wrapUnions: false,
-      clientId: 'Consumer',
+      fetchAllVersions: false,
+      wrapUnions: 'auto',
+      clientId: 'ConsumerErik',
       consume: [{ topic: 'standard_cap', offset: 0 }],
+      fromOffset: true,
       logging: {
         logToConsole: LogLevel.Info,
         logToFile: LogLevel.Info,
-        logToKafka: LogLevel.Info,
+        logToKafka: LogLevel.Warn,
         logFile: 'log.txt'
       }
     });
@@ -30,6 +34,12 @@ class Consumer {
       this.subscribe();
       log.info('Consumer is connected');
       // this.getTopics();
+      this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
+        if (err) {
+          return log.error(err);
+        }
+        this.handleMessage(msg as IAdapterMessage);
+      });
     });
     this.adapter.on('error', err => log.error(`Consumer received an error: ${err}`));
     this.adapter.connect();
