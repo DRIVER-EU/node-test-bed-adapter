@@ -65,7 +65,7 @@ class Producer {
     // });
     this.adapter.send(payloads, (error, data) => {
       if (error) { log.error(error); }
-      if (data) { log.debug(data); }
+      if (data) { log.info(data); }
     });
 
     // log.error('This is an not an error message, sent only for testing purposes');
