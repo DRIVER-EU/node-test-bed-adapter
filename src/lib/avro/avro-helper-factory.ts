@@ -25,22 +25,11 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
 
   return {
     /** Check whether the message is valid */
-    isValid: (obj: Object | Object[]) => {
-      const msg: Object[] = obj instanceof Array ? obj : [obj];
-      return msg.reduce((p, c) => p && valueSchema.type.isValid(c, { errorHook }), true);
-    },
+    isValid: (obj: Object) => valueSchema.type.isValid(obj, { errorHook }),
     /** Encode the message or messages */
-    encode: (obj: Object | Object[]) => {
-      return obj instanceof Array
-        ? obj.map(o => toMessageBuffer(o, valueSchema.type, valueSchema.srId))
-        : toMessageBuffer(obj, valueSchema.type, valueSchema.srId);
-    },
+    encode: (obj: Object) => toMessageBuffer(obj, valueSchema.type, valueSchema.srId),
     /** Decode the message or messages */
-    decode: (buf: Buffer | Buffer[]) => {
-      return buf instanceof Array
-        ? buf.map(m => fromMessageBuffer(valueSchema.type, m, sr).value)
-        : fromMessageBuffer(valueSchema.type, buf, sr).value;
-    },
+    decode: (buf: Buffer) => fromMessageBuffer(valueSchema.type, buf, sr).value,
     /** Check whether the key is valid */
     isKeyValid: (key: Object | string | number) => {
       return keySchema ? keySchema.type.isValid(key, { errorHook }) : true;

@@ -550,7 +550,7 @@ export class TestBedAdapter extends EventEmitter {
           {
             attributes: 1,
             topic: TestBedAdapter.HeartbeatTopic,
-            messages: [ { id: this.config.clientId, alive: Date.now() } as IHeartbeat ]
+            messages: { id: this.config.clientId, alive: Date.now() } as IHeartbeat
           },
           (error) => {
             if (error) {
