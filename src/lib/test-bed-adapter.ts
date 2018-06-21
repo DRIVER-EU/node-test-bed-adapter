@@ -582,19 +582,20 @@ export class TestBedAdapter extends EventEmitter {
       } as ITestBedOptions,
       options
     );
-    if (opt.produce) {
-      if (opt.produce.indexOf(TestBedAdapter.TimeTopic) < 0) {
-        opt.produce.push(TestBedAdapter.TimeTopic);
-      }
-      if (opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
-        opt.produce.push(TestBedAdapter.HeartbeatTopic);
-      }
-      if (opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
-        opt.produce.push(TestBedAdapter.ConfigurationTopic);
-      }
-      if (opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
-        opt.produce.push(TestBedAdapter.LogTopic);
-      }
+    if (!opt.produce) {
+      opt.produce = [];
+    }
+    if (opt.produce.indexOf(TestBedAdapter.TimeTopic) < 0) {
+      opt.produce.push(TestBedAdapter.TimeTopic);
+    }
+    if (opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
+      opt.produce.push(TestBedAdapter.HeartbeatTopic);
+    }
+    if (opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
+      opt.produce.push(TestBedAdapter.ConfigurationTopic);
+    }
+    if (opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
+      opt.produce.push(TestBedAdapter.LogTopic);
     }
     return opt;
   }
