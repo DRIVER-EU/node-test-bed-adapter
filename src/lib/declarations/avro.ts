@@ -66,7 +66,7 @@ export interface IValidationOptions {
    * path will be an array of strings identifying where the mismatch occurred.
    * This option is especially useful when dealing with complex records.
    */
-  errorHook?: (path: string[], any: any, type: IAvroType) => void;
+  errorHook?: (path: string[], anything: any, type: IAvroType) => void;
   /**
    * When set, records with attributes that don't correspond to a declared field will be considered invalid.
    * The default is to ignore any extra attributes.
