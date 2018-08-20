@@ -6,7 +6,7 @@ import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
 import { ISendResponse } from './models/adapter-message';
-import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest, Topic } from 'kafka-node';
+import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest, Topic, Offset } from 'kafka-node';
 import { ITimeMessage } from './models/time-message';
 import { IHeartbeat } from './models/heartbeat';
 import { IInitializedTopic } from './models/topic';
@@ -106,29 +106,22 @@ export class TestBedAdapter extends EventEmitter {
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {
-    return new Promise<void>(async (resolve) => {
-      await this.schemaRegistry.init();
-      await this.initProducer();
-      await this.addProducerTopics(this.config.produce);
-      await this.addKafkaLogger();
-      await this.startHeartbeat();
-      await this.initConsumer();
-      await this.addConsumerTopics(this.config.consume, this.config.fromOffset);
-      await this.configUpdated();
-      await this.emit('ready');
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.schemaRegistry.init();
+        await this.initProducer();
+        await this.addProducerTopics(this.config.produce);
+        await this.addKafkaLogger();
+        await this.startHeartbeat();
+        await this.initConsumer();
+        await this.addConsumerTopics(this.config.consume, this.config.fromOffset);
+        await this.configUpdated();
+        await this.emit('ready');
+      } catch (err) {
+        return this.emitErrorMsg(`Error initializing kafka services: ${err}`, reject);
+      }
       resolve();
     });
-    // this.schemaRegistry
-    //   .init()
-    //   .then(() => this.initProducer())
-    //   .then(() => this.addKafkaLogger())
-    //   .then(() => this.startHeartbeat())
-    //   .then(() => this.addProducerTopics(this.config.produce))
-    //   .then(() => this.initConsumer())
-    //   .then(() => this.addConsumerTopics(this.config.consume, this.config.fromOffset))
-    //   .then(() => this.configUpdated())
-    //   .then(() => this.emit('ready'))
-    //   .catch((err) => this.emitErrorMsg(err));
   }
 
   public pause() {
@@ -428,6 +421,7 @@ export class TestBedAdapter extends EventEmitter {
         this.log.error(`initializeConsumerTopics - no schema registered for topic ${t.topic}`);
         return;
       }
+      this.assertOffsetInRange(t);
       newTopics.push(t);
       if (this.config.consume && this.config.consume.filter((fr) => fr.topic === t.topic).length === 0) {
         isConfigUpdated = true;
@@ -443,6 +437,20 @@ export class TestBedAdapter extends EventEmitter {
       this.configUpdated();
     }
     return newTopics;
+  }
+
+  private assertOffsetInRange(t: OffsetFetchRequest) {
+    if (!this.client || !t.hasOwnProperty('offset')) return;
+    const partition = t.partition || 0;
+    const topic = t.topic;
+    const offset = new Offset(this.client);
+    offset.fetchLatestOffsets([topic], (error, offsets) => {
+      if (error) return this.emitErrorMsg(error);
+      if (!offsets || !offsets[topic] || !offsets[topic].hasOwnProperty(partition))
+        return this.emitErrorMsg(`Could not fetch latest offset for ${topic}`);
+      t.offset = Math.min(t.offset!, offsets[topic][partition]);
+      this.log.info(`Set offset of topic ${topic} to ${t.offset}`);
+    });
   }
 
   /**
