@@ -3,13 +3,12 @@ import * as Promise from 'bluebird';
 import { default as axios, AxiosRequestConfig } from 'axios';
 import * as url from 'url';
 import { Logger } from '..';
-import * as avro from 'avsc';
-import { IAvroType } from '../declarations/avro';
+import { Type } from 'avsc';
 
 export interface ISchema {
   version: number | string;
   topic: string;
-  type?: IAvroType;
+  type?: Type;
   schemaType: string;
   schemaTopicRaw: string;
   responseRaw: {
@@ -30,7 +29,7 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public schemaTypeById: { [key: string]: IAvroType } = {};
+  public schemaTypeById: { [key: string]: Type } = {};
 
   /**
    * A dict containing all the key schemas with key the bare topic name and
@@ -38,7 +37,7 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public keySchemas: { [topic: string]: { type: IAvroType; srId: number } } = {};
+  public keySchemas: { [topic: string]: { type: Type; srId: number } } = {};
 
   /**
    * A dict containing all the value schemas with value the instance of the "avsc" package.
@@ -47,7 +46,7 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public valueSchemas: { [topic: string]: { type: IAvroType; srId: number } } = {};
+  public valueSchemas: { [topic: string]: { type: Type; srId: number } } = {};
 
   private log = Logger.instance;
   private selectedTopics: string[] = [];
@@ -74,7 +73,7 @@ export class SchemaRegistry {
     if (options.fetchAllSchemas) {
       return;
     }
-    const consume = options.consume ? options.consume.map((c) => c.topic) : [];
+    const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
     this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(
       (options.hasOwnProperty('wrapUnions') ? options.wrapUnions : 'auto')
@@ -91,9 +90,9 @@ export class SchemaRegistry {
 
     return this.isSchemaRegistryAvailable()
       .then(() => this.fetchTopics())
-      .then((t) => this.storeTopics(t))
+      .then(t => this.storeTopics(t))
       .map((t: string) => this.fetchLatestVersion(t), { concurrency: 10 })
-      .filter((t) => (t ? true : false))
+      .filter(t => (t ? true : false))
       .map((t: ISchemaTopic) => this.fetchSchema(t), { concurrency: 10 })
       .map((t: ISchema) => this.registerSchemaLatest(t))
       .then((t: ISchema[]) => this.checkForAllVersions(t));
@@ -101,7 +100,7 @@ export class SchemaRegistry {
 
   private isSchemaRegistryAvailable() {
     const MAX_RETRIES = 10;
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const srUrl = this.options.schemaRegistry;
       let retries = MAX_RETRIES;
       const intervalId = setInterval(() => {
@@ -129,10 +128,10 @@ export class SchemaRegistry {
   }
 
   private processSelectedTopics() {
-    return new Promise<string[]>((resolve) => {
+    return new Promise<string[]>(resolve => {
       const topics: string[] = [];
 
-      this.selectedTopics.forEach((selectedTopic) => {
+      this.selectedTopics.forEach(selectedTopic => {
         topics.push(selectedTopic + '-value');
         topics.push(selectedTopic + '-key');
       });
@@ -142,16 +141,16 @@ export class SchemaRegistry {
   }
 
   private fetchAllSchemaTopics() {
-    return new Promise<string[]>((resolve) => {
+    return new Promise<string[]>(resolve => {
       const fetchAllTopicsUrl = url.resolve(this.options.schemaRegistry, '/subjects');
       this.log.debug(`fetchAllSchemaTopics() - Fetching all schemas using url: ${fetchAllTopicsUrl}`);
 
       return Promise.resolve(axios.get(fetchAllTopicsUrl))
-        .then((response) => {
+        .then(response => {
           this.log.debug(`fetchAllSchemaTopics() - Fetched total schemas: ${response.data.length}.`);
           resolve(response.data);
         })
-        .catch((err) => {
+        .catch(err => {
           this.suppressAxiosError(err);
           resolve([]);
         });
@@ -159,11 +158,11 @@ export class SchemaRegistry {
   }
 
   private registerSchemaLatest(schemaObj: ISchema) {
-    return new Promise<ISchema>((resolve) => {
+    return new Promise<ISchema>(resolve => {
       this.log.debug(`registerSchemaLatest() - Registering ${schemaObj.schemaType} schema: ${schemaObj.topic}`);
 
       try {
-        schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
+        schemaObj.type = Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
       } catch (ex) {
         this.log.warn({
           message: 'registerSchemaLatest() - Error parsing schema... moving on:',
@@ -175,15 +174,15 @@ export class SchemaRegistry {
 
       this.log.debug(`registerSchemaLatest() - Registered ${schemaObj.schemaType} schema: ${schemaObj.topic}`);
 
-      this.schemaTypeById['schema-' + schemaObj.responseRaw.id] = schemaObj.type as IAvroType;
+      this.schemaTypeById['schema-' + schemaObj.responseRaw.id] = schemaObj.type as Type;
       if (schemaObj.schemaType.toLowerCase() === 'key') {
         this.keySchemas[schemaObj.topic] = {
-          type: schemaObj.type as IAvroType,
+          type: schemaObj.type as Type,
           srId: schemaObj.responseRaw.id,
         };
       } else {
         this.valueSchemas[schemaObj.topic] = {
-          type: schemaObj.type as IAvroType,
+          type: schemaObj.type as Type,
           srId: schemaObj.responseRaw.id,
         };
         this.schemaMeta[schemaObj.topic] = schemaObj.responseRaw;
@@ -199,7 +198,7 @@ export class SchemaRegistry {
   }
 
   private fetchLatestVersion(schemaTopic: string) {
-    return new Promise<ISchemaTopic>((resolve) => {
+    return new Promise<ISchemaTopic>(resolve => {
       const fetchLatestVersionUrl = url.resolve(
         this.options.schemaRegistry,
         `/subjects/${schemaTopic}/versions/latest`
@@ -208,7 +207,7 @@ export class SchemaRegistry {
       this.log.debug(`fetchLatestVersion() - Fetching latest topic version from url:\n${fetchLatestVersionUrl}`);
 
       return Promise.resolve(axios.get(fetchLatestVersionUrl))
-        .then((response) => {
+        .then(response => {
           this.log.debug('fetchLatestVersion() - Fetched latest topic version from url: ' + fetchLatestVersionUrl);
 
           resolve({
@@ -216,7 +215,7 @@ export class SchemaRegistry {
             schemaTopic: schemaTopic,
           } as ISchemaTopic);
         })
-        .catch((err) => {
+        .catch(err => {
           this.suppressAxiosError(err);
           resolve();
         });
@@ -232,7 +231,7 @@ export class SchemaRegistry {
    * @private
    */
   private checkForAllVersions(registeredSchemas: ISchema[]) {
-    return new Promise<ISchema[]>((resolve) => {
+    return new Promise<ISchema[]>(resolve => {
       if (!this.fetchAllVersions) {
         resolve(registeredSchemas);
         return;
@@ -260,11 +259,11 @@ export class SchemaRegistry {
    * @private
    */
   private registerSchema(schemaObj: ISchema) {
-    return new Promise<ISchema>((resolve) => {
+    return new Promise<ISchema>(resolve => {
       this.log.debug(`registerSchema() - Registering ${schemaObj.schemaType} schema: ${schemaObj.topic}`);
 
       try {
-        schemaObj.type = avro.Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
+        schemaObj.type = Type.forSchema(JSON.parse(schemaObj.responseRaw.schema), { wrapUnions: this.wrapUnions });
       } catch (ex) {
         this.log.warn({
           message: 'registerSchema() - Error parsing schema:',
@@ -274,10 +273,14 @@ export class SchemaRegistry {
         resolve(schemaObj);
       }
 
-      this.log.debug(`registerSchema() - Registered ${schemaObj.schemaType} schema by id ${schemaObj.responseRaw.id}: ${schemaObj.topic}`);
+      this.log.debug(
+        `registerSchema() - Registered ${schemaObj.schemaType} schema by id ${schemaObj.responseRaw.id}: ${
+          schemaObj.topic
+        }`
+      );
 
       if (schemaObj.schemaType.toLowerCase() === 'value') {
-        this.schemaTypeById['schema-' + schemaObj.responseRaw.id] = schemaObj.type as IAvroType;
+        this.schemaTypeById['schema-' + schemaObj.responseRaw.id] = schemaObj.type as Type;
       }
 
       resolve(schemaObj);
@@ -292,7 +295,7 @@ export class SchemaRegistry {
    * @private
    */
   private fetchAllSchemaVersions(schemaTopic: string) {
-    return new Promise<ISchemaTopic[]>((resolve) => {
+    return new Promise<ISchemaTopic[]>(resolve => {
       const fetchVersionsUrl = url.resolve(this.options.schemaRegistry, '/subjects/' + schemaTopic + '/versions');
 
       this.log.debug('fetchAllSchemaVersions() - Fetching schema versions: ' + fetchVersionsUrl);
@@ -304,7 +307,7 @@ export class SchemaRegistry {
           },
         } as AxiosRequestConfig)
       )
-        .then((response) => {
+        .then(response => {
           this.log.debug('fetchAllSchemaVersions() - Fetched schema versions: ' + fetchVersionsUrl);
 
           resolve(
@@ -316,7 +319,7 @@ export class SchemaRegistry {
               }))
           );
         })
-        .catch((err) => {
+        .catch(err => {
           this.suppressAxiosError(err);
           resolve();
         });
@@ -331,10 +334,10 @@ export class SchemaRegistry {
    * @private
    */
   private flattenResults(results: ISchemaTopic[][]) {
-    return new Promise<ISchemaTopic[]>((resolve) => {
+    return new Promise<ISchemaTopic[]>(resolve => {
       const flattenedResults: ISchemaTopic[] = [];
       results.map((schemaVersions: ISchemaTopic[]) => {
-        schemaVersions.forEach((schemaVersion) => {
+        schemaVersions.forEach(schemaVersion => {
           flattenedResults.push(schemaVersion);
         });
       });
@@ -359,7 +362,7 @@ export class SchemaRegistry {
   }
 
   private fetchSchema(topicMeta: ISchemaTopic, config?: AxiosRequestConfig) {
-    return new Promise<ISchema>((resolve) => {
+    return new Promise<ISchema>(resolve => {
       config = Object.assign({
         headers: {
           Accept: 'application/vnd.schemaregistry.v1+json',
@@ -380,7 +383,7 @@ export class SchemaRegistry {
       this.log.debug(`fetchSchema() - Fetching schema url: ${fetchSchemaUrl}`);
 
       return Promise.resolve(axios.get(fetchSchemaUrl, config))
-        .then((response) => {
+        .then(response => {
           this.log.debug(`fetchSchema() - Fetched schema url: ${fetchSchemaUrl}`);
 
           resolve({
@@ -391,7 +394,7 @@ export class SchemaRegistry {
             topic: topic,
           } as ISchema);
         })
-        .catch((err) => this.suppressAxiosError(err));
+        .catch(err => this.suppressAxiosError(err));
     });
   }
 

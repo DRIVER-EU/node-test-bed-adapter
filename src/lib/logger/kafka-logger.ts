@@ -1,7 +1,7 @@
 import { TestBedAdapter } from '../test-bed-adapter';
 import { ILogMessage } from './../models/log-message';
 import { ILog } from './logger';
-import { Producer, HighLevelProducer, ProduceRequest } from 'kafka-node';
+import { ProduceRequest } from 'kafka-node';
 import { LogLevel, LogLevelToType } from './log-levels';
 
 export interface IKafkaLoggerOptions {
@@ -37,9 +37,9 @@ export class KafkaLogger implements ILog {
           id: this.id,
           level: LogLevelToType(level),
           dateTimeSent: Date.now(),
-          log: msg
-        } as ILogMessage
-      }
+          log: msg,
+        } as ILogMessage,
+      },
     ];
     this.adapter.send(payload, (err, res) => {
       if (err) {

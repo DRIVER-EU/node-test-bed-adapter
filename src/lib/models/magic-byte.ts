@@ -1,6 +1,7 @@
 import { SchemaRegistry } from '../avro/schema-registry';
-import { IAvroType, IAvroDecoded } from '../declarations/avro';
+import { IAvroDecoded } from '../declarations/avro';
 import { Logger } from '..';
+import { Type } from 'avsc';
 /**
  * Encode and decode an Avro message for Confluent schema registry (SR) with magic byte.
  */
@@ -17,7 +18,7 @@ const MAGIC_BYTE = 0;
  * @param optLength Optional initial buffer length. Set it high enough to avoid having to resize. Defaults to 1024.
  * @return {Buffer} Serialized value.
  */
-export const toMessageBuffer = (val: any, type: IAvroType, schemaId: number, optLength?: number): Buffer => {
+export const toMessageBuffer = (val: any, type: Type, schemaId: number, optLength?: number): Buffer => {
   const length = optLength || 1024;
   const buf = new Buffer(length);
 
@@ -43,7 +44,7 @@ export const toMessageBuffer = (val: any, type: IAvroType, schemaId: number, opt
  *   @param {number} schemaId The schema id.
  *   @param {Object} value The decoded avro value.
  */
-export const fromMessageBuffer = (type: IAvroType, encodedMessage: Buffer, sr: SchemaRegistry) => {
+export const fromMessageBuffer = (type: Type, encodedMessage: Buffer, sr: SchemaRegistry) => {
   if (encodedMessage[0] !== MAGIC_BYTE) {
     Logger.instance.error('Message not serialized with magic byte!');
     return { value: undefined, schemaId: undefined };

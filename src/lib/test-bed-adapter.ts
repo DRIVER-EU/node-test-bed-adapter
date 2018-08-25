@@ -18,10 +18,10 @@ import { avroHelperFactory } from './avro/avro-helper-factory';
 import { clone, uuid4, isEmptyObject } from './utils/helpers';
 import { KafkaLogger } from './logger/kafka-logger';
 import { ConsoleLogger } from './logger/console-logger';
-import { ILogger, IAdapterMessage, LogLevel } from '.';
-import { IAvroType } from './declarations/avro';
+import { ILogger, IAdapterMessage } from '.';
 import { TimeService } from './services/time-service';
 import { IConfiguration } from './models/configuration';
+import { Type } from 'avsc';
 
 export interface TestBedAdapter {
   on(event: 'ready', listener: () => void): this;
@@ -92,7 +92,7 @@ export class TestBedAdapter extends EventEmitter {
    * A dictionary containing a clone of all the key schemas with key the bare topic name and
    * value the instance of the AVRO schema and schema ID.
    */
-  public get keySchemas(): { [topic: string]: { type: IAvroType; srId: number } } {
+  public get keySchemas(): { [topic: string]: { type: Type; srId: number } } {
     return clone(this.schemaRegistry.keySchemas);
   }
 
@@ -100,7 +100,7 @@ export class TestBedAdapter extends EventEmitter {
    * A dictionary containing a clone of all the value schemas with key the bare topic name and
    * value the instance of the AVRO schema and schema ID.
    */
-  public get valueSchemas(): { [topic: string]: { type: IAvroType; srId: number } } {
+  public get valueSchemas(): { [topic: string]: { type: Type; srId: number } } {
     return clone(this.schemaRegistry.valueSchemas);
   }
 

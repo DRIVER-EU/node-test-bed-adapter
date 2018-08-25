@@ -1,3 +1,5 @@
+import { Type } from 'avsc';
+
 export interface ISchemaOptions {
   /**
    * The Avro specification mandates that we fall through to the underlying type if a logical type is invalid.
@@ -51,7 +53,7 @@ export interface IForValueOptions extends IForTypesOptions {
    * Temporary type used when an empty array is encountered.
    * It will be discarded as soon as the array's type can be inferred. Defaults to null's type.
    */
-  emptyArrayType?: IAvroType;
+  emptyArrayType?: Type;
   /**
    * Function called each time a type needs to be inferred from a value. This function should either
    * return an alternate type to use, or undefined to proceed with the default inference logic.
@@ -66,7 +68,7 @@ export interface IValidationOptions {
    * path will be an array of strings identifying where the mismatch occurred.
    * This option is especially useful when dealing with complex records.
    */
-  errorHook?: (path: string[], anything: any, type: IAvroType) => void;
+  errorHook?: (path: string[], anything: any, type: Type) => void;
   /**
    * When set, records with attributes that don't correspond to a declared field will be considered invalid.
    * The default is to ignore any extra attributes.
@@ -76,44 +78,11 @@ export interface IValidationOptions {
 
 export interface IAvroDecoded { value: any; offset: number; }
 
-/**
- * "Abstract" base Avro type.
- *
- * This Type constructor will register any named types to support recursive
- * schemas. All type values are represented in memory similarly to their JSON
- * representation, except for:
- *
- * + `bytes` and `fixed` which are represented as `Buffer`s.
- * + `union`s which will be "unwrapped" unless the `wrapUnions` option is set.
- *
- *  See individual subclasses for details.
- */
-export interface IAvroType {
-  name: string;
-  forSchema(schema: Object | string, opts: { wrapUnions?: boolean }): IAvroType;
-  isType(): boolean;
-  /**
-   * Encode the object to the buffer, and return the current buffer position.
-   */
-  encode: (val: Object, buf: Buffer, pos: number) => number;
-  /** Create a new buffer that contains the encoded object */
-  toBuffer: (obj: Object) => Buffer;
-  /** Convenience function to allow JSON.stringify(type) */
-  toJSON(): string;
-  isValid: (obj: Object, options?: IValidationOptions) => boolean;
-  /**
-   * Returns {value: value, offset: offset} if buf contains a valid encoding of type
-   * (value being the decoded value, and offset the new offset in the buffer).
-   * Returns {value: undefined, offset: -1} when the buffer is too short.
-   */
-  decode: (buf: Buffer, offset?: number, resolver?: (t: IAvroType) => IAvroType) => IAvroDecoded;
-  fromBuffer: (buf: Buffer, offset?: number, resolver?: (t: IAvroType) => IAvroType) => IAvroDecoded;
-}
 
-export interface IAvroSchema extends IAvroType {
+export interface IAvroSchema extends Type {
   branchName: string;
   doc: string;
   name: string;
   aliases: string[];
-  types: IAvroType[];
+  types: Type[];
 }
