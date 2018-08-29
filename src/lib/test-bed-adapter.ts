@@ -70,13 +70,21 @@ export class TestBedAdapter extends EventEmitter {
     this.schemaRegistry = new SchemaRegistry(this.config);
   }
 
-  public connect(): Promise<{}> {
+  public async connect(): Promise<{}> {
     return new Promise(async (resolve, reject) => {
-      await this.initLogger();
-      await this.schemaPublisher.init();
+      try {
+        await this.initLogger();
+        await this.schemaPublisher.init();
+      } catch (e) {
+        this.emitErrorMsg(`Error before initializing the testbed connection: ${e}`);
+      }
       this.client = new KafkaClient(this.config);
       this.client.on('ready', async () => {
-        await this.initialize();
+        try {
+          await this.initialize();
+        } catch (e) {
+          this.emitErrorMsg(`Error in initializing the testbed connection: ${e}`, reject);
+        }
         resolve();
       });
       this.client.on('error', (error) => {
@@ -112,9 +120,9 @@ export class TestBedAdapter extends EventEmitter {
         await this.initProducer();
         await this.addProducerTopics(this.config.produce);
         await this.addKafkaLogger();
-        await this.startHeartbeat();
         await this.initConsumer();
         await this.addConsumerTopics(this.config.consume, this.config.fromOffset);
+        await this.startHeartbeat();
         await this.configUpdated();
         await this.emit('ready');
       } catch (err) {
@@ -243,9 +251,9 @@ export class TestBedAdapter extends EventEmitter {
           newTopics,
           (error, added) => {
             if (error) {
-              return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
+              return this.emitErrorMsg(`addConsumerTopics - Error ${error}`, reject);
             }
-            this.log.info(`Added topics: ${added}`);
+            this.log.info(`Added topics: ${added} (fromOffset? ${fromOffset})`);
             registerCallback(added);
             resolve(newTopics);
           },
@@ -313,27 +321,24 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
-  private initLogger() {
-    return new Promise((resolve) => {
-      const loggers: ILogger[] = [];
-      const logOptions = this.config.logging;
-      if (logOptions) {
-        if (logOptions.logToConsole) {
-          loggers.push({
-            logger: new ConsoleLogger(),
-            minLevel: logOptions.logToConsole,
-          });
-        }
-        if (logOptions.logToFile) {
-          loggers.push({
-            logger: new FileLogger(logOptions.logFile || 'log.txt'),
-            minLevel: logOptions.logToFile,
-          });
-        }
-        this.log.initialize(loggers);
+  private async initLogger() {
+    const loggers: ILogger[] = [];
+    const logOptions = this.config.logging;
+    if (logOptions) {
+      if (logOptions.logToConsole) {
+        loggers.push({
+          logger: new ConsoleLogger(),
+          minLevel: logOptions.logToConsole,
+        });
       }
-      resolve();
-    });
+      if (logOptions.logToFile) {
+        loggers.push({
+          logger: new FileLogger(logOptions.logFile || 'log.txt'),
+          minLevel: logOptions.logToFile,
+        });
+      }
+      this.log.initialize(loggers);
+    }
   }
 
   /** If required, add the Kafka logger too (after the producer has been initialised). */
@@ -422,6 +427,7 @@ export class TestBedAdapter extends EventEmitter {
         return;
       }
       this.assertOffsetInRange(t);
+      t = this.removeAdditionalFields(t);
       newTopics.push(t);
       if (this.config.consume && this.config.consume.filter((fr) => fr.topic === t.topic).length === 0) {
         isConfigUpdated = true;
@@ -448,9 +454,15 @@ export class TestBedAdapter extends EventEmitter {
       if (error) return this.emitErrorMsg(error);
       if (!offsets || !offsets[topic] || !offsets[topic].hasOwnProperty(partition))
         return this.emitErrorMsg(`Could not fetch latest offset for ${topic}`);
-      t.offset = Math.min(t.offset!, offsets[topic][partition]);
+      this.log.debug(`Latest offsets:\n${JSON.stringify(offsets)}`);
+      const configuredOffset = (t.offset! === -1) ? Number.MAX_SAFE_INTEGER : t.offset!;
+      t.offset = Math.min(configuredOffset, offsets[topic][partition]);
       this.log.info(`Set offset of topic ${topic} to ${t.offset}`);
     });
+  }
+
+  private removeAdditionalFields(t: OffsetFetchRequest): OffsetFetchRequest {
+    return {offset: t.offset, partition: t.partition, topic: t.topic};
   }
 
   /**
@@ -497,7 +509,7 @@ export class TestBedAdapter extends EventEmitter {
    * Configuration has changed.
    */
   private configUpdated() {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       if (!this.producer) {
         return;
       }
@@ -517,18 +529,18 @@ export class TestBedAdapter extends EventEmitter {
             }
           : undefined,
       };
-      this.send(
-        [
-          {
-            topic: TestBedAdapter.ConfigurationTopic,
-            messages: msg,
-          },
-        ],
+      const configurationMsg = [
+        {
+          topic: TestBedAdapter.ConfigurationTopic,
+          messages: msg,
+        },
+      ];
+      this.send(configurationMsg,
         (err?: string, result?: ISendResponse) => {
           if (err) {
-            this.emitErrorMsg(err);
+            return this.emitErrorMsg(`Error updating configuration: ${err} (msg: ${JSON.stringify(configurationMsg)})`, reject);
           } else if (result) {
-            this.log.info(result);
+            this.log.info(`Updated configuration: ${JSON.stringify(result)}`);
           }
           resolve();
         }
@@ -562,6 +574,7 @@ export class TestBedAdapter extends EventEmitter {
           }
         );
       }, this.config.heartbeatInterval || 5000);
+      this.log.info(`Started heartbeat`);
       resolve();
     });
     // });
