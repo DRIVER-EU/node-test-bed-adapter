@@ -6,7 +6,7 @@
   "typings": "./dist/lib/index.d.ts",
   "scripts": {
     "build": "tsc -w",
-    "install": "tsc",
+    "prepublish": "tsc",
     "patch-release": "npm version patch && npm publish && git push --follow-tags",
     "minor-release": "npm version minor && npm publish && git push --follow-tags",
     "test": "jasmine JASMINE_CONFIG_PATH=src/test/jasmine.json || true",
