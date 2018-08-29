@@ -20,7 +20,7 @@ describe('TestBedAdapter', () => {
       setTimeout(() => this.emit('ready'), 10);
     }
 
-    public addTopics(..._args: any[]) {};
+    public addTopics(..._args: any[]) {}
   }
 
   class ProducerMock extends EventEmitter {
@@ -29,18 +29,20 @@ describe('TestBedAdapter', () => {
       setTimeout(() => this.emit('ready'), 10);
     }
 
-    public createTopics(..._args: any[]) {};
+    public createTopics(..._args: any[]) {}
     public send(_pr: ProduceRequest[], cb: (err: any, result: any) => void) {
       cb(null, '');
     }
   }
 
   beforeAll(done => {
-    TestBedAdapterMock = proxyquire('../lib/test-bed-adapter', { 'kafka-node': {
-      KafkaClient: KafkaClientMock,
-      Consumer: ConsumerMock,
-      Producer: ProducerMock
-    } }).TestBedAdapter;
+    TestBedAdapterMock = proxyquire('../lib/test-bed-adapter', {
+      'kafka-node': {
+        KafkaClient: KafkaClientMock,
+        Consumer: ConsumerMock,
+        Producer: ProducerMock,
+      },
+    }).TestBedAdapter;
     done();
   });
 
@@ -55,12 +57,20 @@ describe('TestBedAdapter', () => {
   });
 
   it('should not automatically connect to the testbed', () => {
-    const result = new TestBedAdapterMock({ kafkaHost: 'broker:9092', schemaRegistry: 'schema-registry:3502', clientId: 'client' });
+    const result = new TestBedAdapterMock({
+      kafkaHost: 'broker:9092',
+      schemaRegistry: 'schema-registry:3502',
+      clientId: 'client',
+    });
     expect(result.isConnected).toBe(false);
   });
 
-  it('should connect to the testbed', (done) => {
-    const tba = new TestBedAdapterMock({ kafkaHost: 'broker:9092', schemaRegistry: 'schema-registry:3502', clientId: 'client' });
+  it('should connect to the testbed', done => {
+    const tba = new TestBedAdapterMock({
+      kafkaHost: 'broker:9092',
+      schemaRegistry: 'schema-registry:3502',
+      clientId: 'client',
+    });
     tba.on('ready', () => {
       expect(tba.isConnected).toBe(true);
       done();
@@ -76,5 +86,4 @@ describe('TestBedAdapter', () => {
     expect(configuration.consume).toBeTruthy();
     expect(configuration.consume && configuration.consume.length).toBe(0);
   });
-
 });

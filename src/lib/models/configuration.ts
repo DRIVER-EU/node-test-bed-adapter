@@ -13,5 +13,5 @@ export interface IConfiguration {
     logToKafka?: LogLevel;
     logToFile?: LogLevel;
     logFile?: string;
-  }
+  };
 }
