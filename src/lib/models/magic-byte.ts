@@ -46,7 +46,9 @@ export const toMessageBuffer = (val: any, type: Type, schemaId: number, optLengt
  */
 export const fromMessageBuffer = (type: Type, encodedMessage: Buffer, sr: SchemaRegistry) => {
   if (encodedMessage[0] !== MAGIC_BYTE) {
-    Logger.instance.error('Message not serialized with magic byte!');
+    Logger.instance.error(`Message not serialized with magic byte!`);
+    Logger.instance.debug(`type: ${JSON.stringify(type)}`);
+    Logger.instance.debug(`encodedMessage: ${encodedMessage.toString()}`);
     return { value: undefined, schemaId: undefined };
   }
 

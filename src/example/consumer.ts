@@ -47,7 +47,7 @@ class Consumer {
 
   private subscribe() {
     this.adapter.on('message', message => this.handleMessage(message));
-    // this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
+    // this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic, offset: Number.MAX_SAFE_INTEGER }, true).catch(err => {
     //   if (err) { log.error(`Consumer received an error: ${err}`); }
     // });
   }
