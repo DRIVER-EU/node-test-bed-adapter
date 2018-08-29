@@ -45,7 +45,9 @@ export const toMessageBuffer = (val: any, type: IAvroType, schemaId: number, opt
  */
 export const fromMessageBuffer = (type: IAvroType, encodedMessage: Buffer, sr: SchemaRegistry) => {
   if (encodedMessage[0] !== MAGIC_BYTE) {
-    Logger.instance.error('Message not serialized with magic byte!');
+    Logger.instance.error(`Message not serialized with magic byte!`);
+    Logger.instance.debug(`type: ${JSON.stringify(type)}`);
+    Logger.instance.debug(`encodedMessage: ${encodedMessage.toString()}`);
     return { value: undefined, schemaId: undefined };
   }
 
