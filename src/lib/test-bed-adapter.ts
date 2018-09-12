@@ -6,7 +6,14 @@ import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
 import { ISendResponse } from './models/adapter-message';
-import { KafkaClient, Producer, Consumer, ProduceRequest, Message, OffsetFetchRequest, Topic } from 'kafka-node';
+import {
+  KafkaClient,
+  Producer,
+  Consumer,
+  Message,
+  OffsetFetchRequest,
+  Topic
+} from 'kafka-node';
 import { ITimeMessage } from './models/time-message';
 import { IHeartbeat } from './models/heartbeat';
 import { IInitializedTopic } from './models/topic';
@@ -22,6 +29,15 @@ import { ILogger, IAdapterMessage } from '.';
 import { TimeService } from './services/time-service';
 import { IConfiguration } from './models/configuration';
 import { Type } from 'avsc';
+
+/* Override the defined ProduceRequest in kafka-node, as it uses a key: string */
+export interface ProduceRequest {
+  topic: string;
+  messages: any; // string[] | Array<KeyedMessage> | string | KeyedMessage
+  key?: any;
+  partition?: number;
+  attributes?: number;
+}
 
 export interface TestBedAdapter {
   on(event: 'ready', listener: () => void): this;
@@ -53,7 +69,9 @@ export class TestBedAdapter extends EventEmitter {
   private producerTopics: { [topic: string]: IInitializedTopic } = {};
   /** Location of the configuration file */
   private configFile = 'config/test-bed-config.json';
-  private callbacks: { [topic: string]: (error: string, message: Message) => void } = {};
+  private callbacks: {
+    [topic: string]: (error: string, message: Message) => void;
+  } = {};
   private timeService = new TimeService();
 
   constructor(config?: ITestBedOptions | string) {
@@ -79,7 +97,7 @@ export class TestBedAdapter extends EventEmitter {
         await this.initialize();
         resolve();
       });
-      this.client.on('error', (error) => {
+      this.client.on('error', error => {
         this.emitErrorMsg(error, reject);
       });
       this.client.on('reconnect', () => {
@@ -106,7 +124,7 @@ export class TestBedAdapter extends EventEmitter {
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {
-    return new Promise<void>(async (resolve) => {
+    return new Promise<void>(async resolve => {
       await this.schemaRegistry.init();
       await this.initProducer();
       await this.addProducerTopics(this.config.produce);
@@ -169,16 +187,24 @@ export class TestBedAdapter extends EventEmitter {
     this.client.close();
   }
 
-  public send(payloads: ProduceRequest | ProduceRequest[], cb: (error?: any, data?: ISendResponse) => any) {
+  public send(
+    payloads: ProduceRequest | ProduceRequest[],
+    cb: (error?: any, data?: ISendResponse) => any
+  ) {
     if (!this.producer) {
       return this.emitErrorMsg('Producer not ready!');
     }
     payloads = payloads instanceof Array ? payloads : [payloads];
     const pl: ProduceRequest[] = [];
     let hasError = false;
-    payloads.forEach((payload) => {
+    payloads.forEach(payload => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) {
-        return cb(`Topic ${payload.topic} not found: please register first! ${JSON.stringify(payload)}`, undefined);
+        return cb(
+          `Topic ${
+            payload.topic
+          } not found: please register first! ${JSON.stringify(payload)}`,
+          undefined
+        );
       }
       const topic = this.producerTopics[payload.topic];
       if (!payload.key || isEmptyObject(payload.key)) {
@@ -188,7 +214,7 @@ export class TestBedAdapter extends EventEmitter {
           dateTimeSent: Date.now(),
           dateTimeExpires: 0,
           distributionStatus: 'Test',
-          distributionKind: 'Unknown',
+          distributionKind: 'Unknown'
         } as IDefaultKey;
       }
       if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
@@ -232,8 +258,8 @@ export class TestBedAdapter extends EventEmitter {
         return;
       }
       (topics as any[])
-        .map((t) => (typeof t === 'string' ? t : (t as Topic).topic))
-        .forEach((t) => (this.callbacks[t] = cb));
+        .map(t => (typeof t === 'string' ? t : (t as Topic).topic))
+        .forEach(t => (this.callbacks[t] = cb));
     };
 
     return new Promise<OffsetFetchRequest[]>((resolve, reject) => {
@@ -250,7 +276,10 @@ export class TestBedAdapter extends EventEmitter {
           newTopics,
           (error, added) => {
             if (error) {
-              return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
+              return this.emitErrorMsg(
+                `addProducerTopics - Error ${error}`,
+                reject
+              );
             }
             this.log.info(`Added topics: ${added}`);
             registerCallback(added);
@@ -272,7 +301,10 @@ export class TestBedAdapter extends EventEmitter {
       if (this.producer && newTopics.length > 0) {
         this.producer.createTopics(newTopics, true, (error, _data) => {
           if (error) {
-            return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
+            return this.emitErrorMsg(
+              `addProducerTopics - Error ${error}`,
+              reject
+            );
           }
           resolve(newTopics);
         });
@@ -288,16 +320,22 @@ export class TestBedAdapter extends EventEmitter {
    * @param topics If topics is an empty array, retreive the metadata of all topics
    * @param cb callback function to return the metadata results
    */
-  public loadMetadataForTopics(topics: string[], cb: (error?: any, results?: ITopicsMetadata) => void) {
+  public loadMetadataForTopics(
+    topics: string[],
+    cb: (error?: any, results?: ITopicsMetadata) => void
+  ) {
     if (!this.isConnected) {
       cb('Client is not connected');
     }
-    (this.client as any).loadMetadataForTopics(topics, (error?: any, results?: ITopicsMetadata) => {
-      if (error) {
-        cb(error, undefined);
+    (this.client as any).loadMetadataForTopics(
+      topics,
+      (error?: any, results?: ITopicsMetadata) => {
+        if (error) {
+          cb(error, undefined);
+        }
+        cb(null, results);
       }
-      cb(null, results);
-    });
+    );
   }
 
   /**
@@ -315,26 +353,26 @@ export class TestBedAdapter extends EventEmitter {
         return this.emitErrorMsg('Client not ready!', reject);
       }
       this.producer = new Producer(this.client);
-      this.producer.on('error', (error) => this.emitErrorMsg(error));
+      this.producer.on('error', error => this.emitErrorMsg(error));
       resolve(); // The producer does not emit the ready event.
     });
   }
 
   private initLogger() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const loggers: ILogger[] = [];
       const logOptions = this.config.logging;
       if (logOptions) {
         if (logOptions.logToConsole) {
           loggers.push({
             logger: new ConsoleLogger(),
-            minLevel: logOptions.logToConsole,
+            minLevel: logOptions.logToConsole
           });
         }
         if (logOptions.logToFile) {
           loggers.push({
             logger: new FileLogger(logOptions.logFile || 'log.txt'),
-            minLevel: logOptions.logToFile,
+            minLevel: logOptions.logToFile
           });
         }
         this.log.initialize(loggers);
@@ -345,7 +383,7 @@ export class TestBedAdapter extends EventEmitter {
 
   /** If required, add the Kafka logger too (after the producer has been initialised). */
   private addKafkaLogger() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.producer) {
         return resolve();
       }
@@ -354,9 +392,9 @@ export class TestBedAdapter extends EventEmitter {
         this.log.addLogger({
           logger: new KafkaLogger({
             adapter: this,
-            clientId: this.config.clientId,
+            clientId: this.config.clientId
           }),
-          minLevel: logOptions.logToKafka,
+          minLevel: logOptions.logToKafka
         });
       }
       resolve();
@@ -368,10 +406,16 @@ export class TestBedAdapter extends EventEmitter {
       if (!this.client) {
         return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
       }
-      this.consumer = new Consumer(this.client, [], { encoding: 'buffer', keyEncoding: 'buffer', autoCommit: true });
-      this.consumer.on('message', (message) => this.handleMessage(message));
-      this.consumer.on('error', (error) => this.emitErrorMsg(error));
-      this.consumer.on('offsetOutOfRange', (error) => this.emit('offsetOutOfRange', error));
+      this.consumer = new Consumer(this.client, [], {
+        encoding: 'buffer',
+        keyEncoding: 'buffer',
+        autoCommit: true
+      });
+      this.consumer.on('message', message => this.handleMessage(message));
+      this.consumer.on('error', error => this.emitErrorMsg(error));
+      this.consumer.on('offsetOutOfRange', error =>
+        this.emit('offsetOutOfRange', error)
+      );
       resolve();
     });
   }
@@ -402,7 +446,7 @@ export class TestBedAdapter extends EventEmitter {
           partition,
           highWaterOffset,
           value: decodedValue,
-          key: decodedKey,
+          key: decodedKey
         } as IAdapterMessage);
         break;
       case TestBedAdapter.TimeTopic:
@@ -422,14 +466,19 @@ export class TestBedAdapter extends EventEmitter {
     }
     let isConfigUpdated = false;
     const newTopics: OffsetFetchRequest[] = [];
-    topics.forEach((t) => {
+    topics.forEach(t => {
       if (this.consumerTopics.hasOwnProperty(t.topic)) return;
       if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
-        this.log.error(`initializeConsumerTopics - no schema registered for topic ${t.topic}`);
+        this.log.error(
+          `initializeConsumerTopics - no schema registered for topic ${t.topic}`
+        );
         return;
       }
       newTopics.push(t);
-      if (this.config.consume && this.config.consume.filter((fr) => fr.topic === t.topic).length === 0) {
+      if (
+        this.config.consume &&
+        this.config.consume.filter(fr => fr.topic === t.topic).length === 0
+      ) {
         isConfigUpdated = true;
         this.config.consume.push(t);
       }
@@ -455,7 +504,7 @@ export class TestBedAdapter extends EventEmitter {
     }
     let isConfigUpdated = false;
     const newTopics: string[] = [];
-    topics.forEach((t) => {
+    topics.forEach(t => {
       if (this.producerTopics.hasOwnProperty(t)) return;
       if (
         !(
@@ -463,7 +512,9 @@ export class TestBedAdapter extends EventEmitter {
           this.schemaRegistry.valueSchemas.hasOwnProperty(t + '-value')
         )
       ) {
-        this.log.error(`initializeProducerTopics - no schema registered for topic ${t}`);
+        this.log.error(
+          `initializeProducerTopics - no schema registered for topic ${t}`
+        );
         return;
       }
       newTopics.push(t);
@@ -489,7 +540,7 @@ export class TestBedAdapter extends EventEmitter {
    * Configuration has changed.
    */
   private configUpdated() {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       if (!this.producer) {
         return;
       }
@@ -497,7 +548,8 @@ export class TestBedAdapter extends EventEmitter {
         clientId: this.config.clientId,
         kafkaHost: this.config.kafkaHost,
         schemaRegistry: this.config.schemaRegistry,
-        heartbeatInterval: this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval,
+        heartbeatInterval:
+          this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval,
         consume: this.config.consume,
         produce: this.config.produce,
         logging: this.config.logging
@@ -505,16 +557,16 @@ export class TestBedAdapter extends EventEmitter {
               logToConsole: this.config.logging.logToConsole,
               logToKafka: this.config.logging.logToKafka,
               logToFile: this.config.logging.logToFile,
-              logFile: this.config.logging.logFile,
+              logFile: this.config.logging.logFile
             }
-          : undefined,
+          : undefined
       };
       this.send(
         [
           {
             topic: TestBedAdapter.ConfigurationTopic,
-            messages: msg,
-          },
+            messages: msg
+          }
         ],
         (err?: string, result?: ISendResponse) => {
           if (err) {
@@ -545,9 +597,12 @@ export class TestBedAdapter extends EventEmitter {
           {
             attributes: 1,
             topic: TestBedAdapter.HeartbeatTopic,
-            messages: { id: this.config.clientId, alive: Date.now() } as IHeartbeat,
+            messages: {
+              id: this.config.clientId,
+              alive: Date.now()
+            } as IHeartbeat
           },
-          (error) => {
+          error => {
             if (error) {
               this.log.error(error);
             }
@@ -578,7 +633,7 @@ export class TestBedAdapter extends EventEmitter {
         produce: [],
         logging: {},
         maxConnectionRetries: 10,
-        connectTimeout: 5000,
+        connectTimeout: 5000
       } as ITestBedOptions,
       options
     );
@@ -594,7 +649,11 @@ export class TestBedAdapter extends EventEmitter {
     if (opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
       opt.produce.push(TestBedAdapter.ConfigurationTopic);
     }
-    if (opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
+    if (
+      opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 &&
+      opt.logging &&
+      opt.logging.logToKafka
+    ) {
       opt.produce.push(TestBedAdapter.LogTopic);
     }
     return opt;
@@ -630,7 +689,9 @@ export class TestBedAdapter extends EventEmitter {
     configFile = path.resolve(configFile);
     // this.log(configFile);
     if (fs.existsSync(configFile)) {
-      return JSON.parse(fs.readFileSync(configFile, { encoding: 'utf8' })) as ITestBedOptions;
+      return JSON.parse(
+        fs.readFileSync(configFile, { encoding: 'utf8' })
+      ) as ITestBedOptions;
     }
     throw new Error(
       `Error loading options! Either supply them as parameter or as a configuration file at ${configFile}.`

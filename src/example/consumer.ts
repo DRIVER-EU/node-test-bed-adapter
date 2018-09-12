@@ -3,7 +3,6 @@
 // const kafkaLogging = require('kafka-node/logging');
 // kafkaLogging.setLoggerProvider(consoleLoggerProvider);
 
-import { Message } from 'kafka-node';
 import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem, IAdapterMessage } from '../lib/index';
 
 const log = Logger.instance;
@@ -13,10 +12,10 @@ class Consumer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
-      // kafkaHost: 'localhost:3501',
-      // schemaRegistry: 'localhost:3502',
-      kafkaHost: 'driver-testbed.eu:3501',
-      schemaRegistry: 'driver-testbed.eu:3502',
+      kafkaHost: 'localhost:3501',
+      schemaRegistry: 'localhost:3502',
+      // kafkaHost: 'driver-testbed.eu:3501',
+      // schemaRegistry: 'driver-testbed.eu:3502',
       fetchAllSchemas: false,
       fetchAllVersions: false,
       wrapUnions: 'auto',

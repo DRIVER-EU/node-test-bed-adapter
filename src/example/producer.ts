@@ -1,4 +1,4 @@
-import { ProduceRequest, KafkaClient } from 'kafka-node';
+import { ProduceRequest } from 'kafka-node';
 import { TestBedAdapter, Logger, LogLevel } from '../lib/index';
 import * as amberAlert from '../../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.json';
@@ -13,10 +13,10 @@ class Producer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
-      // kafkaHost: 'localhost:3501',
-      // schemaRegistry: 'localhost:3502',
-      kafkaHost: 'driver-testbed.eu:3501',
-      schemaRegistry: 'driver-testbed.eu:3502',
+      kafkaHost: 'localhost:3501',
+      schemaRegistry: 'localhost:3502',
+      // kafkaHost: 'driver-testbed.eu:3501',
+      // schemaRegistry: 'driver-testbed.eu:3502',
       clientId: this.id,
       fetchAllSchemas: false,
       fetchAllVersions: false,
