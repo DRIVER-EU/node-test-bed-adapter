@@ -1,7 +1,7 @@
 version: '2'
 services:
     kafka:
-      image: wurstmeister/kafka:0.11.0.0
+      image: wurstmeister/kafka:2.11-2.0.0
       environment:
         KAFKA_LOG_MESSAGE_FORMAT_VERSION: "0.10.2"
         KAFKA_LISTENERS: "PLAINTEXT://:9092,SSL://:9093,SASL_PLAINTEXT://:9094"
@@ -13,4 +13,3 @@ services:
         KAFKA_OPTS: "-Djava.security.auth.login.config=/var/private/sasl/sasl.conf"
       volumes:
         - "./docker/start-kafka.sh:/usr/bin/start-kafka.sh"
-

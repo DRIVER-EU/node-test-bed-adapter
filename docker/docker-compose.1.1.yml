@@ -12,5 +12,5 @@ services:
         KAFKA_SUPER_USERS: "User:admin,User:broker"
         KAFKA_OPTS: "-Djava.security.auth.login.config=/var/private/sasl/sasl.conf"
       volumes:
-        - ./docker/start-kafka.sh:/usr/bin/start-kafka.sh
+        - "./docker/start-kafka.sh:/usr/bin/start-kafka.sh"
 
