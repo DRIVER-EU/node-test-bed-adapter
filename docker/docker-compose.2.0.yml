@@ -11,6 +11,5 @@ services:
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
       KAFKA_SUPER_USERS: "User:admin,User:broker"
       KAFKA_OPTS: "-Djava.security.auth.login.config=/var/private/sasl/sasl.conf"
-      PATH: "/usr/bin:$PATH"
     volumes:
       - ./docker/start-kafka.sh:/usr/bin/start-kafka.sh
