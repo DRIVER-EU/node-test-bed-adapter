@@ -129,24 +129,16 @@ export class TestBedAdapter extends EventEmitter {
       await this.initProducer();
       await this.addProducerTopics(this.config.produce);
       await this.addKafkaLogger();
-      await this.startHeartbeat();
       await this.initConsumer();
-      await this.addConsumerTopics(this.config.consume, this.config.fromOffset);
+      await this.addConsumerTopics(
+        this.config.consume,
+        this.config.fromOffset
+      ).catch(e => this.log.error(e));
+      await this.startHeartbeat();
       await this.configUpdated();
       await this.emit('ready');
       resolve();
     });
-    // this.schemaRegistry
-    //   .init()
-    //   .then(() => this.initProducer())
-    //   .then(() => this.addKafkaLogger())
-    //   .then(() => this.startHeartbeat())
-    //   .then(() => this.addProducerTopics(this.config.produce))
-    //   .then(() => this.initConsumer())
-    //   .then(() => this.addConsumerTopics(this.config.consume, this.config.fromOffset))
-    //   .then(() => this.configUpdated())
-    //   .then(() => this.emit('ready'))
-    //   .catch((err) => this.emitErrorMsg(err));
   }
 
   public pause() {
@@ -271,23 +263,27 @@ export class TestBedAdapter extends EventEmitter {
         return resolve();
       }
       const newTopics = this.initializeConsumerTopics(topics);
-      if (this.consumer && newTopics.length > 0) {
-        this.consumer.addTopics(
+      const consumer = this.consumer;
+      if (typeof consumer === 'undefined' || newTopics.length === 0) {
+        return [];
+      }
+      let count = 0;
+      const handler = setInterval(() => {
+        consumer.addTopics(
           newTopics,
           (error, added) => {
             if (error) {
-              return this.emitErrorMsg(
-                `addProducerTopics - Error ${error}`,
-                reject
-              );
+              process.stderr.write(`addConsumerTopics - Error ${error}. Waiting ${++count * 5} seconds...\r`);
+              return;
             }
-            this.log.info(`Added topics: ${added}`);
+            clearInterval(handler);
+            this.log.info(`\nAdded topic(s): ${added instanceof Array ? added.join(', ') : added}.`);
             registerCallback(added);
             resolve(newTopics);
           },
           fromOffset
         );
-      }
+      }, 5000);
     });
   }
 
@@ -299,7 +295,7 @@ export class TestBedAdapter extends EventEmitter {
       topics = topics instanceof Array ? topics : [topics];
       const newTopics = this.initializeProducerTopics(topics);
       if (this.producer && newTopics.length > 0) {
-        this.producer.createTopics(newTopics, true, (error, _data) => {
+        this.producer.createTopics(newTopics, false, (error, _data) => {
           if (error) {
             return this.emitErrorMsg(
               `addProducerTopics - Error ${error}`,
@@ -541,7 +537,7 @@ export class TestBedAdapter extends EventEmitter {
    */
   private configUpdated() {
     return new Promise<void>(resolve => {
-      if (!this.producer) {
+      if (!this.producer || !this.valueSchemas.hasOwnProperty(TestBedAdapter.ConfigurationTopic)) {
         return;
       }
       const msg: IConfiguration = {
