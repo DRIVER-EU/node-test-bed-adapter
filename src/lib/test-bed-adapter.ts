@@ -254,7 +254,7 @@ export class TestBedAdapter extends EventEmitter {
         .forEach(t => (this.callbacks[t] = cb));
     };
 
-    return new Promise<OffsetFetchRequest[]>((resolve, reject) => {
+    return new Promise<OffsetFetchRequest[]>((resolve) => {
       if (!topics) {
         return resolve();
       }
