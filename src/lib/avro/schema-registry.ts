@@ -71,9 +71,6 @@ export class SchemaRegistry {
   constructor(private options: ITestBedOptions) {
     axios.defaults.timeout = 30000;
     this.fetchAllVersions = options.fetchAllVersions || false;
-    if (options.fetchAllSchemas) {
-      return;
-    }
     const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
     this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(
