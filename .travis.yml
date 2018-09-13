@@ -20,8 +20,8 @@ env:
     # - DEBUG=kafka-node:*
     - KAFKA_ADVERTISED_HOST_NAME=127.0.0.1
 before_install:
-  - sudo apt-get update
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  # - sudo apt-get update
+  # - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
   - docker-compose -f docker-compose.yml -f docker/docker-compose.${KAFKA_VERSION}.yml up -d
 before_script:
   - npm prune
