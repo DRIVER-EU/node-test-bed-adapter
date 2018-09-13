@@ -12,14 +12,19 @@
       "program": "${workspaceFolder}/src/example/producer.ts",
       "outFiles": [
         "${workspaceFolder}/**/*"
-      ]
+      ],
+      "console": "integratedTerminal"
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Launch Consumer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/dist/example/consumer.js"
+      "program": "${workspaceFolder}/src/example/consumer.ts",
+      "outFiles": [
+        "${workspaceFolder}/**/*"
+      ],
+      "console": "integratedTerminal"
     },
     {
       "type": "node",
