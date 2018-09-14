@@ -1,5 +1,4 @@
 import { ITestBedOptions } from '../models/test-bed-options';
-import * as Promise from 'bluebird';
 import { default as axios, AxiosRequestConfig } from 'axios';
 import * as url from 'url';
 import { Logger } from '..';
@@ -69,41 +68,48 @@ export class SchemaRegistry {
   private wrapUnions: boolean | 'auto' | 'never' | 'always' = 'auto';
 
   constructor(private options: ITestBedOptions) {
+    this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(
+      (options.hasOwnProperty('wrapUnions') ? options.wrapUnions : 'auto')
+    );
     axios.defaults.timeout = 30000;
     this.fetchAllVersions = options.fetchAllVersions || false;
     const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
-    this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(
-      (options.hasOwnProperty('wrapUnions') ? options.wrapUnions : 'auto')
-    );
     this.selectedTopics = [...consume, ...produce];
   }
 
   public init() {
     this.log.info(
       `init() - Initializing SR will fetch ${
-        this.options.fetchAllVersions
-          ? 'all'
-          : 'requested consumer and producer'
-      } schemas from SR`
+        this.options.fetchAllSchemas ? 'all' : 'requested consumer and producer'
+      } schemas from SR${
+        this.options.fetchAllVersions ? ' (all versions)' : ''
+      }.`
     );
 
     const tryToInitialize = () => {
       this.isSchemaRegistryAvailable()
         .then(() => this.fetchTopics())
         .then(t => this.storeTopics(t))
-        .map((t: string) => this.fetchLatestVersion(t), { concurrency: 10 })
-        .filter(t => (t ? true : false))
-        .map((t: ISchemaTopic) => this.fetchSchema(t), { concurrency: 10 })
-        .map((t: ISchema) => this.registerSchemaLatest(t))
-        .then((t: ISchema[]) => this.checkForAllVersions(t))
+        .then(topics =>
+          Promise.all(
+            topics.map(t => this.fetchLatestVersion(t), { concurrency: 10 })
+          )
+        )
+        .then(topics => topics.filter(t => (t ? true : false)))
+        .then(topics =>
+          Promise.all(topics.map(t => this.fetchSchema(t), { concurrency: 10 }))
+        )
+        .then(schemas =>
+          Promise.all(schemas.map(t => this.registerSchemaLatest(t)))
+        )
+        .then(schemas => Promise.resolve(this.checkForAllVersions(schemas)))
         .catch(e => console.error(e));
     };
     const isSuccess = () =>
-      this.selectedTopics.filter(t => t !== TestBedAdapter.ConfigurationTopic).reduce(
-        (p, c) => p && this.valueSchemas.hasOwnProperty(c),
-        true
-      );
+      this.selectedTopics
+        .filter(t => t !== TestBedAdapter.ConfigurationTopic)
+        .reduce((p, c) => p && this.valueSchemas.hasOwnProperty(c), true);
     return new Promise<{}>(resolve => {
       let count = 0;
       const handler = setInterval(() => {
@@ -303,14 +309,30 @@ export class SchemaRegistry {
 
       // Fetch and register all past versions for each schema.
       return Promise.resolve(this.schemaTopics)
-        .map((t: string) => this.fetchAllSchemaVersions(t), { concurrency: 10 })
-        .filter((t: ISchemaTopic[]) => (t ? true : false))
-        .then((t: ISchemaTopic[][]) => this.flattenResults(t))
-        .map((t: ISchemaTopic) => this.fetchSchema(t), { concurrency: 10 })
-        .map((t: ISchema) => this.registerSchema(t))
-        .then((allRegisteredSchemas: ISchema[]) => {
-          resolve(registeredSchemas.concat(allRegisteredSchemas));
-        });
+        .then(t =>
+          Promise.all(
+            t.map((t: string) => this.fetchAllSchemaVersions(t), {
+              concurrency: 10
+            })
+          )
+        )
+        .then(topics =>
+          topics.filter((t: ISchemaTopic[]) => (t ? true : false))
+        )
+        .then((t: ISchemaTopic[][]) => Promise.resolve(this.flattenResults(t)))
+        .then(topics =>
+          Promise.all(
+            topics.map((t: ISchemaTopic) => this.fetchSchema(t), {
+              concurrency: 10
+            })
+          )
+        )
+        .then(schemas =>
+          Promise.all(schemas.map((t: ISchema) => this.registerSchema(t)))
+        )
+        .then((allRegisteredSchemas: ISchema[]) =>
+          resolve(registeredSchemas.concat(allRegisteredSchemas))
+        );
     });
   }
 
@@ -435,15 +457,13 @@ export class SchemaRegistry {
    * A master wrapper method to determine if all topics or just specific ones
    * need to be fetched.
    *
-   * @return {Promise(Array.<string>)} A Promise with an arrray of string topics.
+   * @return A Promise with an arrray of string topics.
    * @private
    */
-  private fetchTopics() {
-    if (this.selectedTopics.length > 0) {
-      return this.processSelectedTopics();
-    } else {
-      return this.fetchAllSchemaTopics();
-    }
+  private async fetchTopics() {
+    return this.options.fetchAllSchemas
+      ? this.fetchAllSchemaTopics()
+      : this.processSelectedTopics();
   }
 
   private fetchSchema(topicMeta: ISchemaTopic, config?: AxiosRequestConfig) {
@@ -488,25 +508,9 @@ export class SchemaRegistry {
     });
   }
 
-  // private suppressAxiosError(err: { response: string; message: string; config: { url: string } }) {
-  //   this.log.warn({
-  //     message: 'suppressAxiosError() - http error, will continue operation.',
-  //     error: err.message,
-  //     url: err.config.url,
-  //   });
-  //   return null;
-  // }
-
   private suppressAxiosError(_err: {
     port: string;
     message: string;
     config: { url: string };
-  }) {
-    // this.log.warn({
-    //   message: 'handleAxiosError() - http error:',
-    //   error: err.message,
-    //   url: err.config.url
-    // });
-    // throw err;
-  }
+  }) {}
 }
