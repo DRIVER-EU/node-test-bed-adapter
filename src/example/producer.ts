@@ -20,8 +20,8 @@ class Producer {
       clientId: this.id,
       fetchAllSchemas: false,
       fetchAllVersions: false,
-      autoRegisterSchemas: true,
-      // autoRegisterSchemas: false,
+      // autoRegisterSchemas: true,
+      autoRegisterSchemas: false,
       wrapUnions: 'auto',
       schemaFolder: './data/schemas',
       produce: ['standard_cap'],
@@ -34,29 +34,34 @@ class Producer {
     this.adapter.on('ready', () => {
       log.info(`Current simulation time: ${this.adapter.simTime}`);
       log.info('Producer is connected');
-      this.sendcap();
+      this.sendCap();
     });
     this.adapter.connect();
   }
 
-  private sendcap() {
-    const payloads: ProduceRequest[] = [{
-      topic: 'standard_cap',
-      messages: amberAlert,
-      attributes: 1 // Gzip
-    }, {
-      topic: 'standard_cap',
-      messages: earthquakeAlert,
-      attributes: 1 // Gzip
-    }, {
-      topic: 'standard_cap',
-      messages: thunderstormAlert,
-      attributes: 1 // Gzip
-    }, {
-      topic: 'standard_cap',
-      messages: homelandSecurityAlert,
-      attributes: 1 // Gzip
-    }];
+  private sendCap() {
+    const payloads: ProduceRequest[] = [
+      {
+        topic: 'standard_cap',
+        messages: amberAlert,
+        attributes: 1 // Gzip
+      },
+      {
+        topic: 'standard_cap',
+        messages: earthquakeAlert,
+        attributes: 1 // Gzip
+      },
+      {
+        topic: 'standard_cap',
+        messages: thunderstormAlert,
+        attributes: 1 // Gzip
+      },
+      {
+        topic: 'standard_cap',
+        messages: homelandSecurityAlert,
+        attributes: 1 // Gzip
+      }
+    ];
     // payloads.forEach(payload => {
     //   this.adapter.send(payload, (error, data) => {
     //     if (error) { console.error(error); }
@@ -64,8 +69,12 @@ class Producer {
     //   });
     // });
     this.adapter.send(payloads, (error, data) => {
-      if (error) { log.error(error); }
-      if (data) { log.info(data); }
+      if (error) {
+        log.error(error);
+      }
+      if (data) {
+        log.info(data);
+      }
     });
 
     // log.error('This is an not an error message, sent only for testing purposes');

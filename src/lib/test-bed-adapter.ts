@@ -111,7 +111,7 @@ export class TestBedAdapter extends EventEmitter {
    * value the instance of the AVRO schema and schema ID.
    */
   public get keySchemas(): { [topic: string]: { type: Type; srId: number } } {
-    return clone(this.schemaRegistry.keySchemas);
+    return this.schemaRegistry.keySchemas;
   }
 
   /**
@@ -119,7 +119,7 @@ export class TestBedAdapter extends EventEmitter {
    * value the instance of the AVRO schema and schema ID.
    */
   public get valueSchemas(): { [topic: string]: { type: Type; srId: number } } {
-    return clone(this.schemaRegistry.valueSchemas);
+    return this.schemaRegistry.valueSchemas;
   }
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
@@ -537,7 +537,8 @@ export class TestBedAdapter extends EventEmitter {
    */
   private configUpdated() {
     return new Promise<void>(resolve => {
-      if (!this.producer || !this.valueSchemas.hasOwnProperty(TestBedAdapter.ConfigurationTopic)) {
+      const configType = this.valueSchemas[TestBedAdapter.ConfigurationTopic];
+      if (!this.producer || !configType) {
         return;
       }
       const msg: IConfiguration = {

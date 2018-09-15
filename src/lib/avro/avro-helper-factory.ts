@@ -6,7 +6,8 @@ import { IDecoder } from '../models/decoder';
 import { Logger } from '..';
 import { SchemaRegistry } from './schema-registry';
 
-const removeNulls = (_key: string, value: any) => (value === 'null' || value === null) ? undefined : value;
+const removeNulls = (_key: string, value: any) =>
+  value === 'null' || value === null ? undefined : value;
 
 /**
  * Create an object that knows how to validate/encode/decode keys and values of a message.
@@ -16,8 +17,9 @@ const removeNulls = (_key: string, value: any) => (value === 'null' || value ===
  */
 export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
   const log = Logger.instance;
-  const valueSchema = sr.valueSchemas[topic] || sr.valueSchemas[topic + '-value'];
-  const keySchema = sr.keySchemas[topic] || sr.keySchemas[topic + '-key'] ;
+  const valueSchema =
+    sr.valueSchemas[topic] || sr.valueSchemas[topic + '-value'];
+  const keySchema = sr.keySchemas[topic] || sr.keySchemas[topic + '-key'];
 
   const errorHook = (path: string[], part: any) =>
     log.error(`avroHelperFactory() - Topic ${topic}, path ${path.join(', ')}
@@ -27,7 +29,14 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
     /** Check whether the message is valid */
     isValid: (obj: Object) => valueSchema.type.isValid(obj, { errorHook }),
     /** Encode the message or messages */
-    encode: (obj: Object) => toMessageBuffer(obj, valueSchema.type, valueSchema.srId),
+    encode: (obj: Object) => {
+      const obj2 = valueSchema.type.clone(obj, { wrapUnions: true });
+      return toMessageBuffer(
+        obj,
+        valueSchema.type,
+        valueSchema.srId
+      );
+    },
     /** Decode the message or messages */
     decode: (buf: Buffer) => fromMessageBuffer(valueSchema.type, buf, sr).value,
     /** Check whether the key is valid */
@@ -36,15 +45,23 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
     },
     /** Encode the key */
     encodeKey: (key: IDefaultKey) => {
-      return keySchema ? toMessageBuffer(key, keySchema.type, keySchema.srId) : key;
+      return keySchema
+        ? toMessageBuffer(key, keySchema.type, keySchema.srId)
+        : key;
     },
     /** Decode the key */
     decodeKey: (buf: Buffer): IDefaultKey => {
-      return keySchema && buf instanceof Buffer ? fromMessageBuffer(keySchema.type, buf, sr).value : buf;
+      return keySchema && buf instanceof Buffer
+        ? fromMessageBuffer(keySchema.type, buf, sr).value
+        : buf;
     },
     /** Convert the object to a string */
-    toString: (buf: Buffer | Object) => typeof buf === 'object'
-      ? JSON.stringify(buf, removeNulls)
-      : JSON.stringify(fromMessageBuffer(valueSchema.type, buf, sr).value, removeNulls)
+    toString: (buf: Buffer | Object) =>
+      typeof buf === 'object'
+        ? JSON.stringify(buf, removeNulls)
+        : JSON.stringify(
+            fromMessageBuffer(valueSchema.type, buf, sr).value,
+            removeNulls
+          )
   } as IValidator & IEncoder & IDecoder;
 };

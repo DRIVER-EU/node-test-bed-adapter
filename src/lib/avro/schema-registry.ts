@@ -65,13 +65,11 @@ export class SchemaRegistry {
    * @type {Object}
    */
   private schemaMeta: { [key: string]: any } = {};
-  private wrapUnions: boolean | 'auto' | 'never' | 'always' = 'auto';
+  private wrapUnions: boolean | 'auto' | 'never' | 'always';
 
   constructor(private options: ITestBedOptions) {
-    this.wrapUnions = <boolean | 'auto' | 'never' | 'always'>(
-      (options.hasOwnProperty('wrapUnions') ? options.wrapUnions : 'auto')
-    );
     axios.defaults.timeout = 30000;
+    this.wrapUnions = options.wrapUnions || 'auto';
     this.fetchAllVersions = options.fetchAllVersions || false;
     const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
@@ -215,7 +213,7 @@ export class SchemaRegistry {
       try {
         schemaObj.type = Type.forSchema(
           JSON.parse(schemaObj.responseRaw.schema),
-          { wrapUnions: this.wrapUnions }
+          { wrapUnions: this.wrapUnionType(schemaObj.topic) }
         );
       } catch (ex) {
         this.log.warn({
@@ -336,6 +334,17 @@ export class SchemaRegistry {
     });
   }
 
+  private wrapUnionType(schemaType: string) {
+    switch (schemaType) {
+      case TestBedAdapter.HeartbeatTopic:
+      case TestBedAdapter.LogTopic:
+      case TestBedAdapter.ConfigurationTopic:
+        return 'auto';
+      default:
+        return this.wrapUnions;
+    }
+  }
+
   /**
    * Register the provided schema locally using avro.
    *
@@ -355,7 +364,7 @@ export class SchemaRegistry {
       try {
         schemaObj.type = Type.forSchema(
           JSON.parse(schemaObj.responseRaw.schema),
-          { wrapUnions: this.wrapUnions }
+          { wrapUnions: this.wrapUnionType(schemaObj.topic) }
         );
       } catch (ex) {
         this.log.warn({
