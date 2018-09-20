@@ -653,6 +653,9 @@ export class TestBedAdapter extends EventEmitter {
     ) {
       opt.produce.push(TestBedAdapter.LogTopic);
     }
+    if (!/\/$/.test(opt.schemaRegistry)) {
+      opt.schemaRegistry = opt.schemaRegistry + '/';
+    }
     return opt;
   }
 

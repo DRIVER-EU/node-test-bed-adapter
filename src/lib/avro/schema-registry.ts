@@ -180,7 +180,7 @@ export class SchemaRegistry {
     return new Promise<string[]>(resolve => {
       const fetchAllTopicsUrl = url.resolve(
         this.options.schemaRegistry,
-        '/subjects'
+        'subjects'
       );
       this.log.debug(
         `fetchAllSchemaTopics() - Fetching all schemas using url: ${fetchAllTopicsUrl}`
@@ -264,7 +264,7 @@ export class SchemaRegistry {
     return new Promise<ISchemaTopic>(resolve => {
       const fetchLatestVersionUrl = url.resolve(
         this.options.schemaRegistry,
-        `/subjects/${schemaTopic}/versions/latest`
+        `subjects/${schemaTopic}/versions/latest`
       );
 
       this.log.debug(
@@ -402,7 +402,7 @@ export class SchemaRegistry {
     return new Promise<ISchemaTopic[]>(resolve => {
       const fetchVersionsUrl = url.resolve(
         this.options.schemaRegistry,
-        '/subjects/' + schemaTopic + '/versions'
+        'subjects/' + schemaTopic + '/versions'
       );
 
       this.log.debug(
@@ -494,7 +494,7 @@ export class SchemaRegistry {
 
       const fetchSchemaUrl = url.resolve(
         this.options.schemaRegistry,
-        `/subjects/${schemaTopic}/versions/${version}`
+        `subjects/${schemaTopic}/versions/${version}`
       );
 
       this.log.debug(`fetchSchema() - Fetching schema url: ${fetchSchemaUrl}`);

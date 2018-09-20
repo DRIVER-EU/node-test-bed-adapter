@@ -85,7 +85,7 @@ export class SchemaPublisher {
   private uploadSchema(schemaFilename: string, useDefaultKeySchema: boolean) {
     return new Promise((resolve, reject) => {
       const schemaTopic = path.basename(schemaFilename).replace(path.extname(schemaFilename), '');
-      const uri = url.resolve(this.schemaRegistryUrl, `/subjects/${schemaTopic}/versions`);
+      const uri = url.resolve(this.schemaRegistryUrl, `subjects/${schemaTopic}/versions`);
       const schema = useDefaultKeySchema
         ? defaultKeySchema
         : JSON.parse(fs.readFileSync(schemaFilename, { encoding: 'utf8' }));
