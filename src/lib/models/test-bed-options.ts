@@ -6,6 +6,8 @@ export interface ITestBedOptions extends KafkaClientOptions {
   clientId: string;
   /** Uri for the Kafka broker, e.g. broker:3501 */
   kafkaHost: string;
+  /** SSL Options for secure connection to broker, see https://nodejs.org/api/tls.html#tls_tls_connect_options_callback */
+  sslOptions?: Object;
   /** Uri for the schema registry, e.g. schema_registry:3502 */
   schemaRegistry: string;
   /** Avro parser setting: whether to wrap union types in schema*/

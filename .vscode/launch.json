@@ -18,9 +18,31 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch SSL Producer",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/src/example/producer-secure.ts",
+      "outFiles": [
+        "${workspaceFolder}/**/*"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch Consumer",
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/src/example/consumer.ts",
+      "outFiles": [
+        "${workspaceFolder}/**/*"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch SSL  Consumer",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/src/example/consumer-secure.ts",
       "outFiles": [
         "${workspaceFolder}/**/*"
       ],

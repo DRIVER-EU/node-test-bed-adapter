@@ -1,20 +1,27 @@
 import { ProduceRequest } from 'kafka-node';
-import { TestBedAdapter, Logger, LogLevel } from '../lib/index';
+import { TestBedAdapter, Logger, LogLevel } from '../lib';
 import * as amberAlert from '../../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.json';
 import * as thunderstormAlert from '../../data/cap/examples/example_thunderstorm.json';
 import * as homelandSecurityAlert from '../../data/cap/examples/example_homeland_security.json';
+import * as fs from 'fs';
 
 const log = Logger.instance;
 
 class Producer {
-  private id = 'NodeTestProducer';
+  private id = 'NodeTestProducerSecure';
   private adapter: TestBedAdapter;
 
   constructor() {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
+      sslOptions: { 
+        pfx: fs.readFileSync('certs/other-tool-1-client.p12'),
+        passphrase: 'changeit',
+        ca: fs.readFileSync('certs/test-ca.pem'),
+        rejectUnauthorized: true
+      },
       // kafkaHost: 'driver-testbed.eu:3501',
       // schemaRegistry: 'driver-testbed.eu:3502',
       clientId: this.id,
