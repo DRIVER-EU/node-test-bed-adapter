@@ -16,11 +16,11 @@ class Producer {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
-      sslOptions: { 
+      sslOptions: {
         pfx: fs.readFileSync('certs/other-tool-1-client.p12'),
         passphrase: 'changeit',
         ca: fs.readFileSync('certs/test-ca.pem'),
-        rejectUnauthorized: true
+        rejectUnauthorized: true,
       },
       // kafkaHost: 'driver-testbed.eu:3501',
       // schemaRegistry: 'driver-testbed.eu:3502',
@@ -34,8 +34,8 @@ class Producer {
       produce: ['standard_cap'],
       logging: {
         logToConsole: LogLevel.Info,
-        logToKafka: LogLevel.Warn
-      }
+        logToKafka: LogLevel.Warn,
+      },
     });
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
@@ -46,35 +46,30 @@ class Producer {
     this.adapter.connect();
   }
 
+  /** Will currently only work if you are authorized to send CAP messages. */
   private sendCap() {
     const payloads: ProduceRequest[] = [
       {
         topic: 'standard_cap',
         messages: amberAlert,
-        attributes: 1 // Gzip
+        attributes: 1, // Gzip
       },
       {
         topic: 'standard_cap',
         messages: earthquakeAlert,
-        attributes: 1 // Gzip
+        attributes: 1, // Gzip
       },
       {
         topic: 'standard_cap',
         messages: thunderstormAlert,
-        attributes: 1 // Gzip
+        attributes: 1, // Gzip
       },
       {
         topic: 'standard_cap',
         messages: homelandSecurityAlert,
-        attributes: 1 // Gzip
-      }
+        attributes: 1, // Gzip
+      },
     ];
-    // payloads.forEach(payload => {
-    //   this.adapter.send(payload, (error, data) => {
-    //     if (error) { console.error(error); }
-    //     if (data) { console.log(data); }
-    //   });
-    // });
     this.adapter.send(payloads, (error, data) => {
       if (error) {
         log.error(error);
@@ -83,32 +78,6 @@ class Producer {
         log.info(data);
       }
     });
-
-    // log.error('This is an not an error message, sent only for testing purposes');
-    // log.critical('This is an not a critical error message, sent only for testing purposes');
-
-    // const vs = this.adapter.valueSchemas;
-    // for (const key in vs) {
-    //   if (!vs.hasOwnProperty(key)) { continue; }
-    //   const schema = vs[key];
-    //   console.log(`Schema for ${key}:`);
-    //   console.log(JSON.stringify(schema, null, 2));
-    // }
-    // this.adapter.send(payloads[0], (error, data) => {
-    //   if (error) { console.error(error); }
-    //   if (data) { console.log(data); }
-    // });
-    // this.adapter.send({
-    //   key: 15,
-    //   topic: 'avrokeytest2',
-    //   messages: {
-    //     name: 'Erik Vullings'
-    //   },
-    //   attributes: 1
-    // }, (error, data) => {
-    //   if (error) { console.error(error); }
-    //   if (data) { console.log(data); }
-    // });
   }
 }
 

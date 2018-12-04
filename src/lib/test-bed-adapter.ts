@@ -623,7 +623,6 @@ export class TestBedAdapter extends EventEmitter {
         clientId: '',
         autoConnect: true,
         wrapUnions: 'auto',
-        sslOptions: false,
         fromOffset: false,
         heartbeatInterval: TestBedAdapter.HeartbeatInterval,
         consume: [],

@@ -7,7 +7,20 @@ export interface ITestBedOptions extends KafkaClientOptions {
   /** Uri for the Kafka broker, e.g. broker:3501 */
   kafkaHost: string;
   /** SSL Options for secure connection to broker, see https://nodejs.org/api/tls.html#tls_tls_connect_options_callback */
-  sslOptions?: Object;
+  sslOptions?: {
+    /** Reads the public key + certificate */
+    pfx?: Buffer;
+    /** Alternatives (to pfx), use a key and cert */
+    key?: Buffer; // fs.readFileSync('client-key.pem'),
+    /** Alternatives (to pfx), use a key and cert */
+    cert?: Buffer; // fs.readFileSync('client-cert.pem'),
+    /** Passphrase for your key */
+    passphrase: string;
+    /** Reads the certificate authority's public key (so we can use the Test-bed's self-signed certificates) */
+    ca: Buffer;
+    /** Do not connect when the server's certificate is not accepted. */
+    rejectUnauthorized: boolean;
+  };
   /** Uri for the schema registry, e.g. schema_registry:3502 */
   schemaRegistry: string;
   /** Avro parser setting: whether to wrap union types in schema*/
