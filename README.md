@@ -23,13 +23,14 @@ npm i node-test-bed-adapter
 ```
 In case you have problems installing the adapter, you may have to first run `npm i -g node-gyp`, which is often required to build C++ libraries (in our case, snappy compression).
 
-See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/tree/master/src/example) for an example of a consumer and producer sending CAP messages.
+See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/tree/master/src/example) for an example of a consumer and producer sending CAP messages. Examples are also present for using SSL to connect to a secure test-bed.
 
 ## Functionality
 
 ### Completed
 
 - Connect to Kafka
+- Connect to Kafka using SSL
 - Publish heartbeat (topic: connect-status-heartbeat)
 - Validate AVRO messages
 - Encode/decode object and keys using AVRO helper factory
