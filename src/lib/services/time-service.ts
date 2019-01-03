@@ -52,7 +52,9 @@ export class TimeService {
   public get trialTime(): Date {
     const now = Date.now();
     const timePassedSinceLastUpdate = now - this.updatedSimTimeAt;
-    return new Date(this.pTrialTime + timePassedSinceLastUpdate * this.pTrialTimeSpeed);
+    return this.pState === TimeState.Idle
+      ? new Date()
+      : new Date(this.pTrialTime + timePassedSinceLastUpdate * this.pTrialTimeSpeed);
   }
 
   /**
