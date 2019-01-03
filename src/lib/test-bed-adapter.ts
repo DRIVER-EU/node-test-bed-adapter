@@ -24,6 +24,7 @@ import { IConfiguration } from './models/configuration';
 import { Type } from 'avsc';
 import { ITimeControlMessage } from './models/time-control-message';
 import { log } from 'util';
+import { TimeState } from './models';
 
 /* Override the defined ProduceRequest in kafka-node, as it uses a key: string */
 export interface ProduceRequest {
@@ -320,7 +321,7 @@ export class TestBedAdapter extends EventEmitter {
   /**
    * Get the simulation state.
    */
-  public get state() {
+  public get state(): TimeState {
     return this.timeService.state;
   }
 
