@@ -3,6 +3,7 @@
 This is the test-bed adapter for node.js: it allows you to easily connect JavaScript and typescript services to the Apache Kafka test-bed via Node.js. Although it is specifically created for connecting to our [test-bed](https://github.com/DRIVER-EU/test-bed), it should work for any Apache Kafka version too.
 
 The implementation is a wrapper around [kafka-node](https://www.npmjs.com/package/kafka-node), offering support for:
+
 - AVRO schema's and messages: both key's and values should have a schema as explained [here](https:/github.com/DRIVER-EU/avro-schemas).
 - Logging via console, file and via Kafka: you can set for each log provider the log level (e.g. error or debug).
 - Management
@@ -11,6 +12,7 @@ The implementation is a wrapper around [kafka-node](https://www.npmjs.com/packag
   - Configuration (topic: connect-status-configuration), so you can see which topics clients consume and produce.
 
 ## Pre-requisites
+
 Clearly, you need to install [node.js](https://nodejs.org). After that, in order to build and install the adapter on WINDOWS, run
 `npm install --global --production windows-build-tools` in a command prompt as an admin user. Most likely, you will also need to [install .NET 2 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=19988), and `npm i -g node-gyp`.
 
@@ -21,6 +23,7 @@ First, install the adapter, so you can import / require it in your code.
 ```console
 npm i node-test-bed-adapter
 ```
+
 In case you have problems installing the adapter, you may have to first run `npm i -g node-gyp`, which is often required to build C++ libraries (in our case, snappy compression).
 
 See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/tree/master/src/example) for an example of a consumer and producer sending CAP messages. Examples are also present for using SSL to connect to a secure test-bed.
@@ -57,6 +60,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 - Create AVRO schema for Configuration, Log and Heartbeat message
 - Automatically publish schema's to the registry: using options `schemaFolder` and `autoRegisterSchemas`. See `producer.ts` in the example folder.
 - Test configuration, log and heartbeat schema's.
+- Added the time service: through it, you can get the trialTime, trialSpeed, state, and elapsed trial time.
 
 ### To be done
 
@@ -65,7 +69,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 - Pause consuming messages remotely
 - Pause publishing messages remotely
 
-# Build
+## Build
 
 Assuming you have node (8 or higher) have installed, you can do the following:
 
