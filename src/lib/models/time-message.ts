@@ -1,3 +1,5 @@
+import { TimeState } from './time-state';
+
 /**
  * Timing message to distribute the trial time.
  */
@@ -21,4 +23,6 @@ export interface ITimeMessage {
    * to the actual time. A value of 0 means a pause, 1 is as fast as real-time.
    */
   trialTimeSpeed: number;
+  /** The state of the Test-bed Time Service */
+  state: TimeState;
 }

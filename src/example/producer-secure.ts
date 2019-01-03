@@ -1,9 +1,8 @@
-import { ProduceRequest } from 'kafka-node';
-import { TestBedAdapter, Logger, LogLevel } from '../lib';
-import * as amberAlert from '../../data/cap/examples/example_amber_alert.json';
-import * as earthquakeAlert from '../../data/cap/examples/example_earthquake.json';
-import * as thunderstormAlert from '../../data/cap/examples/example_thunderstorm.json';
-import * as homelandSecurityAlert from '../../data/cap/examples/example_homeland_security.json';
+import { TestBedAdapter, Logger, LogLevel, ProduceRequest } from '../lib';
+import * as amberAlert from '../data/cap/examples/example_amber_alert.json';
+import * as earthquakeAlert from '../data/cap/examples/example_earthquake.json';
+import * as thunderstormAlert from '../data/cap/examples/example_thunderstorm.json';
+import * as homelandSecurityAlert from '../data/cap/examples/example_homeland_security.json';
 import * as fs from 'fs';
 
 const log = Logger.instance;
@@ -39,7 +38,7 @@ class Producer {
     });
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
-      log.info(`Current simulation time: ${this.adapter.simTime}`);
+      log.info(`Current simulation time: ${this.adapter.trialTime}`);
       log.info('Producer is connected');
       this.sendCap();
     });

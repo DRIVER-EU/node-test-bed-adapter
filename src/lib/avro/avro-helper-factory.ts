@@ -30,7 +30,6 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
     isValid: (obj: Object) => valueSchema.type.isValid(obj, { errorHook }),
     /** Encode the message or messages */
     encode: (obj: Object) => {
-      const obj2 = valueSchema.type.clone(obj, { wrapUnions: true });
       return toMessageBuffer(
         obj,
         valueSchema.type,

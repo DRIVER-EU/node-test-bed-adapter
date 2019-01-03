@@ -1,8 +1,7 @@
-import { TestBedAdapter } from '../lib/test-bed-adapter';
-import { ITestBedOptions } from '../lib/models/test-bed-options';
+import { TestBedAdapter, ITestBedOptions, ProduceRequest, LogLevel } from './';
 import * as proxyquire from 'proxyquire';
 import { EventEmitter } from 'events';
-import { KafkaClient, ProduceRequest } from 'kafka-node';
+import { KafkaClient } from 'kafka-node';
 
 describe('TestBedAdapter', () => {
   let TestBedAdapterMock: typeof TestBedAdapter;
@@ -36,7 +35,8 @@ describe('TestBedAdapter', () => {
   }
 
   beforeAll(done => {
-    TestBedAdapterMock = proxyquire('../lib/test-bed-adapter', {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
+    TestBedAdapterMock = proxyquire('./index', {
       'kafka-node': {
         KafkaClient: KafkaClientMock,
         Consumer: ConsumerMock,
@@ -58,8 +58,8 @@ describe('TestBedAdapter', () => {
 
   it('should not automatically connect to the testbed', () => {
     const result = new TestBedAdapterMock({
-      kafkaHost: 'broker:9092',
-      schemaRegistry: 'schema-registry:3502',
+      kafkaHost: 'localhost:3501',
+      schemaRegistry: 'localhost:3502',
       clientId: 'client',
     });
     expect(result.isConnected).toBe(false);
@@ -67,9 +67,12 @@ describe('TestBedAdapter', () => {
 
   it('should connect to the testbed', done => {
     const tba = new TestBedAdapterMock({
-      kafkaHost: 'broker:9092',
-      schemaRegistry: 'schema-registry:3502',
+      kafkaHost: 'localhost:3501',
+      schemaRegistry: 'localhost:3502',
       clientId: 'client',
+      logging: {
+        logToConsole: LogLevel.Info,
+      },
     });
     tba.on('ready', () => {
       expect(tba.isConnected).toBe(true);
@@ -81,9 +84,9 @@ describe('TestBedAdapter', () => {
   it('should load the test-bed-config.json from the config folder', () => {
     const testbed = new TestBedAdapterMock('./src/test/config/test-bed-config.json');
     const configuration = testbed.configuration;
-    expect(configuration.kafkaHost).toEqual('broker:9092');
+    expect(configuration.kafkaHost).toEqual('localhost:3501');
     expect(configuration.produce).toBeTruthy();
     expect(configuration.consume).toBeTruthy();
-    expect(configuration.consume && configuration.consume.length).toBe(0);
+    expect(configuration.consume && configuration.consume.length).toBe(1);
   });
 });

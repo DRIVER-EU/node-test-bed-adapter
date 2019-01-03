@@ -40,6 +40,17 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Time Consumer",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/src/example/consumer-time.ts",
+      "outFiles": [
+        "${workspaceFolder}/**/*"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch SSL  Consumer",
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/src/example/consumer-secure.ts",

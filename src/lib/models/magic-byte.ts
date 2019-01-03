@@ -56,6 +56,7 @@ export const fromMessageBuffer = (type: Type, encodedMessage: Buffer, sr: Schema
   let decoded: IAvroDecoded;
   if (!sr.schemaTypeById[schemaKey]) {
     // use default type
+    Logger.instance.warn(`Could not find schema ${schemaId}. Is this an old schema version?`);
     decoded = type.decode(encodedMessage, 5);
   } else {
     decoded = sr.schemaTypeById[schemaKey].decode(encodedMessage, 5);

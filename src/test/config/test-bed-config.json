@@ -1,5 +1,6 @@
 {
-  "kafkaHost": "broker:9092",
+  "kafkaHost": "localhost:3501",
+  "schemaRegistry": "localhost:3502",
   "clientId": "client",
   "produce": [{
     "topic": "test-cap",

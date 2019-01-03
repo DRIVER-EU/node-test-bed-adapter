@@ -6,14 +6,7 @@ import { FileLogger } from './logger/file-logger';
 import { EventEmitter } from 'events';
 import { Logger } from './logger/logger';
 import { ISendResponse } from './models/adapter-message';
-import {
-  KafkaClient,
-  Producer,
-  Consumer,
-  Message,
-  OffsetFetchRequest,
-  Topic
-} from 'kafka-node';
+import { KafkaClient, Producer, Consumer, Message, OffsetFetchRequest, Topic } from 'kafka-node';
 import { ITimeMessage } from './models/time-message';
 import { IHeartbeat } from './models/heartbeat';
 import { IInitializedTopic } from './models/topic';
@@ -29,6 +22,8 @@ import { ILogger, IAdapterMessage } from '.';
 import { TimeService } from './services/time-service';
 import { IConfiguration } from './models/configuration';
 import { Type } from 'avsc';
+import { ITimeControlMessage } from './models/time-control-message';
+import { log } from 'util';
 
 /* Override the defined ProduceRequest in kafka-node, as it uses a key: string */
 export interface ProduceRequest {
@@ -53,6 +48,7 @@ export class TestBedAdapter extends EventEmitter {
   public static HeartbeatTopic = 'system_heartbeat';
   public static ConfigurationTopic = 'system_configuration';
   public static TimeTopic = 'system_timing';
+  public static TimeControlTopic = 'system_timing_control';
   public static LogTopic = 'system_logging';
   public isConnected = false;
 
@@ -130,10 +126,7 @@ export class TestBedAdapter extends EventEmitter {
       await this.addProducerTopics(this.config.produce);
       await this.addKafkaLogger();
       await this.initConsumer();
-      await this.addConsumerTopics(
-        this.config.consume,
-        this.config.fromOffset
-      ).catch(e => this.log.error(e));
+      await this.addConsumerTopics(this.config.consume, this.config.fromOffset).catch(e => this.log.error(e));
       await this.startHeartbeat();
       await this.configUpdated();
       await this.emit('ready');
@@ -179,10 +172,7 @@ export class TestBedAdapter extends EventEmitter {
     this.client.close();
   }
 
-  public send(
-    payloads: ProduceRequest | ProduceRequest[],
-    cb: (error?: any, data?: ISendResponse) => any
-  ) {
+  public send(payloads: ProduceRequest | ProduceRequest[], cb: (error?: any, data?: ISendResponse) => any) {
     if (!this.producer) {
       return this.emitErrorMsg('Producer not ready!');
     }
@@ -191,12 +181,7 @@ export class TestBedAdapter extends EventEmitter {
     let hasError = false;
     payloads.forEach(payload => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) {
-        return cb(
-          `Topic ${
-            payload.topic
-          } not found: please register first! ${JSON.stringify(payload)}`,
-          undefined
-        );
+        return cb(`Topic ${payload.topic} not found: please register first! ${JSON.stringify(payload)}`, undefined);
       }
       const topic = this.producerTopics[payload.topic];
       if (!payload.key || isEmptyObject(payload.key)) {
@@ -206,7 +191,7 @@ export class TestBedAdapter extends EventEmitter {
           dateTimeSent: Date.now(),
           dateTimeExpires: 0,
           distributionStatus: 'Test',
-          distributionKind: 'Unknown'
+          distributionKind: 'Unknown',
         } as IDefaultKey;
       }
       if (topic.isValid(payload.messages) && topic.isKeyValid(payload.key)) {
@@ -254,7 +239,7 @@ export class TestBedAdapter extends EventEmitter {
         .forEach(t => (this.callbacks[t] = cb));
     };
 
-    return new Promise<OffsetFetchRequest[]>((resolve) => {
+    return new Promise<OffsetFetchRequest[]>(resolve => {
       if (!topics) {
         return resolve();
       }
@@ -297,10 +282,7 @@ export class TestBedAdapter extends EventEmitter {
       if (this.producer && newTopics.length > 0) {
         this.producer.createTopics(newTopics, false, (error, _data) => {
           if (error) {
-            return this.emitErrorMsg(
-              `addProducerTopics - Error ${error}`,
-              reject
-            );
+            return this.emitErrorMsg(`addProducerTopics - Error ${error}`, reject);
           }
           resolve(newTopics);
         });
@@ -316,31 +298,46 @@ export class TestBedAdapter extends EventEmitter {
    * @param topics If topics is an empty array, retreive the metadata of all topics
    * @param cb callback function to return the metadata results
    */
-  public loadMetadataForTopics(
-    topics: string[],
-    cb: (error?: any, results?: ITopicsMetadata) => void
-  ) {
+  public loadMetadataForTopics(topics: string[], cb: (error?: any, results?: ITopicsMetadata) => void) {
     if (!this.isConnected) {
       cb('Client is not connected');
     }
-    (this.client as any).loadMetadataForTopics(
-      topics,
-      (error?: any, results?: ITopicsMetadata) => {
-        if (error) {
-          cb(error, undefined);
-        }
-        cb(null, results);
+    (this.client as any).loadMetadataForTopics(topics, (error?: any, results?: ITopicsMetadata) => {
+      if (error) {
+        cb(error, undefined);
       }
-    );
+      cb(null, results);
+    });
   }
 
   /**
-   * Get the simulation time as Date.
+   * Get the simulation time as UTC Date.
    */
-  public get simTime() {
-    return this.timeService.simTime;
+  public get trialTime() {
+    return this.timeService.trialTime;
   }
 
+  /**
+   * Get the simulation state.
+   */
+  public get state() {
+    return this.timeService.state;
+  }
+
+  /**
+   * Positive number, indicating how fast the simulation / trial time moves with respect
+   * to the actual time. A value of 0 means a pause, 1 is as fast as real-time.
+   */
+  public get trialSpeed() {
+    return this.timeService.trialSpeed;
+  }
+
+  /**
+   * Get elapsed time in msec.
+   */
+  public get timeElapsed() {
+    return this.timeService.timeElapsed;
+  }
   // PRIVATE METHODS
 
   private initProducer() {
@@ -362,13 +359,13 @@ export class TestBedAdapter extends EventEmitter {
         if (logOptions.logToConsole) {
           loggers.push({
             logger: new ConsoleLogger(),
-            minLevel: logOptions.logToConsole
+            minLevel: logOptions.logToConsole,
           });
         }
         if (logOptions.logToFile) {
           loggers.push({
             logger: new FileLogger(logOptions.logFile || 'log.txt'),
-            minLevel: logOptions.logToFile
+            minLevel: logOptions.logToFile,
           });
         }
         this.log.initialize(loggers);
@@ -388,9 +385,9 @@ export class TestBedAdapter extends EventEmitter {
         this.log.addLogger({
           logger: new KafkaLogger({
             adapter: this,
-            clientId: this.config.clientId
+            clientId: this.config.clientId,
           }),
-          minLevel: logOptions.logToKafka
+          minLevel: logOptions.logToKafka,
         });
       }
       resolve();
@@ -405,13 +402,11 @@ export class TestBedAdapter extends EventEmitter {
       this.consumer = new Consumer(this.client, [], {
         encoding: 'buffer',
         keyEncoding: 'buffer',
-        autoCommit: true
+        autoCommit: true,
       });
       this.consumer.on('message', message => this.handleMessage(message));
       this.consumer.on('error', error => this.emitErrorMsg(error));
-      this.consumer.on('offsetOutOfRange', error =>
-        this.emit('offsetOutOfRange', error)
-      );
+      this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
       resolve();
     });
   }
@@ -432,8 +427,8 @@ export class TestBedAdapter extends EventEmitter {
       consumerTopic.decodeKey && (message.key as any) instanceof Buffer
         ? (consumerTopic.decodeKey(message.key as any) as IDefaultKey)
         : key
-          ? key
-          : '';
+        ? key
+        : '';
     switch (topic) {
       default:
         this.emit('message', {
@@ -442,13 +437,21 @@ export class TestBedAdapter extends EventEmitter {
           partition,
           highWaterOffset,
           value: decodedValue,
-          key: decodedKey
+          key: decodedKey,
         } as IAdapterMessage);
         break;
       case TestBedAdapter.TimeTopic:
         const timeMessage = decodedValue as ITimeMessage;
-        this.timeService.setSimTime(timeMessage);
+        if (timeMessage) {
+          this.timeService.setSimTime(timeMessage);
+        } else {
+          this.log.warn(`Could not decode topic ${TestBedAdapter.TimeTopic}. Is the schema correct?`);
+        }
         break;
+      // case TestBedAdapter.TimeControlTopic:
+      //   const timeControl = decodedValue as ITimeControlMessage;
+      //   this.timeService.setSimState(timeControl);
+      //   break;
     }
   }
 
@@ -465,16 +468,11 @@ export class TestBedAdapter extends EventEmitter {
     topics.forEach(t => {
       if (this.consumerTopics.hasOwnProperty(t.topic)) return;
       if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
-        this.log.error(
-          `initializeConsumerTopics - no schema registered for topic ${t.topic}`
-        );
+        this.log.error(`initializeConsumerTopics - no schema registered for topic ${t.topic}`);
         return;
       }
       newTopics.push(t);
-      if (
-        this.config.consume &&
-        this.config.consume.filter(fr => fr.topic === t.topic).length === 0
-      ) {
+      if (this.config.consume && this.config.consume.filter(fr => fr.topic === t.topic).length === 0) {
         isConfigUpdated = true;
         this.config.consume.push(t);
       }
@@ -508,9 +506,7 @@ export class TestBedAdapter extends EventEmitter {
           this.schemaRegistry.valueSchemas.hasOwnProperty(t + '-value')
         )
       ) {
-        this.log.error(
-          `initializeProducerTopics - no schema registered for topic ${t}`
-        );
+        this.log.error(`initializeProducerTopics - no schema registered for topic ${t}`);
         return;
       }
       newTopics.push(t);
@@ -545,8 +541,7 @@ export class TestBedAdapter extends EventEmitter {
         clientId: this.config.clientId,
         kafkaHost: this.config.kafkaHost,
         schemaRegistry: this.config.schemaRegistry,
-        heartbeatInterval:
-          this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval,
+        heartbeatInterval: this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval,
         consume: this.config.consume,
         produce: this.config.produce,
         logging: this.config.logging
@@ -554,16 +549,16 @@ export class TestBedAdapter extends EventEmitter {
               logToConsole: this.config.logging.logToConsole,
               logToKafka: this.config.logging.logToKafka,
               logToFile: this.config.logging.logToFile,
-              logFile: this.config.logging.logFile
+              logFile: this.config.logging.logFile,
             }
-          : undefined
+          : undefined,
       };
       this.send(
         [
           {
             topic: TestBedAdapter.ConfigurationTopic,
-            messages: msg
-          }
+            messages: msg,
+          },
         ],
         (err?: string, result?: ISendResponse) => {
           if (err) {
@@ -596,8 +591,8 @@ export class TestBedAdapter extends EventEmitter {
             topic: TestBedAdapter.HeartbeatTopic,
             messages: {
               id: this.config.clientId,
-              alive: Date.now()
-            } as IHeartbeat
+              alive: Date.now(),
+            } as IHeartbeat,
           },
           error => {
             if (error) {
@@ -629,15 +624,18 @@ export class TestBedAdapter extends EventEmitter {
         produce: [],
         logging: {},
         maxConnectionRetries: 10,
-        connectTimeout: 5000
+        connectTimeout: 5000,
       } as ITestBedOptions,
       options
     );
     if (!opt.produce) {
       opt.produce = [];
     }
-    if (opt.produce.indexOf(TestBedAdapter.TimeTopic) < 0) {
-      opt.produce.push(TestBedAdapter.TimeTopic);
+    if (!opt.consume) {
+      opt.consume = [];
+    }
+    if (opt.consume.filter(c => c.topic === TestBedAdapter.TimeTopic).length === 0) {
+      opt.consume.push({ topic: TestBedAdapter.TimeTopic });
     }
     if (opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
       opt.produce.push(TestBedAdapter.HeartbeatTopic);
@@ -645,11 +643,7 @@ export class TestBedAdapter extends EventEmitter {
     if (opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
       opt.produce.push(TestBedAdapter.ConfigurationTopic);
     }
-    if (
-      opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 &&
-      opt.logging &&
-      opt.logging.logToKafka
-    ) {
+    if (opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
       opt.produce.push(TestBedAdapter.LogTopic);
     }
     if (!/\/$/.test(opt.schemaRegistry)) {
@@ -688,9 +682,7 @@ export class TestBedAdapter extends EventEmitter {
     configFile = path.resolve(configFile);
     // this.log(configFile);
     if (fs.existsSync(configFile)) {
-      return JSON.parse(
-        fs.readFileSync(configFile, { encoding: 'utf8' })
-      ) as ITestBedOptions;
+      return JSON.parse(fs.readFileSync(configFile, { encoding: 'utf8' })) as ITestBedOptions;
     }
     throw new Error(
       `Error loading options! Either supply them as parameter or as a configuration file at ${configFile}.`
