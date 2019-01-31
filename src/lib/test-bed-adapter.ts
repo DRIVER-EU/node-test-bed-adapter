@@ -22,8 +22,6 @@ import { ILogger, IAdapterMessage } from '.';
 import { TimeService } from './services/time-service';
 import { IConfiguration } from './models/configuration';
 import { Type } from 'avsc';
-import { ITimeControlMessage } from './models/time-control-message';
-import { log } from 'util';
 import { TimeState } from './models';
 
 /* Override the defined ProduceRequest in kafka-node, as it uses a key: string */
@@ -42,6 +40,7 @@ export interface TestBedAdapter {
   on(event: 'offsetOutOfRange', listener: (error: string) => void): this;
   on(event: 'raw', listener: (message: Message) => void): this;
   on(event: 'message', listener: (message: IAdapterMessage) => void): this;
+  on(event: 'time', listener: (message: ITimeMessage) => void): this;
 }
 
 export class TestBedAdapter extends EventEmitter {
@@ -445,6 +444,7 @@ export class TestBedAdapter extends EventEmitter {
         const timeMessage = decodedValue as ITimeMessage;
         if (timeMessage) {
           this.timeService.setSimTime(timeMessage);
+          this.emit('time', timeMessage);
         } else {
           this.log.warn(`Could not decode topic ${TestBedAdapter.TimeTopic}. Is the schema correct?`);
         }
