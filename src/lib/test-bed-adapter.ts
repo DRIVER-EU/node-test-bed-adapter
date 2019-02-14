@@ -635,7 +635,7 @@ export class TestBedAdapter extends EventEmitter {
     if (!opt.consume) {
       opt.consume = [];
     }
-    if (opt.consume.filter(c => c.topic === TestBedAdapter.TimeTopic).length === 0) {
+    if (!opt.ignoreTimeTopic && opt.consume.filter(c => c.topic === TestBedAdapter.TimeTopic).length === 0) {
       opt.consume.push({ topic: TestBedAdapter.TimeTopic });
     }
     if (opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
