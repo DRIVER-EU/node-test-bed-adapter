@@ -94,10 +94,11 @@ export class SchemaRegistry {
         .then(schemas => Promise.resolve(this.checkForAllVersions(schemas)))
         .catch(e => console.error(e));
     };
-    const isSuccess = () =>
+    const missingSchemas = () =>
       this.selectedTopics
         .filter(t => t !== TestBedAdapter.ConfigurationTopic)
-        .reduce((p, c) => p && this.valueSchemas.hasOwnProperty(c), true);
+        .filter(t => !this.valueSchemas.hasOwnProperty(t));
+    const isSuccess = () => missingSchemas().length === 0;
     return new Promise<{}>(resolve => {
       let count = 0;
       const handler = setInterval(() => {
@@ -107,7 +108,9 @@ export class SchemaRegistry {
           resolve();
         } else {
           count === 0
-            ? this.log.info(`Retreiving schema's...`)
+            ? this.log.info(`Retrieving schema's...`)
+            : count === 1
+            ? this.log.info(`Missing schema's: ${JSON.stringify(missingSchemas())}`)
             : count > 1
             ? process.stdout.write(`Schema\'s not available... waiting ${5 * (count + 1)} seconds\r`)
             : '';
