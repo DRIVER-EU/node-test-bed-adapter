@@ -60,7 +60,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 - Create AVRO schema for Configuration, Log and Heartbeat message
 - Automatically publish schema's to the registry: using options `schemaFolder` and `autoRegisterSchemas`. See `producer.ts` in the example folder.
 - Test configuration, log and heartbeat schema's.
-- Added the time service: through it, you can get the trialTime, trialSpeed, state, and elapsed trial time.
+- Added the time service: through it, you can get the trialTime, trialTimeSpeed, state, and elapsed trial time.
 
 ### To be done
 

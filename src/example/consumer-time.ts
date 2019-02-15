@@ -34,7 +34,7 @@ class TimeConsumer {
     this.adapter.on('ready', () => {
       setInterval(() => {
         const time = this.adapter.trialTime;
-        const speed = this.adapter.trialSpeed;
+        const speed = this.adapter.trialTimeSpeed;
         const state = this.adapter.state;
         process.stdout.write(`Time: ${time.toUTCString()}; Speed: ${speed}; State: ${state}    \r`);
       }, 100);
