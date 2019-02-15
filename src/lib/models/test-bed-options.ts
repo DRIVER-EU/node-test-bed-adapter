@@ -39,6 +39,8 @@ export interface ITestBedOptions extends KafkaClientOptions {
   // canPublishUnvalidatedMessages?: boolean;
   /** Hearbeat interval in msec */
   heartbeatInterval?: number;
+  /** Don't subscribe to the system_time topic (which is subscribed to by default) */
+  ignoreTimeTopic?: boolean;
   /** Topics you want to consume */
   consume?: OffsetFetchRequest[];
   /** Topics you want to produce */
