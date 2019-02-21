@@ -258,6 +258,11 @@ export class TestBedAdapter extends EventEmitter {
           newTopics,
           (error, added) => {
             if (error) {
+              count === 0
+            ? this.log.info(`Initializing topics...`)
+            : count <= 3 
+            ? this.log.info(`Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`)
+            : count > 3
               process.stderr.write(`addConsumerTopics - Error ${error}. Waiting ${++count * 5} seconds...\r`);
               return;
             }
