@@ -109,9 +109,9 @@ export class SchemaRegistry {
         } else {
           count === 0
             ? this.log.info(`Retrieving schema's...`)
-            : count === 1
+            : count <= 3 
             ? this.log.info(`Missing schema's: ${JSON.stringify(missingSchemas())}`)
-            : count > 1
+            : count > 3
             ? process.stdout.write(`Schema\'s not available... waiting ${5 * (count + 1)} seconds\r`)
             : '';
           count++;
