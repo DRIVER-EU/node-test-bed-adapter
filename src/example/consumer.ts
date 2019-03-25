@@ -20,9 +20,9 @@ class Consumer {
       fetchAllVersions: false,
       wrapUnions: true,
       // wrapUnions: 'auto',
-      clientId: 'ConsumerErik',
-      consume: [{ topic: 'standard_cap', offset: 0 }],
-      fromOffset: true,
+      clientId: 'crisissuite-stedin',
+      // consume: [{ topic: 'standard_cap', offset: 0 }],
+      fromOffset: false,
       logging: {
         logToConsole: LogLevel.Info,
         logToFile: LogLevel.Info,
@@ -34,12 +34,12 @@ class Consumer {
       this.subscribe();
       log.info('Consumer is connected');
       // this.getTopics();
-      this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
-        if (err) {
-          return log.error(err);
-        }
-        this.handleMessage(msg as IAdapterMessage);
-      });
+      // this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
+      //   if (err) {
+      //     return log.error(err);
+      //   }
+      //   this.handleMessage(msg as IAdapterMessage);
+      // });
     });
     this.adapter.on('error', err => log.error(`Consumer received an error: ${err}`));
     this.adapter.connect();
@@ -78,9 +78,6 @@ class Consumer {
     switch (message.topic.toLowerCase()) {
       case 'system_heartbeat':
         log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
-        break;
-      case 'system_configuration':
-        log.info(`Received configuration message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
       case 'standard_cap':
         log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
