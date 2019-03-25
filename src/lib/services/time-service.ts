@@ -1,5 +1,4 @@
-import { ITimeMessage } from '../models/time-message';
-import { TimeState } from '../models/time-state';
+import { ITiming, TimeState } from '../avro-schemas/core';
 
 /**
  * A service to maintain the simulation time and scenario duration.
@@ -34,7 +33,7 @@ export class TimeService {
    *
    * @param simTime Received time message
    */
-  public setSimTime(tm: ITimeMessage) {
+  public setSimTime(tm: ITiming) {
     const latency = 0; // this.updatedSimTimeAt - tm.updatedAt;
     this.updatedSimTimeAt = Date.now();
     this.updatedAt = tm.updatedAt;

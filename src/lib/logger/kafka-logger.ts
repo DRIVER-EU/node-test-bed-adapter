@@ -1,8 +1,7 @@
 import { TestBedAdapter } from '../test-bed-adapter';
-import { ILogMessage } from './../models/log-message';
-import { ILog } from './logger';
+import { ILogMessage } from '../avro-schemas/core';
+import { ILog, LogLevel, LogLevelToType } from '.';
 import { ProduceRequest } from 'kafka-node';
-import { LogLevel, LogLevelToType } from './log-levels';
 
 export interface IKafkaLoggerOptions {
   adapter: TestBedAdapter;

@@ -1,7 +1,9 @@
-import { LogLevel, LogLevelType } from './../logger/log-levels';
+import { LogLevelType } from '../../../logger/log-levels';
 
 /**
  * Log message, especially useful to inform others of errors that are occurring.
+ * Implements AVRO schema: system_logging-value.avsc
+ * @see https://github.com/DRIVER-EU/avro-schemas/blob/master/core/log/system_logging-value.avsc
  */
 export interface ILogMessage {
   /** Client id */
