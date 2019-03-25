@@ -3,7 +3,6 @@ import { default as axios, AxiosRequestConfig } from 'axios';
 import * as url from 'url';
 import { Logger } from '..';
 import { Type } from 'avsc';
-import { TestBedAdapter } from '../test-bed-adapter';
 import { HeartbeatTopic, LogTopic } from '../avro-schemas';
 
 export interface ISchema {
