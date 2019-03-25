@@ -1,28 +1,31 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ITopicsMetadata } from './declarations/kafka-node-ext';
-import { clearInterval } from 'timers';
-import { FileLogger } from './logger/file-logger';
-import { EventEmitter } from 'events';
-import { Logger } from './logger/logger';
-import { ISendResponse } from './models/adapter-message';
 import { KafkaClient, Producer, Consumer, Message, OffsetFetchRequest, Topic } from 'kafka-node';
-import { ITimeMessage } from './models/time-message';
-import { IHeartbeat } from './models/heartbeat';
+import { clearInterval } from 'timers';
+import { EventEmitter } from 'events';
+import { ISendResponse } from './models/adapter-message';
+import {
+  IHeartbeat,
+  IAdminHeartbeat,
+  ITiming,
+  ITopicInvite,
+  TimeState,
+  TimeTopic,
+  HeartbeatTopic,
+  CoreSubscribeTopics,
+  CorePublishTopics,
+  AccessInviteTopic,
+  AdminHeartbeatTopic,
+} from './avro-schemas/core';
 import { IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
-import { SchemaRegistry } from './avro/schema-registry';
-import { SchemaPublisher } from './avro/schema-publisher';
-import { IDefaultKey } from './avro/default-key-schema';
-import { avroHelperFactory } from './avro/avro-helper-factory';
+import { SchemaRegistry, SchemaPublisher, IDefaultKey, avroHelperFactory } from './avro';
 import { clone, uuid4, isEmptyObject } from './utils/helpers';
-import { KafkaLogger } from './logger/kafka-logger';
-import { ConsoleLogger } from './logger/console-logger';
-import { ILogger, IAdapterMessage } from '.';
+import { Logger, FileLogger, KafkaLogger, ConsoleLogger, ILogger } from './logger';
+import { IAdapterMessage } from '.';
 import { TimeService } from './services/time-service';
-import { IConfiguration } from './models/configuration';
 import { Type } from 'avsc';
-import { TimeState } from './models';
 
 /* Override the defined ProduceRequest in kafka-node, as it uses a key: string */
 export interface ProduceRequest {
@@ -40,18 +43,15 @@ export interface TestBedAdapter {
   on(event: 'offsetOutOfRange', listener: (error: string) => void): this;
   on(event: 'raw', listener: (message: Message) => void): this;
   on(event: 'message', listener: (message: IAdapterMessage) => void): this;
-  on(event: 'time', listener: (message: ITimeMessage) => void): this;
+  on(event: 'time', listener: (message: ITiming) => void): this;
+  on(event: 'heartbeat', listener: (message: IAdminHeartbeat) => void): this;
 }
 
 export class TestBedAdapter extends EventEmitter {
   public static HeartbeatInterval = 5000;
-  public static HeartbeatTopic = 'system_heartbeat';
-  public static ConfigurationTopic = 'system_configuration';
-  public static TimeTopic = 'system_timing';
-  public static TimeControlTopic = 'system_timing_control';
-  public static LogTopic = 'system_logging';
   public isConnected = false;
 
+  private clientId: string;
   private schemaPublisher: SchemaPublisher;
   private schemaRegistry: SchemaRegistry;
   private log = Logger.instance;
@@ -79,6 +79,7 @@ export class TestBedAdapter extends EventEmitter {
       config = this.loadOptionsFromFile(config);
     }
     this.validateOptions(config);
+    this.clientId = config.clientId;
     this.config = this.setDefaultOptions(config);
     this.schemaPublisher = new SchemaPublisher(this.config);
     this.schemaRegistry = new SchemaRegistry(this.config);
@@ -128,7 +129,6 @@ export class TestBedAdapter extends EventEmitter {
       await this.initConsumer();
       await this.addConsumerTopics(this.config.consume, this.config.fromOffset).catch(e => this.log.error(e));
       await this.startHeartbeat();
-      await this.configUpdated();
       await this.emit('ready');
       resolve();
     });
@@ -259,15 +259,15 @@ export class TestBedAdapter extends EventEmitter {
           (error, added) => {
             if (error) {
               count === 0
-            ? this.log.info(`Initializing topics...`)
-            : count <= 3 
-            ? this.log.info(`Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`)
-            : count > 3
+                ? this.log.info(`Initializing topics...`)
+                : count <= 3
+                ? this.log.info(`Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`)
+                : count > 3;
               process.stderr.write(`addConsumerTopics - Error ${error}. Waiting ${++count * 5} seconds...\r`);
               return;
             }
             clearInterval(handler);
-            this.log.info(`\nAdded topic(s): ${added instanceof Array ? added.join(', ') : added}.`);
+            this.log.info(`\nSubscribed to topic(s): ${added instanceof Array ? added.join(', ') : added}.`);
             registerCallback(added);
             resolve(newTopics);
           },
@@ -445,20 +445,44 @@ export class TestBedAdapter extends EventEmitter {
           key: decodedKey,
         } as IAdapterMessage);
         break;
-      case TestBedAdapter.TimeTopic:
-        const timeMessage = decodedValue as ITimeMessage;
+      case TimeTopic:
+        const timeMessage = decodedValue as ITiming;
         if (timeMessage) {
           this.timeService.setSimTime(timeMessage);
           this.emit('time', timeMessage);
         } else {
-          this.log.warn(`Could not decode topic ${TestBedAdapter.TimeTopic}. Is the schema correct?`);
+          this.log.warn(`Could not decode topic ${TimeTopic}. Is the schema correct?`);
         }
         break;
-      // case TestBedAdapter.TimeControlTopic:
-      //   const timeControl = decodedValue as ITimeControlMessage;
-      //   this.timeService.setSimState(timeControl);
-      //   break;
+      case AccessInviteTopic:
+        const invitation = decodedValue as ITopicInvite;
+        if (invitation.id.toLowerCase() === this.clientId.toLowerCase()) {
+          this.registerTopic(invitation);
+        }
+        break;
+      case AdminHeartbeatTopic:
+        const ahb = decodedValue as IAdminHeartbeat;
+        console.log(`Admin heartbeat received`);
+        console.log(JSON.stringify(ahb));
+        this.emit('heartbeat', ahb);
+        break;
     }
+  }
+
+  private async registerTopic(invitation: ITopicInvite) {
+    if (invitation.subscribeAllowed && await this.schemaRegistry.registerNewTopic(invitation.topicName)) {
+      this.addConsumerTopics({ topic: invitation.topicName }, false, (err, msg) => {
+        if (err) {
+          return this.log.error(err);
+        }
+        this.handleMessage(msg);
+      });
+    }
+    if (invitation.publishAllowed && await this.schemaRegistry.registerNewTopic(invitation.topicName)) {
+      this.addProducerTopics(invitation.topicName);
+    }
+    console.log(`Invitation received`);
+    console.log(JSON.stringify(invitation));
   }
 
   /**
@@ -469,7 +493,6 @@ export class TestBedAdapter extends EventEmitter {
     if (!topics) {
       return [];
     }
-    let isConfigUpdated = false;
     const newTopics: OffsetFetchRequest[] = [];
     topics.forEach(t => {
       if (this.consumerTopics.hasOwnProperty(t.topic)) return;
@@ -479,7 +502,6 @@ export class TestBedAdapter extends EventEmitter {
       }
       newTopics.push(t);
       if (this.config.consume && this.config.consume.filter(fr => fr.topic === t.topic).length === 0) {
-        isConfigUpdated = true;
         this.config.consume.push(t);
       }
       const initializedTopic = clone(t) as IInitializedTopic;
@@ -488,9 +510,6 @@ export class TestBedAdapter extends EventEmitter {
       initializedTopic.decodeKey = avro.decodeKey;
       this.consumerTopics[t.topic] = initializedTopic;
     });
-    if (isConfigUpdated) {
-      this.configUpdated();
-    }
     return newTopics;
   }
 
@@ -502,7 +521,6 @@ export class TestBedAdapter extends EventEmitter {
     if (!topics) {
       return [];
     }
-    let isConfigUpdated = false;
     const newTopics: string[] = [];
     topics.forEach(t => {
       if (this.producerTopics.hasOwnProperty(t)) return;
@@ -517,7 +535,6 @@ export class TestBedAdapter extends EventEmitter {
       }
       newTopics.push(t);
       if (this.config.produce && this.config.produce.indexOf(t) < 0) {
-        isConfigUpdated = true;
         this.config.produce.push(t);
       }
       const initializedTopic = { topic: t } as IInitializedTopic;
@@ -528,54 +545,7 @@ export class TestBedAdapter extends EventEmitter {
       initializedTopic.isKeyValid = avro.isKeyValid;
       this.producerTopics[t] = initializedTopic;
     });
-    if (isConfigUpdated) {
-      this.configUpdated();
-    }
     return newTopics;
-  }
-
-  /**
-   * Configuration has changed.
-   */
-  private configUpdated() {
-    return new Promise<void>(resolve => {
-      const configType = this.valueSchemas[TestBedAdapter.ConfigurationTopic];
-      if (!this.producer || !configType) {
-        return;
-      }
-      const msg: IConfiguration = {
-        clientId: this.config.clientId,
-        kafkaHost: this.config.kafkaHost,
-        schemaRegistry: this.config.schemaRegistry,
-        heartbeatInterval: this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval,
-        consume: this.config.consume,
-        produce: this.config.produce,
-        logging: this.config.logging
-          ? {
-              logToConsole: this.config.logging.logToConsole,
-              logToKafka: this.config.logging.logToKafka,
-              logToFile: this.config.logging.logToFile,
-              logFile: this.config.logging.logFile,
-            }
-          : undefined,
-      };
-      this.send(
-        [
-          {
-            topic: TestBedAdapter.ConfigurationTopic,
-            messages: msg,
-          },
-        ],
-        (err?: string, result?: ISendResponse) => {
-          if (err) {
-            this.emitErrorMsg(err);
-          } else if (result) {
-            this.log.info(result);
-          }
-          resolve();
-        }
-      );
-    });
   }
 
   /**
@@ -594,7 +564,7 @@ export class TestBedAdapter extends EventEmitter {
         this.send(
           {
             attributes: 1,
-            topic: TestBedAdapter.HeartbeatTopic,
+            topic: HeartbeatTopic,
             messages: {
               id: this.config.clientId,
               alive: Date.now(),
@@ -634,24 +604,19 @@ export class TestBedAdapter extends EventEmitter {
       } as ITestBedOptions,
       options
     );
-    if (!opt.produce) {
-      opt.produce = [];
-    }
     if (!opt.consume) {
       opt.consume = [];
     }
-    if (!opt.ignoreTimeTopic && opt.consume.filter(c => c.topic === TestBedAdapter.TimeTopic).length === 0) {
-      opt.consume.push({ topic: TestBedAdapter.TimeTopic });
+    const consumerTopics = opt.consume.map(t => t.topic);
+    CoreSubscribeTopics.filter(t => consumerTopics.indexOf(t) < 0).forEach(
+      t => opt.consume && opt.consume.push({ topic: t })
+    );
+    if (!opt.produce) {
+      opt.produce = [];
     }
-    if (opt.produce.indexOf(TestBedAdapter.HeartbeatTopic) < 0) {
-      opt.produce.push(TestBedAdapter.HeartbeatTopic);
-    }
-    if (opt.produce.indexOf(TestBedAdapter.ConfigurationTopic) < 0) {
-      opt.produce.push(TestBedAdapter.ConfigurationTopic);
-    }
-    if (opt.produce.indexOf(TestBedAdapter.LogTopic) < 0 && opt.logging && opt.logging.logToKafka) {
-      opt.produce.push(TestBedAdapter.LogTopic);
-    }
+    CorePublishTopics.filter(t => opt.produce && opt.produce.indexOf(t) < 0).forEach(
+      t => opt.produce && opt.produce.push(t)
+    );
     if (!/\/$/.test(opt.schemaRegistry)) {
       opt.schemaRegistry = opt.schemaRegistry + '/';
     }
