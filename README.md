@@ -9,7 +9,7 @@ The implementation is a wrapper around [kafka-node](https://www.npmjs.com/packag
 - Management
   - Heartbeat (topic: connect-status-heartbeat), so you know which clients are online.
   - Logging (topic: connect-status-log): when Kafka Logging is enabled in the options.
-  - Configuration (topic: connect-status-configuration), so you can see which topics clients consume and produce.
+  - system
 
 ## Pre-requisites
 

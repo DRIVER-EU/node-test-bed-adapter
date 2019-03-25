@@ -40,13 +40,7 @@ class Consumer {
     this.adapter.on('ready', () => {
       this.subscribe();
       log.info('Consumer is connected');
-      // this.getTopics();
-      this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
-        if (err) {
-          return log.error(err);
-        }
-        this.handleMessage(msg as IAdapterMessage);
-      });
+      this.getTopics();
     });
     this.adapter.on('error', err => log.error(`Consumer received an error: ${err}`));
     this.adapter.connect();
@@ -85,9 +79,6 @@ class Consumer {
     switch (message.topic.toLowerCase()) {
       case 'system_heartbeat':
         log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
-        break;
-      case 'system_configuration':
-        log.info(`Received configuration message with key ${stringify(message.key)}: ${stringify(message.value)}`);
         break;
       case 'standard_cap':
         log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
