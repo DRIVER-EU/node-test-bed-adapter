@@ -4,6 +4,7 @@ import * as url from 'url';
 import { Logger } from '..';
 import { Type } from 'avsc';
 import { TestBedAdapter } from '../test-bed-adapter';
+import { HeartbeatTopic, LogTopic } from '../avro-schemas';
 
 export interface ISchema {
   version: number | string;
@@ -94,10 +95,7 @@ export class SchemaRegistry {
         .then(schemas => Promise.resolve(this.checkForAllVersions(schemas)))
         .catch(e => console.error(e));
     };
-    const missingSchemas = () =>
-      this.selectedTopics
-        .filter(t => t !== TestBedAdapter.ConfigurationTopic)
-        .filter(t => !this.valueSchemas.hasOwnProperty(t));
+    const missingSchemas = () => this.selectedTopics.filter(t => !this.valueSchemas.hasOwnProperty(t));
     const isSuccess = () => missingSchemas().length === 0;
     return new Promise<{}>(resolve => {
       let count = 0;
@@ -109,7 +107,7 @@ export class SchemaRegistry {
         } else {
           count === 0
             ? this.log.info(`Retrieving schema's...`)
-            : count <= 3 
+            : count <= 3
             ? this.log.info(`Missing schema's: ${JSON.stringify(missingSchemas())}`)
             : count > 3
             ? process.stdout.write(`Schema\'s not available... waiting ${5 * (count + 1)} seconds\r`)
@@ -120,8 +118,35 @@ export class SchemaRegistry {
     });
   }
 
+  /** Register a new topic */
+  public async registerNewTopic(newTopic: string) {
+    const topics: string[] = [];
+    const vs = `${newTopic}-value`;
+    if (this.schemaTopics.indexOf(vs) < 0) {
+      topics.push(vs);
+    }
+    const ks = `${newTopic}-key`;
+    if (this.schemaTopics.indexOf(ks) < 0) {
+      topics.push(ks);
+    }
+    if (topics.length === 0) {
+      // Nothing to resolve
+      return true;
+    }
+    try {
+      const schemaTopics = await Promise.all(topics.map(t => this.fetchLatestVersion(t), { concurrency: 10 }));
+      const schemas = await Promise.all(schemaTopics.map(t => this.fetchSchema(t), { concurrency: 10 }));
+      await Promise.all(schemas.map(t => this.registerSchemaLatest(t)));
+      this.schemaTopics = [...this.schemaTopics, ...topics];
+      return true;
+    } catch (e) {
+      this.log.error(e);
+      return false;
+    }
+  }
+
   private isSchemaRegistryAvailable() {
-    const MAX_RETRIES = 10;
+    const MAX_RETRIES = 20;
     return new Promise(resolve => {
       const srUrl = this.options.schemaRegistry;
       let retries = MAX_RETRIES;
@@ -162,6 +187,7 @@ export class SchemaRegistry {
     });
   }
 
+  /** Get all the topics that are registered with the schema registry */
   private fetchAllSchemaTopics() {
     return new Promise<string[]>(resolve => {
       const fetchAllTopicsUrl = url.resolve(this.options.schemaRegistry, 'subjects');
@@ -230,6 +256,7 @@ export class SchemaRegistry {
     });
   }
 
+  /** Fetch the latest version of a topic */
   private fetchLatestVersion(schemaTopic: string) {
     return new Promise<ISchemaTopic>(resolve => {
       const fetchLatestVersionUrl = url.resolve(this.options.schemaRegistry, `subjects/${schemaTopic}/versions/latest`);
@@ -292,9 +319,8 @@ export class SchemaRegistry {
 
   private wrapUnionType(schemaType: string) {
     switch (schemaType) {
-      case TestBedAdapter.HeartbeatTopic:
-      case TestBedAdapter.LogTopic:
-      case TestBedAdapter.ConfigurationTopic:
+      case HeartbeatTopic:
+      case LogTopic:
         return 'auto';
       default:
         return this.wrapUnions;
@@ -436,11 +462,11 @@ export class SchemaRegistry {
           this.log.debug(`fetchSchema() - Fetched schema url: ${fetchSchemaUrl}`);
 
           resolve({
-            version: version,
+            version,
             responseRaw: response.data,
-            schemaType: schemaType,
+            schemaType,
             schemaTopicRaw: schemaTopic,
-            topic: topic,
+            topic,
           } as ISchema);
         })
         .catch(err => this.suppressAxiosError(err));
