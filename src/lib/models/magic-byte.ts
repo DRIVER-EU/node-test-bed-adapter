@@ -20,7 +20,7 @@ const MAGIC_BYTE = 0;
  */
 export const toMessageBuffer = (val: any, type: Type, schemaId: number, optLength?: number): Buffer => {
   const length = optLength || 1024;
-  const buf = new Buffer(length);
+  const buf = Buffer.alloc(length);
 
   buf[0] = MAGIC_BYTE; // Magic byte.
   buf.writeInt32BE(schemaId, 1);
