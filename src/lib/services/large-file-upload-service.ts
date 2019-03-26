@@ -105,11 +105,10 @@ export class LargeFileUploadService {
         headers: form.getHeaders(),
       })
       .then(res => {
-        cb && cb(undefined, res.data);
+        cb && res.data && cb(undefined, res.data.FileURL);
       })
       .catch(err => {
-        console.error(err);
-        cb && cb(err);
+        cb ? cb(err) : console.error(err);
       });
   }
 }

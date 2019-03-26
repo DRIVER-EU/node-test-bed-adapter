@@ -1,9 +1,10 @@
 import * as path from 'path';
-import { TestBedAdapter, Logger, LogLevel, ProduceRequest } from '../lib';
+import { TestBedAdapter, Logger, LogLevel, ProduceRequest, largeFileUploadCallback } from '../lib';
 import * as amberAlert from '../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../data/cap/examples/example_earthquake.json';
 import * as thunderstormAlert from '../data/cap/examples/example_thunderstorm.json';
 import * as homelandSecurityAlert from '../data/cap/examples/example_homeland_security.json';
+import { DataType } from '../lib/avro-schemas';
 
 const log = Logger.instance;
 
@@ -37,11 +38,11 @@ class Producer {
         logToKafka: LogLevel.Warn,
       },
     });
-    this.uploadFile();
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
       log.info(`Current simulation time: ${this.adapter.trialTime}`);
       log.info('Producer is connected');
+      this.uploadFile();
       this.sendCap();
     });
     this.adapter.connect();
@@ -49,12 +50,8 @@ class Producer {
 
   private uploadFile() {
     const file = path.resolve(process.cwd(), './dist/data/cap/examples/example_amber_alert.json');
-    this.adapter.uploadFile(file, false, (err, result) => {
-      if (err) {
-        return console.error(err);
-      }
-      console.log(result);
-    });
+    const cb = largeFileUploadCallback(this.adapter, 'Amber alert message', 'This is a test message', DataType.json);
+    this.adapter.uploadFile(file, false, cb);
   }
 
   /** Will currently only work if you are authorized to send CAP messages. */
