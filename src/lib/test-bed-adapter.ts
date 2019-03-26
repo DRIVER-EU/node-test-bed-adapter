@@ -248,27 +248,24 @@ export class TestBedAdapter extends EventEmitter {
         return [];
       }
       let count = 0;
-      const handler = setInterval(() => {
-        consumer.addTopics(
-          newTopics,
-          (error, added) => {
-            if (error) {
-              count === 0
-                ? this.log.info(`Initializing topics...`)
-                : count <= 3
+      const addTopics = () => {
+        consumer.addTopics(newTopics, (error, added) => {
+          if (error) {
+            count === 0
+              ? this.log.info(`Initializing topics...`)
+              : count <= 3
                 ? this.log.info(`Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`)
                 : count > 3;
-              process.stderr.write(`addConsumerTopics - Error ${error}. Waiting ${++count * 5} seconds...\r`);
-              return;
-            }
-            clearInterval(handler);
-            this.log.info(`\nSubscribed to topic(s): ${added instanceof Array ? added.join(', ') : added}.`);
-            registerCallback(added);
-            resolve(newTopics);
-          },
-          fromOffset
-        );
-      }, 5000);
+            process.stderr.write(`addConsumerTopics - Error ${error}. Waiting ${++count * 5} seconds...\r`);
+            setTimeout(addTopics, 5000);
+            return;
+          }
+          this.log.info(`\nSubscribed to topic(s): ${added instanceof Array ? added.join(', ') : added}.`);
+          registerCallback(added);
+          resolve(newTopics);
+        }, fromOffset);
+      };
+      addTopics();
     });
   }
 
@@ -481,8 +478,8 @@ export class TestBedAdapter extends EventEmitter {
         break;
       case AdminHeartbeatTopic:
         const ahb = decodedValue as IAdminHeartbeat;
-        console.log(`Admin heartbeat received`);
-        console.log(JSON.stringify(ahb));
+        // console.log(`Admin heartbeat received`);
+        // console.log(JSON.stringify(ahb));
         this.emit('heartbeat', ahb);
         break;
     }
