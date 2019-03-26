@@ -37,11 +37,18 @@ export interface ProduceRequest {
   attributes?: number;
 }
 
+export interface OffsetOutOfRange {
+  message: string;
+  partition: number;
+  stack: string;
+  topic: string;
+}
+
 export interface TestBedAdapter {
   on(event: 'ready', listener: () => void): this;
   on(event: 'reconnect', listener: () => void): this;
   on(event: 'error', listener: (error: string) => void): this;
-  on(event: 'offsetOutOfRange', listener: (error: string) => void): this;
+  on(event: 'offsetOutOfRange', listener: (error: OffsetOutOfRange) => void): this;
   on(event: 'raw', listener: (message: Message) => void): this;
   on(event: 'message', listener: (message: IAdapterMessage) => void): this;
   on(event: 'time', listener: (message: ITiming) => void): this;
@@ -482,7 +489,7 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private async registerTopic(invitation: ITopicInvite) {
-    if (invitation.subscribeAllowed && await this.schemaRegistry.registerNewTopic(invitation.topicName)) {
+    if (invitation.subscribeAllowed && (await this.schemaRegistry.registerNewTopic(invitation.topicName))) {
       this.addConsumerTopics({ topic: invitation.topicName }, false, (err, msg) => {
         if (err) {
           return this.log.error(err);
@@ -490,7 +497,7 @@ export class TestBedAdapter extends EventEmitter {
         this.handleMessage(msg);
       });
     }
-    if (invitation.publishAllowed && await this.schemaRegistry.registerNewTopic(invitation.topicName)) {
+    if (invitation.publishAllowed && (await this.schemaRegistry.registerNewTopic(invitation.topicName))) {
       this.addProducerTopics(invitation.topicName);
     }
     console.log(`Invitation received`);
