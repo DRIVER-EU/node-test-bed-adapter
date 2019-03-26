@@ -1,7 +1,7 @@
 import { ITestBedOptions } from '../models/test-bed-options';
 import { default as axios, AxiosRequestConfig } from 'axios';
 import * as url from 'url';
-import { Logger } from '..';
+import { Logger, isUnique } from '..';
 import { Type } from 'avsc';
 import { HeartbeatTopic, LogTopic } from '../avro-schemas';
 
@@ -73,7 +73,7 @@ export class SchemaRegistry {
     this.fetchAllVersions = options.fetchAllVersions || false;
     const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
-    this.selectedTopics = [...consume, ...produce];
+    this.selectedTopics = [...consume, ...produce].filter(isUnique);
   }
 
   public init() {
@@ -84,24 +84,26 @@ export class SchemaRegistry {
     );
 
     const tryToInitialize = () => {
-      this.isSchemaRegistryAvailable()
-        .then(() => this.fetchTopics())
-        .then(t => this.storeTopics(t))
-        .then(topics => Promise.all(topics.map(t => this.fetchLatestVersion(t), { concurrency: 10 })))
-        .then(topics => topics.filter(t => (t ? true : false)))
-        .then(topics => Promise.all(topics.map(t => this.fetchSchema(t), { concurrency: 10 })))
-        .then(schemas => Promise.all(schemas.map(t => this.registerSchemaLatest(t))))
-        .then(schemas => Promise.resolve(this.checkForAllVersions(schemas)))
-        .catch(e => console.error(e));
+      return new Promise((resolve, reject) => {
+        this.isSchemaRegistryAvailable()
+          .then(() => this.fetchTopics())
+          .then(t => this.storeTopics(t))
+          .then(topics => Promise.all(topics.map(t => this.fetchLatestVersion(t), { concurrency: 10 })))
+          .then(topics => topics.filter(t => (t ? true : false)))
+          .then(topics => Promise.all(topics.map(t => this.fetchSchema(t), { concurrency: 10 })))
+          .then(schemas => Promise.all(schemas.map(t => this.registerSchemaLatest(t))))
+          .then(schemas => Promise.resolve(this.checkForAllVersions(schemas)))
+          .then(() => resolve())
+          .catch(e => reject(e));
+      });
     };
     const missingSchemas = () => this.selectedTopics.filter(t => !this.valueSchemas.hasOwnProperty(t));
     const isSuccess = () => missingSchemas().length === 0;
     return new Promise<{}>(resolve => {
       let count = 0;
-      const handler = setInterval(() => {
-        tryToInitialize();
+      const tryingToInitializeSchemas = async () => {
+        await tryToInitialize();
         if (isSuccess()) {
-          clearInterval(handler);
           resolve();
         } else {
           count === 0
@@ -112,8 +114,10 @@ export class SchemaRegistry {
             ? process.stdout.write(`Schema\'s not available... waiting ${5 * (count + 1)} seconds\r`)
             : '';
           count++;
+          setTimeout(tryingToInitializeSchemas, count * 1000);
         }
-      }, 5000);
+      };
+      tryingToInitializeSchemas();
     });
   }
 
