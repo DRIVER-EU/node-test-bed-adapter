@@ -3,7 +3,7 @@
 // const kafkaLogging = require('kafka-node/logging');
 // kafkaLogging.setLoggerProvider(consoleLoggerProvider);
 
-import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem, IAdapterMessage } from '../lib/index';
+import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem, IAdapterMessage, TimeControlTopic } from '../lib/index';
 
 const log = Logger.instance;
 
@@ -21,7 +21,8 @@ class Consumer {
       wrapUnions: true,
       // wrapUnions: 'auto',
       clientId: 'crisissuite-stedin',
-      consume: [{ topic: 'standard_cap', offset: 0 }],
+      consume: [{ topic: TimeControlTopic }],
+      // consume: [{ topic: 'standard_cap', offset: 0 }],
       fromOffset: false,
       logging: {
         logToConsole: LogLevel.Info,
@@ -47,8 +48,9 @@ class Consumer {
 
   private subscribe() {
     this.adapter.on('message', message => this.handleMessage(message));
-    // this.adapter.addConsumerTopics({ topic: TestBedAdapter.HeartbeatTopic }).catch(err => {
-    //   if (err) { log.error(`Consumer received an error: ${err}`); }
+    this.adapter.on('error', err => console.error(`Consumer received an error: ${err}`));
+    // this.adapter.on('offsetOutOfRange', (err) => {
+    //   console.error(`Consumer received an offsetOutOfRange error on topic ${err.topic}.`);
     // });
   }
 

@@ -424,6 +424,7 @@ export class TestBedAdapter extends EventEmitter {
         encoding: 'buffer',
         keyEncoding: 'buffer',
         autoCommit: true,
+        fromOffset: this.config.fromOffset,
       });
       this.consumer.on('message', message => this.handleMessage(message));
       this.consumer.on('error', error => this.emitErrorMsg(error));
