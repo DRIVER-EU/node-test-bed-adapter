@@ -26,6 +26,7 @@ import { Logger, FileLogger, KafkaLogger, ConsoleLogger, ILogger } from './logge
 import { IAdapterMessage } from '.';
 import { TimeService } from './services/time-service';
 import { Type } from 'avsc';
+import { LargeFileUploadService } from './services/large-file-upload-service';
 
 /* Override the defined ProduceRequest in kafka-node, as it uses a key: string */
 export interface ProduceRequest {
@@ -54,6 +55,7 @@ export class TestBedAdapter extends EventEmitter {
   private clientId: string;
   private schemaPublisher: SchemaPublisher;
   private schemaRegistry: SchemaRegistry;
+  private largeFileUploadService: LargeFileUploadService;
   private log = Logger.instance;
   private client?: KafkaClient;
   private producer?: Producer;
@@ -83,6 +85,7 @@ export class TestBedAdapter extends EventEmitter {
     this.config = this.setDefaultOptions(config);
     this.schemaPublisher = new SchemaPublisher(this.config);
     this.schemaRegistry = new SchemaRegistry(this.config);
+    this.largeFileUploadService = new LargeFileUploadService(this.config);
   }
 
   public connect(): Promise<{}> {
@@ -117,21 +120,6 @@ export class TestBedAdapter extends EventEmitter {
    */
   public get valueSchemas(): { [topic: string]: { type: Type; srId: number } } {
     return this.schemaRegistry.valueSchemas;
-  }
-
-  /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
-  private initialize() {
-    return new Promise<void>(async resolve => {
-      await this.schemaRegistry.init();
-      await this.initProducer();
-      await this.addProducerTopics(this.config.produce);
-      await this.addKafkaLogger();
-      await this.initConsumer();
-      await this.addConsumerTopics(this.config.consume, this.config.fromOffset).catch(e => this.log.error(e));
-      await this.startHeartbeat();
-      await this.emit('ready');
-      resolve();
-    });
   }
 
   public pause() {
@@ -343,7 +331,31 @@ export class TestBedAdapter extends EventEmitter {
   public get timeElapsed() {
     return this.timeService.timeElapsed;
   }
+
+  /**
+   * Upload a file to the large file service, if enabled.
+   * NOTE: the configuration needs to specify the URL of the large file service, e.g. http://localhost:9090
+   */
+  public uploadFile(file: string, isPrivate: boolean, cb?: (err?: Error, uploadUrl?: string) => void) {
+    this.largeFileUploadService.upload(file, isPrivate, cb);
+  }
+
   // PRIVATE METHODS
+
+  /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
+  private initialize() {
+    return new Promise<void>(async resolve => {
+      await this.schemaRegistry.init();
+      await this.initProducer();
+      await this.addProducerTopics(this.config.produce);
+      await this.addKafkaLogger();
+      await this.initConsumer();
+      await this.addConsumerTopics(this.config.consume, this.config.fromOffset).catch(e => this.log.error(e));
+      await this.startHeartbeat();
+      await this.emit('ready');
+      resolve();
+    });
+  }
 
   private initProducer() {
     return new Promise((resolve, reject) => {

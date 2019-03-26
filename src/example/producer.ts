@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { TestBedAdapter, Logger, LogLevel, ProduceRequest } from '../lib';
 import * as amberAlert from '../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../data/cap/examples/example_earthquake.json';
@@ -7,13 +8,14 @@ import * as homelandSecurityAlert from '../data/cap/examples/example_homeland_se
 const log = Logger.instance;
 
 class Producer {
-  private id = 'NodeTestProducerSecure';
+  private id = '3di';
   private adapter: TestBedAdapter;
 
   constructor() {
     this.adapter = new TestBedAdapter({
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
+      largeFileService: 'localhost:9090',
       // sslOptions: {
       //   pfx: fs.readFileSync('certs/other-tool-1-client.p12'),
       //   passphrase: 'changeit',
@@ -25,8 +27,8 @@ class Producer {
       clientId: this.id,
       fetchAllSchemas: false,
       fetchAllVersions: false,
-      autoRegisterSchemas: true,
-      // autoRegisterSchemas: false,
+      // autoRegisterSchemas: true,
+      autoRegisterSchemas: false,
       wrapUnions: 'auto',
       schemaFolder: './data/schemas',
       produce: ['standard_cap'],
@@ -35,6 +37,7 @@ class Producer {
         logToKafka: LogLevel.Warn,
       },
     });
+    this.uploadFile();
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
       log.info(`Current simulation time: ${this.adapter.trialTime}`);
@@ -42,6 +45,16 @@ class Producer {
       this.sendCap();
     });
     this.adapter.connect();
+  }
+
+  private uploadFile() {
+    const file = path.resolve(process.cwd(), './dist/data/cap/examples/example_amber_alert.json');
+    this.adapter.uploadFile(file, false, (err, result) => {
+      if (err) {
+        return console.error(err);
+      }
+      console.log(result);
+    });
   }
 
   /** Will currently only work if you are authorized to send CAP messages. */

@@ -6,6 +6,10 @@ export interface ITestBedOptions extends KafkaClientOptions {
   clientId: string;
   /** Uri for the Kafka broker, e.g. broker:3501 */
   kafkaHost: string;
+  /** Uri for the schema registry, e.g. schema_registry:3502 */
+  schemaRegistry: string;
+  /** Uri for the large file service, e.g. localhost:9090/api */
+  largeFileService?: string;
   /** SSL Options for secure connection to broker, see https://nodejs.org/api/tls.html#tls_tls_connect_options_callback */
   sslOptions?: {
     /** Reads the public key + certificate */
@@ -21,8 +25,6 @@ export interface ITestBedOptions extends KafkaClientOptions {
     /** Do not connect when the server's certificate is not accepted. */
     rejectUnauthorized: boolean;
   };
-  /** Uri for the schema registry, e.g. schema_registry:3502 */
-  schemaRegistry: string;
   /** Avro parser setting: whether to wrap union types in schema*/
   wrapUnions?: boolean | 'auto' | 'never' | 'always';
   /** If true, automatically register schema's on startup */

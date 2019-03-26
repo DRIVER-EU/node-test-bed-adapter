@@ -21,7 +21,7 @@ class Consumer {
       wrapUnions: true,
       // wrapUnions: 'auto',
       clientId: 'crisissuite-stedin',
-      // consume: [{ topic: 'standard_cap', offset: 0 }],
+      consume: [{ topic: 'standard_cap', offset: 0 }],
       fromOffset: false,
       logging: {
         logToConsole: LogLevel.Info,
