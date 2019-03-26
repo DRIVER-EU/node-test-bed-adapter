@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Readable } from 'stream';
 
 export const clone = <T>(model: T) => {
   return JSON.parse(JSON.stringify(model)) as T;
@@ -21,7 +22,7 @@ export const findFilesInDir = (directoryName: string, ext: string) => {
     return [];
   }
 
-  fs.readdirSync(directoryName).forEach((f) => {
+  fs.readdirSync(directoryName).forEach(f => {
     const filename = path.join(directoryName, f);
     const stat = fs.lstatSync(filename);
     if (stat.isDirectory()) {
@@ -41,14 +42,19 @@ export const findFilesInDir = (directoryName: string, ext: string) => {
  * @return missing key schema files
  */
 export const findMissingKeyFiles = (files: string[]) => {
-  return files.filter((f) => path.basename(f).indexOf('-value.avsc') >= 0).reduce((p, c) => {
-    const keyFile = c.replace('-value.avsc', '-key.avsc');
-    if (files.filter((f) => f.indexOf(keyFile) >= 0).length > 0) {
-      return p;
-    }
-    p.push(keyFile);
-    return p;
-  }, [] as string[]);
+  return files
+    .filter(f => path.basename(f).indexOf('-value.avsc') >= 0)
+    .reduce(
+      (p, c) => {
+        const keyFile = c.replace('-value.avsc', '-key.avsc');
+        if (files.filter(f => f.indexOf(keyFile) >= 0).length > 0) {
+          return p;
+        }
+        p.push(keyFile);
+        return p;
+      },
+      [] as string[]
+    );
 };
 
 /**
@@ -59,7 +65,7 @@ export const findMissingKeyFiles = (files: string[]) => {
  * @returns RFC4122 version 4 compliant GUID
  */
 export const uuid4 = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     // tslint:disable-next-line:no-bitwise
     const r = (Math.random() * 16) | 0;
     // tslint:disable-next-line:no-bitwise
@@ -74,3 +80,10 @@ export const uuid4 = () => {
  * @see https://stackoverflow.com/a/32108184/319711
  */
 export const isEmptyObject = (obj: Object) => Object.keys(obj).length === 0 && obj.constructor === Object;
+
+export const bufferToStream = (buffer: Buffer) => {
+  const stream = new Readable();
+  stream.push(buffer);
+  stream.push(null);
+  return stream;
+};
