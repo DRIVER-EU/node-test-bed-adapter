@@ -27,10 +27,10 @@ class Producer {
       clientId: this.id,
       fetchAllSchemas: false,
       fetchAllVersions: false,
-      // autoRegisterSchemas: true,
-      autoRegisterSchemas: false,
+      autoRegisterSchemas: true,
+      // autoRegisterSchemas: false,
       wrapUnions: 'auto',
-      schemaFolder: './data/schemas',
+      schemaFolder: `${__dirname}/../../src/data/schemas`,
       produce: ['standard_cap'],
       logging: {
         logToConsole: LogLevel.Info,
