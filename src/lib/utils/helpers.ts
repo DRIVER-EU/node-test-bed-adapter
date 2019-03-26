@@ -129,3 +129,5 @@ export const largeFileUploadCallback = (
     adapter.send(payload, cb);
   };
 };
+
+export const isUnique = <T>(value: T, index: number, arr: T[]) => arr.indexOf(value) === index;
