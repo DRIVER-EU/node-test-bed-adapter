@@ -21,7 +21,6 @@ export const ObserverToolAnswer = 'system_observer_tool_answer';
 export const RequestChangeOfTrialStage = 'system_request_change_of_trial_stage';
 
 export const CoreSubscribeTopics = [
-  // AdminHeartbeatTopic,
   TimeTopic,
   AccessInviteTopic,
 ];
