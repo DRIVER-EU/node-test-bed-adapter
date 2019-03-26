@@ -16,7 +16,7 @@ export const TimeControlTopic = 'system_timing_control';
 export const AccessInviteTopic = 'system_topic_access_invite';
 export const TrialManagementPhaseMessageTopic = 'system_tm_phase_message';
 export const TrialManagementRolePlayerTopic = 'system_tm_role_player';
-export const TrialManagementSessionMgmtTopic = 'system_tm_session_mgtm';
+export const TrialManagementSessionMgmtTopic = 'system_tm_session_mgmt';
 export const ObserverToolAnswer = 'system_observer_tool_answer';
 export const RequestChangeOfTrialStage = 'system_request_change_of_trial_stage';
 
