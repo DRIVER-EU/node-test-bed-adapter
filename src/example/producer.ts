@@ -1,10 +1,9 @@
 import * as path from 'path';
-import { TestBedAdapter, Logger, LogLevel, ProduceRequest, largeFileUploadCallback } from '../lib';
+import { TestBedAdapter, Logger, LogLevel, ProduceRequest, largeFileUploadCallback, DataType } from '../lib';
 import * as amberAlert from '../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../data/cap/examples/example_earthquake.json';
 import * as thunderstormAlert from '../data/cap/examples/example_thunderstorm.json';
 import * as homelandSecurityAlert from '../data/cap/examples/example_homeland_security.json';
-import { DataType } from '../lib/avro-schemas';
 
 const log = Logger.instance;
 
