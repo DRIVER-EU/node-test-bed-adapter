@@ -43,6 +43,17 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Basic Consumer",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/src/example/consumer-basic-registration.ts",
+      "outFiles": [
+        "${workspaceFolder}/**/*"
+      ],
+      "console": "integratedTerminal"//,
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch Time Consumer",
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/src/example/consumer-time.ts",
