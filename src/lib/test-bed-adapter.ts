@@ -1,8 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ITopicsMetadata } from './declarations/kafka-node-ext';
-import { KafkaClient, Producer, Consumer, Message, OffsetFetchRequest, Topic } from 'kafka-node';
-import { clearInterval } from 'timers';
+import { KafkaClient, Producer, Consumer, Offset, Message, OffsetFetchRequest, Topic } from 'kafka-node';
 import { EventEmitter } from 'events';
 import { ISendResponse } from './models/adapter-message';
 import {
@@ -17,15 +16,15 @@ import {
   CorePublishTopics,
   AccessInviteTopic,
   AdminHeartbeatTopic,
-} from './avro-schemas/core';
+} from './avro-schemas';
 import { IInitializedTopic } from './models/topic';
 import { ITestBedOptions } from './models/test-bed-options';
 import { SchemaRegistry, SchemaPublisher, IDefaultKey, avroHelperFactory } from './avro';
 import { clone, uuid4, isEmptyObject } from './utils/helpers';
 import { Logger, FileLogger, KafkaLogger, ConsoleLogger, ILogger } from './logger';
 import { IAdapterMessage } from '.';
-import { TimeService } from './services/time-service';
 import { Type } from 'avsc';
+import { TimeService } from './services/time-service';
 import { LargeFileUploadService } from './services/large-file-upload-service';
 
 /* Override the defined ProduceRequest in kafka-node, as it uses a key: string */
@@ -68,7 +67,6 @@ export class TestBedAdapter extends EventEmitter {
   private producer?: Producer;
   private consumer?: Consumer;
   private config: ITestBedOptions;
-  private heartbeatId?: NodeJS.Timer;
   /** Map of all initialized topics, i.e. with validators/encoders/decoders */
   private consumerTopics: { [topic: string]: IInitializedTopic } = {};
   private producerTopics: { [topic: string]: IInitializedTopic } = {};
@@ -158,13 +156,9 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public close() {
-    if (this.heartbeatId) {
-      clearInterval(this.heartbeatId);
+    if (this.client) {
+      this.client.close();
     }
-    if (!this.client) {
-      return;
-    }
-    this.client.close();
   }
 
   public send(payloads: ProduceRequest | ProduceRequest[], cb: (error?: any, data?: ISendResponse) => any) {
@@ -249,21 +243,25 @@ export class TestBedAdapter extends EventEmitter {
       }
       let count = 0;
       const addTopics = () => {
-        consumer.addTopics(newTopics, (error, added) => {
-          if (error) {
-            count === 0
-              ? this.log.info(`Initializing topics...`)
-              : count <= 3
+        consumer.addTopics(
+          newTopics,
+          (error, added) => {
+            if (error) {
+              count === 0
+                ? this.log.info(`Initializing topics...`)
+                : count <= 3
                 ? this.log.info(`Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`)
                 : count > 3;
-            process.stderr.write(`addConsumerTopics - Error ${error}. Waiting ${++count * 5} seconds...\r`);
-            setTimeout(addTopics, 5000);
-            return;
-          }
-          this.log.info(`\nSubscribed to topic(s): ${added instanceof Array ? added.join(', ') : added}.`);
-          registerCallback(added);
-          resolve(newTopics);
-        }, fromOffset);
+              process.stderr.write(`addConsumerTopics - Error ${error}. Waiting ${++count * 5} seconds...\r`);
+              setTimeout(addTopics, 5000);
+              return;
+            }
+            this.log.info(`\nSubscribed to topic(s): ${added instanceof Array ? added.join(', ') : added}.`);
+            registerCallback(added);
+            resolve(newTopics);
+          },
+          fromOffset
+        );
       };
       addTopics();
     });
@@ -428,7 +426,26 @@ export class TestBedAdapter extends EventEmitter {
       });
       this.consumer.on('message', message => this.handleMessage(message));
       this.consumer.on('error', error => this.emitErrorMsg(error));
-      this.consumer.on('offsetOutOfRange', error => this.emit('offsetOutOfRange', error));
+
+      /*
+       * If consumer get `offsetOutOfRange` event, fetch data from the smallest(oldest) offset
+       */
+      const offset = new Offset(this.client);
+      this.consumer.on('offsetOutOfRange', topic => {
+        this.emit('offsetOutOfRange', topic);
+        topic.maxNum = 2;
+        if (this.client) {
+          offset.fetch([topic], (err, offsets) => {
+            if (err) {
+              return console.error(err);
+            }
+            const min = Math.min.apply(null, offsets[topic.topic][topic.partition]);
+            if (this.consumer) {
+              this.consumer.setOffset(topic.topic, topic.partition, min);
+            }
+          });
+        }
+      });
       resolve();
     });
   }
@@ -574,7 +591,7 @@ export class TestBedAdapter extends EventEmitter {
         return resolve();
       }
       this.isConnected = true;
-      this.heartbeatId = setInterval(() => {
+      const sendHeartbeat = () => {
         if (!this.producer) {
           return this.emitErrorMsg('Producer not ready!', reject);
         }
@@ -591,9 +608,11 @@ export class TestBedAdapter extends EventEmitter {
             if (error) {
               this.log.error(error);
             }
+            setTimeout(sendHeartbeat, this.config.heartbeatInterval || 5000);
           }
         );
-      }, this.config.heartbeatInterval || 5000);
+      };
+      sendHeartbeat();
       resolve();
     });
     // });
