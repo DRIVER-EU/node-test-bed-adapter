@@ -35,7 +35,10 @@
       "outFiles": [
         "${workspaceFolder}/**/*"
       ],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal"//,
+      // "env": {
+      //   "DEBUG": "kafka-node:*"
+      // }
     },
     {
       "type": "node",
