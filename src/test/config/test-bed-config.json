@@ -1,9 +1,9 @@
 {
   "kafkaHost": "localhost:3501",
   "schemaRegistry": "localhost:3502",
-  "clientId": "client",
-  "produce": [{
-    "topic": "test-cap",
-    "schemaURI": "./data/cap/cap.avsc"
-  }]
+  "clientId": "producer",
+  "produce": ["standard-cap"],
+  "autoRegisterSchemas": true,
+  "wrapUnions": "auto",
+  "schemaFolder": "/../../src/data/schemas"
 }

@@ -87,6 +87,6 @@ describe('TestBedAdapter', () => {
     expect(configuration.kafkaHost).toEqual('localhost:3501');
     expect(configuration.produce).toBeTruthy();
     expect(configuration.consume).toBeTruthy();
-    expect(configuration.consume && configuration.consume.length).toBe(1);
+    expect(configuration.consume && configuration.consume.length).toBe(2); // time and invitations
   });
 });
