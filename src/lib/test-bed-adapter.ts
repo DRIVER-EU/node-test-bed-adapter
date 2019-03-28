@@ -636,6 +636,7 @@ export class TestBedAdapter extends EventEmitter {
         produce: [],
         logging: {},
         maxConnectionRetries: 10,
+        autoRegisterDefaultSchemas: true,
         connectTimeout: 5000,
       } as ITestBedOptions,
       options
@@ -643,16 +644,18 @@ export class TestBedAdapter extends EventEmitter {
     if (!opt.consume) {
       opt.consume = [];
     }
-    const consumerTopics = opt.consume.map(t => t.topic);
-    CoreSubscribeTopics.filter(t => consumerTopics.indexOf(t) < 0).forEach(
-      t => opt.consume && opt.consume.push({ topic: t })
-    );
     if (!opt.produce) {
       opt.produce = [];
     }
-    CorePublishTopics.filter(t => opt.produce && opt.produce.indexOf(t) < 0).forEach(
-      t => opt.produce && opt.produce.push(t)
-    );
+    if (opt.autoRegisterDefaultSchemas) {
+      const consumerTopics = opt.consume.map(t => t.topic);
+      CoreSubscribeTopics.filter(t => consumerTopics.indexOf(t) < 0).forEach(
+        t => opt.consume && opt.consume.push({ topic: t })
+      );
+      CorePublishTopics(opt.largeFileService ? true : false)
+        .filter(t => opt.produce && opt.produce.indexOf(t) < 0)
+        .forEach(t => opt.produce && opt.produce.push(t));
+    }
     if (!/\/$/.test(opt.schemaRegistry)) {
       opt.schemaRegistry = opt.schemaRegistry + '/';
     }

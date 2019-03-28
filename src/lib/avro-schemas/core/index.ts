@@ -20,14 +20,7 @@ export const TrialManagementSessionMgmtTopic = 'system_tm_session_mgmt';
 export const ObserverToolAnswer = 'system_observer_tool_answer';
 export const RequestChangeOfTrialStage = 'system_request_change_of_trial_stage';
 
-export const CoreSubscribeTopics = [
-  TimeTopic,
-  AccessInviteTopic,
-];
+export const CoreSubscribeTopics = [TimeTopic, AccessInviteTopic];
 
-export const CorePublishTopics = [
-  HeartbeatTopic,
-  LargeDataUpdateTopic,
-  MapLayerUpdateTopic,
-  LogTopic,
-];
+export const CorePublishTopics = (usesLargeDataService = false) =>
+  usesLargeDataService ? [HeartbeatTopic, LargeDataUpdateTopic, LogTopic] : [HeartbeatTopic, LogTopic];

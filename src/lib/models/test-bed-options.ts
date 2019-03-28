@@ -27,6 +27,18 @@ export interface ITestBedOptions extends KafkaClientOptions {
   };
   /** Avro parser setting: whether to wrap union types in schema*/
   wrapUnions?: boolean | 'auto' | 'never' | 'always';
+  /**
+   * If true (default), automatically register typical system schema's. In normal situations,
+   * you should at least register the HeartbeatTopic, LogTopic and, optionally, the TimeTopic.
+   * - consumer topics:
+   *   - TimeTopic: for listening to the time
+   *   - AccessInviteTopic: For receiving invitations to connect
+   * - publisher topics:
+   *   - HeartbeatTopic: To notify the admin tool that you are online
+   *   - LogTopic: To log data to Kafka, making it visible for the admin tool
+   *   - LargeDataUpdateTopic: Only when the `largeFileService` is provided
+   */
+  autoRegisterDefaultSchemas?: boolean;
   /** If true, automatically register schema's on startup */
   autoRegisterSchemas?: boolean;
   /** If autoRegisterSchemas is true, contains the folder with *.avsc schema's to register */
