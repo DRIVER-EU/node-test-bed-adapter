@@ -81,6 +81,15 @@ npm run test
 
 In order to run the tests continuously on code change, run `npm run watch`. This assumes that you have installed `nodemon` globally (`npm i -g nodemon`).
 
+## Examples
+
+In the [src/example/](https://github.com/DRIVER-EU/node-test-bed-adapter/tree/master/src/example) folder, several examples of producers and consumers of messages can be found. Basically, they follow the same procedure:
+
+1. Read the configuration options (e.g. kafka broker, schema registry, etc.).
+2. Create a new adapter.
+3. When the adapter is up-and-running (adapter has emitted the `ready` event), subscribe to messages.
+4. Upon receipt of a new message, handle it.
+
 ## Dependencies
 
 In order to test the application, you need to have a local test-bed running in Docker. Please see [here](https://github.com/DRIVER-EU/test-bed) to get it up and running (Docker folder).

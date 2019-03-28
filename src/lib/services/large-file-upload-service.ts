@@ -1,4 +1,4 @@
-import { ITestBedOptions } from '..';
+import { ITestBedOptions, Logger } from '..';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as FormData from 'form-data';
@@ -12,6 +12,7 @@ import { bufferToStream } from '../utils/helpers';
  */
 export class LargeFileUploadService {
   private restUri?: string;
+  private log = Logger.instance;
 
   constructor(options: ITestBedOptions) {
     if (!options.largeFileService) {
@@ -21,7 +22,7 @@ export class LargeFileUploadService {
     const addHttp = (s: string) => (s.startsWith('http') ? s : `http://${s}`);
     const removeTrailingSlash = (s: string) => (s.endsWith('/') ? s.substr(0, s.length - 1) : s);
     this.restUri = removeTrailingSlash(addHttp(options.largeFileService));
-    console.log('URL: ' + this.restUri);
+    this.log.info('URL: ' + this.restUri);
   }
 
   /** Is the service enabled */
@@ -108,7 +109,7 @@ export class LargeFileUploadService {
         cb && res.data && cb(undefined, res.data.FileURL);
       })
       .catch(err => {
-        cb ? cb(err) : console.error(err);
+        cb ? cb(err) : this.log.error(err);
       });
   }
 }

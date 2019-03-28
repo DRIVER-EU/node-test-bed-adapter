@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { DataType, ILargeDataUpdate } from '../avro-schemas';
-import { TestBedAdapter, ProduceRequest } from '..';
+import { TestBedAdapter, ProduceRequest, Logger } from '..';
 import { LargeDataUpdateTopic } from './../avro-schemas/core/index';
 import { ISendResponse } from '../models/adapter-message';
 
@@ -98,20 +98,22 @@ export const bufferToStream = (buffer: Buffer) => {
  * to the Test-bed's LargeDataUpdateTopic (system_large_data_update). This callback can be
  * passed to the uploadFile function of the adapter.
  *
+ * @param adapter test bed adapter, needed to send the message
  * @param title title of the large file upload message
  * @param description description of the large file upload message
  * @param dataType data type of the message
+ * @param callback to return the result of the large file upload (default logs errors)
  */
 export const largeFileUploadCallback = (
   adapter: TestBedAdapter,
   title?: string,
   description?: string,
   dataType = DataType.other,
-  cb: (err: any, data?: ISendResponse) => void = (err) => err ? console.error(err) : undefined
+  cb: (err: any, data?: ISendResponse) => void = err => (err ? Logger.instance.error(err) : undefined)
 ) => {
   return (err?: Error, url?: string) => {
     if (err) {
-      return console.error(err);
+      return cb(err);
     }
     const msg = {
       url,
@@ -130,4 +132,5 @@ export const largeFileUploadCallback = (
   };
 };
 
+/** Is unique filter for array filter method */
 export const isUnique = <T>(value: T, index: number, arr: T[]) => arr.indexOf(value) === index;
