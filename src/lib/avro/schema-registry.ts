@@ -110,11 +110,10 @@ export class SchemaRegistry {
             ? this.log.info(`Retrieving schema's...`)
             : count <= 3
             ? this.log.info(`Missing schema's: ${JSON.stringify(missingSchemas())}`)
-            : count > 3
-            ? process.stdout.write(`Schema\'s not available... waiting ${5 * (count + 1)} seconds\r`)
-            : '';
+            : process.stdout.write(`Missing schema's: ${JSON.stringify(missingSchemas())}... waiting ${5 * (count + 1)} seconds\r`) &&
+              this.log.warn(`Missing schema's: ${JSON.stringify(missingSchemas())}`);
           count++;
-          setTimeout(tryingToInitializeSchemas, count * 1000);
+          setTimeout(tryingToInitializeSchemas, 5000);
         }
       };
       tryingToInitializeSchemas();
@@ -181,10 +180,12 @@ export class SchemaRegistry {
     return new Promise<string[]>(resolve => {
       const topics: string[] = [];
 
-      this.selectedTopics.forEach(selectedTopic => {
-        topics.push(selectedTopic + '-value');
-        topics.push(selectedTopic + '-key');
-      });
+      this.selectedTopics
+        .filter(t => !this.valueSchemas.hasOwnProperty(t))
+        .forEach(selectedTopic => {
+          topics.push(selectedTopic + '-value');
+          topics.push(selectedTopic + '-key');
+        });
 
       resolve(topics);
     });
