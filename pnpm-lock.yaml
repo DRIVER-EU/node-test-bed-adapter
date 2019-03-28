@@ -5,11 +5,12 @@ dependencies:
   bluebird: 3.5.3
   form-data: 2.3.3
   hoek: 6.1.2
-  kafka-node: 4.0.3
+  kafka-node: 3.0.1
   url: 0.11.0
 devDependencies:
   '@types/form-data': 2.2.1
   '@types/jasmine': 3.3.12
+  '@types/kafka-node': 2.0.8
   '@types/node': 11.11.7
   '@types/proxyquire': 1.3.28
   jasmine-ts: 0.3.0
@@ -32,10 +33,20 @@ packages:
     dev: true
     resolution:
       integrity: sha512-lXvr2xFQEVQLkIhuGaR3GC1L9lMU1IxeWnAF/wNY5ZWpC4p9dgxkKkzMp7pntpAdv9pZSnYqgsBkCg32MXSZMg==
+  /@types/kafka-node/2.0.8:
+    dependencies:
+      '@types/node': 11.12.0
+    dev: true
+    resolution:
+      integrity: sha512-WMhZLv75LorppurHDLb/ghOwX8TCBRWs4C5CpuuXa4lFyKcbahzkgUKmwLRYy4ixdjEsNANrjiDrybTzVPu6YQ==
   /@types/node/11.11.7:
     dev: true
     resolution:
       integrity: sha512-bHbRcyD6XpXVLg42QYaQCjvDXaCFkvb3WbCIxSDmhGbJYVroxvYzekk9QGg1beeIawfvSLkdZpP0h7jxE4ihnA==
+  /@types/node/11.12.0:
+    dev: true
+    resolution:
+      integrity: sha512-Lg00egj78gM+4aE0Erw05cuDbvX9sLJbaaPwwRtdCdAMnIudqrQZ0oZX98Ek0yiSK/A2nubHgJfvII/rTT2Dwg==
   /@types/proxyquire/1.3.28:
     dev: true
     resolution:
@@ -84,6 +95,10 @@ packages:
       node: '>=0.8'
     resolution:
       integrity: sha1-8S4PPF13sLHN2RRpQuTpbB5N1SU=
+  /async/0.2.10:
+    dev: false
+    resolution:
+      integrity: sha1-trvgsGdLnXGXCMo43owjfLUmw9E=
   /async/2.6.2:
     dependencies:
       lodash: 4.17.11
@@ -142,16 +157,8 @@ packages:
       readable-stream: 2.3.6
       safe-buffer: 5.1.2
     dev: false
-    optional: true
     resolution:
       integrity: sha512-e8tQYnZodmebYDWGH7KMRvtzKXaJHx3BbilrgZCfvyLUYdKpK1t5PSPmpkny/SgiTSCnjfLW7v5rlONXVFkQEA==
-  /bl/2.2.0:
-    dependencies:
-      readable-stream: 2.3.6
-      safe-buffer: 5.1.2
-    dev: false
-    resolution:
-      integrity: sha512-wbgvOpqopSr7uq6fJrLH8EsvYMJf9gzfo2jCsL2eTy75qXPukA4pCgHamOQkZtY5vmfVtjB+P3LNlMHW5CEZXA==
   /block-stream/0.0.9:
     dependencies:
       inherits: 2.0.3
@@ -645,11 +652,11 @@ packages:
       '0': node >=0.6.0
     resolution:
       integrity: sha1-MT5mvB5cwG5Di8G3SZwuXFastqI=
-  /kafka-node/4.0.3:
+  /kafka-node/3.0.1:
     dependencies:
       async: 2.6.2
       binary: 0.3.0
-      bl: 2.2.0
+      bl: 1.2.2
       buffer-crc32: 0.2.13
       buffermaker: 1.2.0
       debug: 2.6.9
@@ -657,6 +664,7 @@ packages:
       lodash: 4.17.11
       minimatch: 3.0.4
       nested-error-stacks: 2.1.0
+      node-zookeeper-client: 0.2.3
       optional: 0.1.4
       retry: 0.10.1
       uuid: 3.3.2
@@ -666,7 +674,7 @@ packages:
     optionalDependencies:
       snappy: 6.1.2
     resolution:
-      integrity: sha512-7tZ/nc8olTcIX7DbrwkZrib1YV8YJUQ6uOXZaM9/Vw3bgHiisO+DUu4TCtS4dEfOk0p0ypB3usOwhBTVBdcKhg==
+      integrity: sha512-id9bdOQ35OkrQHHbIjtpC02Y2kTpmLQw/B9wbe6uAzjkLaRyu30GnJoz22vZ8uBB9DZ0JgwjHrKOK7sB3i41LA==
   /lcid/1.0.0:
     dependencies:
       invert-kv: 1.0.0
@@ -796,7 +804,7 @@ packages:
       integrity: sha512-AO81vsIO1k1sM4Zrd6Hu7regmJN1NSiAja10gc4bX3F0wd+9rQmcuHQaHVQCYIEC8iFXnE+mavh23GOt7wBgug==
   /node-abi/2.7.1:
     dependencies:
-      semver: 5.6.0
+      semver: 5.7.0
     dev: false
     optional: true
     resolution:
@@ -821,6 +829,15 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-3g8lYefrRRzvGeSowdJKAKyks8oUpLEd/DyPV4eMhVlhJ0aNaZqIrNUIPuEWWTAoPqyFkfGrM67MC69baqn6vA==
+  /node-zookeeper-client/0.2.3:
+    dependencies:
+      async: 0.2.10
+      underscore: 1.4.4
+    dev: false
+    engines:
+      node: '>=0.6.0'
+    resolution:
+      integrity: sha512-V4gVHxzQ42iwhkANpPryzfjmqi3Ql3xeO9E/px7W5Yi774WplU3YtqUpnvcL/eJit4UqcfuLOgZLkpf0BPhHmg==
   /noop-logger/0.1.1:
     dev: false
     optional: true
@@ -1185,9 +1202,16 @@ packages:
     resolution:
       integrity: sha1-myzl094C0XxgEq0yaqa00M9U+U8=
   /semver/5.6.0:
+    dev: true
     hasBin: true
     resolution:
       integrity: sha512-RS9R6R35NYgQn++fkDWaOmqGoj4Ek9gGs+DPxNUZKuwE183xjJroKvyo1IzVFeXvUrvmALy6FWD5xrdJT25gMg==
+  /semver/5.7.0:
+    dev: false
+    hasBin: true
+    optional: true
+    resolution:
+      integrity: sha512-Ya52jSX2u7QKghxeoFGpLwCtGlt7j0oY9DYb5apt9nPlJ42ID+ulTXESnt/qAQcoSERyZ5sl3LDIOw0nAn/5DA==
   /set-blocking/2.0.0:
     resolution:
       integrity: sha1-BF+XgtARrppoA93TgrJDkrPYkPc=
@@ -1393,6 +1417,10 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-jjOcCZvpkl2+z7JFn0yBOoLQyLoIkNZAs/fYJkUG6VKy6zLPHJGfQJYFHzibB6GJaF/8QrcECtlQ5cpvRHSMEA==
+  /underscore/1.4.4:
+    dev: false
+    resolution:
+      integrity: sha1-YaajIBBiKvoHljvzJSA88SI51gQ=
   /uri-js/4.2.2:
     dependencies:
       punycode: 2.1.1
@@ -1506,6 +1534,7 @@ specifiers:
   '@types/bluebird': ^3.5.26
   '@types/form-data': ^2.2.1
   '@types/jasmine': ^3.3.12
+  '@types/kafka-node': ^2.0.8
   '@types/node': ^11.11.7
   '@types/proxyquire': ^1.3.28
   avsc: ^5.4.7
@@ -1514,7 +1543,7 @@ specifiers:
   form-data: ^2.3.3
   hoek: 6.1.2
   jasmine-ts: ^0.3.0
-  kafka-node: ^4.0.3
+  kafka-node: ^3.0.1
   node-gyp: ^3.8.0
   proxyquire: ^2.1.0
   typescript: ^3.3.4000

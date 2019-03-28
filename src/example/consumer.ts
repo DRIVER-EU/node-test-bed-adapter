@@ -20,7 +20,7 @@ class Consumer {
       fetchAllVersions: false,
       wrapUnions: true,
       // wrapUnions: 'auto',
-      clientId: 'crisissuite-stedin',
+      clientId: 'sim-ci',
       consume: [{ topic: TimeControlTopic }],
       // consume: [{ topic: 'standard_cap', offset: 0 }],
       fromOffset: false,
@@ -49,9 +49,9 @@ class Consumer {
   private subscribe() {
     this.adapter.on('message', message => this.handleMessage(message));
     this.adapter.on('error', err => console.error(`Consumer received an error: ${err}`));
-    // this.adapter.on('offsetOutOfRange', (err) => {
-    //   console.error(`Consumer received an offsetOutOfRange error on topic ${err.topic}.`);
-    // });
+    this.adapter.on('offsetOutOfRange', (err) => {
+      console.error(`Consumer received an offsetOutOfRange error on topic ${err.topic}.`);
+    });
   }
 
   private getTopics() {
