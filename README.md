@@ -61,6 +61,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 - Added the time service: through it, you can get the trialTime, trialTimeSpeed, state, and elapsed trial time.
 - Listens to topic access invite messages: when the admin tool sends them, the adapter will download the required schema's and start listening or publishing to them. You can still specify the consume/produce topics regularly, by specifying it on initialization, but when the Test-bed is operating in secure mode, you may not get access to these topics before receiving an invitation.
 - Added the uploadFile service for uploading files to the Test-bed. Also added a helper callback method that automatically publishes a messsage to the system_large_file_update topic.
+- Added support for GeoJSON processing: see `./src/example/producer.ts`.
 
 ### To be done
 
