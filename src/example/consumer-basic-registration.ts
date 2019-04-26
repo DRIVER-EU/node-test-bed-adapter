@@ -12,6 +12,10 @@ import {
   TimeControlTopic,
   HeartbeatTopic,
   LogTopic,
+  ITiming,
+  TimeState,
+  TimeTopic,
+  ProduceRequest,
 } from '../lib/index';
 
 const log = Logger.instance;
@@ -28,7 +32,7 @@ class BasicConsumer {
       clientId: 'sim-ci',
       autoRegisterDefaultSchemas: false,
       consume: [{ topic: TimeControlTopic }],
-      produce: [HeartbeatTopic, LogTopic],
+      produce: [HeartbeatTopic, LogTopic, TimeTopic],
       fromOffset: false,
       logging: {
         logToConsole: LogLevel.Info,
@@ -38,6 +42,7 @@ class BasicConsumer {
     this.adapter.on('ready', () => {
       this.subscribe();
       log.info('Consumer is connected');
+      this.sendTime();
       // this.getTopics();
       // this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
       //   if (err) {
@@ -55,6 +60,25 @@ class BasicConsumer {
     this.adapter.on('error', err => console.error(`Consumer received an error: ${err}`));
     this.adapter.on('offsetOutOfRange', err => {
       console.error(`Consumer received an offsetOutOfRange error on topic ${err.topic}.`);
+    });
+  }
+
+  private sendTime() {
+    const d = new Date().valueOf();
+    const time = {
+      updatedAt: d,
+      timeElapsed: 0,
+      trialTimeSpeed: 1,
+      trialTime: d,
+      state: TimeState.Initialized,
+    } as ITiming;
+    const pr = { messages: time, topic: TimeTopic, attributes: 1 } as ProduceRequest;
+    this.adapter.send(pr, (err, data) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.info(data);
+      }
     });
   }
 
