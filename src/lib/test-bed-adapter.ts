@@ -111,6 +111,16 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
+  public disconnect() {
+    return new Promise<boolean>((resolve) => {
+      if (this.client) {
+        this.client.close(() => resolve(true));
+      } else {
+        resolve(false);
+      }
+    });
+  }
+
   /**
    * A dictionary containing a clone of all the key schemas with key the bare topic name and
    * value the instance of the AVRO schema and schema ID.
