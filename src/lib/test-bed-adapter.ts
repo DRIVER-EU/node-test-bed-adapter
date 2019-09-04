@@ -114,7 +114,13 @@ export class TestBedAdapter extends EventEmitter {
   public disconnect() {
     return new Promise<boolean>((resolve) => {
       if (this.client) {
-        this.client.close(() => resolve(true));
+        this.client.close(() => {
+          this.isConnected = false;
+          this.client = undefined;
+          this.consumer = undefined;
+          this.producer = undefined;
+          resolve(true);
+        });
       } else {
         resolve(false);
       }
@@ -602,6 +608,7 @@ export class TestBedAdapter extends EventEmitter {
       }
       this.isConnected = true;
       const sendHeartbeat = () => {
+        if (!this.isConnected) { return; }
         if (!this.producer) {
           return this.emitErrorMsg('Producer not ready!', reject);
         }
