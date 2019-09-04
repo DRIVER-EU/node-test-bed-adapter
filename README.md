@@ -11,6 +11,8 @@ The implementation is a wrapper around [kafka-node](https://www.npmjs.com/packag
   - Logging (topic: connect-status-log): when Kafka Logging is enabled in the options.
   - system
 
+A standalone example project can be found [here](https://github.com/DRIVER-EU/example-node-test-bed-adapter).
+
 ## Pre-requisites
 
 Clearly, you need to install [node.js](https://nodejs.org). After that, in order to build and install the adapter on WINDOWS, run
