@@ -26,8 +26,10 @@ class Producer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
-      kafkaHost: process.env.KAFKA_HOST || 'tb6.driver-testbed.eu:3561',
-      schemaRegistry: process.env.SCHEMA_REGISTRY || 'tb6.driver-testbed.eu:3562',
+      kafkaHost: process.env.KAFKA_HOST || 'localhost:3501',
+      schemaRegistry: process.env.SCHEMA_REGISTRY || 'localhost:3502',
+      // kafkaHost: process.env.KAFKA_HOST || 'tb6.driver-testbed.eu:3561',
+      // schemaRegistry: process.env.SCHEMA_REGISTRY || 'tb6.driver-testbed.eu:3562',
       // kafkaHost: 'localhost:3501',
       // schemaRegistry: 'localhost:3502',
       // largeFileService: 'localhost:9090',
@@ -43,7 +45,7 @@ class Producer {
       fetchAllSchemas: false,
       fetchAllVersions: false,
       // autoRegisterSchemas: true,
-      autoRegisterSchemas: false,
+      autoRegisterSchemas: true,
       wrapUnions: 'auto',
       schemaFolder: `${__dirname}/../../src/data/schemas`,
       produce: ['standard_cap', 'standard_geojson', TimeTopic],
