@@ -21,7 +21,7 @@ class Consumer {
       wrapUnions: true,
       // wrapUnions: 'auto',
       clientId: 'sim-ci',
-      consume: [{ topic: TimeControlTopic }],
+      consume: [{ topic: TimeControlTopic }, { topic: 'standard_geojson' }],
       // consume: [{ topic: 'standard_cap', offset: 0 }],
       fromOffset: false,
       logging: {
@@ -79,13 +79,13 @@ class Consumer {
     const stringify = (m: string | Object) => typeof m === 'string' ? m : JSON.stringify(m, null, 2);
     switch (message.topic.toLowerCase()) {
       case 'system_heartbeat':
-        log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+        log.info(`Received heartbeat message with key ${stringify(message.key)}:\n${stringify(message.value)}`);
         break;
       case 'standard_cap':
-        log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+        log.info(`Received CAP message with key ${stringify(message.key)}:\n${stringify(message.value)}`);
         break;
       default:
-        log.info(`Received ${message.topic} message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+        log.info(`Received ${message.topic} message with key ${stringify(message.key)}:\n${stringify(message.value)}`);
         break;
     }
   }
