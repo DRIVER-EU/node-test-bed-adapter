@@ -1,5 +1,4 @@
 import * as path from 'path';
-import { FeatureCollection } from 'geojson';
 import {
   TestBedAdapter,
   Logger,
@@ -7,8 +6,14 @@ import {
   ProduceRequest,
   largeFileUploadCallback,
 } from '../lib';
-import { geojsonToAvro, TimeTopic } from '../lib/avro';
-import { DataType, TimeState, ITimeManagement } from 'test-bed-schemas';
+import { TimeTopic } from '../lib/avro';
+import {
+  DataType,
+  ITimeManagement,
+  TimeState,
+  IFeatureCollection,
+  geojsonToAvro,
+} from 'test-bed-schemas';
 import * as amberAlert from '../data/cap/examples/example_amber_alert.json';
 import * as earthquakeAlert from '../data/cap/examples/example_earthquake.json';
 import * as thunderstormAlert from '../data/cap/examples/example_thunderstorm.json';
@@ -64,7 +69,7 @@ class Producer {
   }
 
   private sendPhotoGeoJSON() {
-    const geojson = geojsonToAvro((photoEx as unknown) as FeatureCollection);
+    const geojson = geojsonToAvro((photoEx as unknown) as IFeatureCollection);
     const payloads: ProduceRequest[] = [
       {
         topic: 'photo_geojson',
@@ -84,7 +89,7 @@ class Producer {
 
   private sendGeoJSON() {
     const geojson = geojsonToAvro(
-      (crowdTaskerMsg as unknown) as FeatureCollection
+      (crowdTaskerMsg as unknown) as IFeatureCollection
     );
     const payloads: ProduceRequest[] = [
       {
