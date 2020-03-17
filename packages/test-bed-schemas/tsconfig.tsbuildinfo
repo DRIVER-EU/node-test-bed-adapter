@@ -1,0 +1,428 @@
+{
+  "program": {
+    "fileInfos": {
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es5.d.ts": {
+        "version": "b42eddba1a53c9d27279cfe7fc0416c10a81489826ad47e39013b9d340fc0cc7",
+        "signature": "b42eddba1a53c9d27279cfe7fc0416c10a81489826ad47e39013b9d340fc0cc7"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.d.ts": {
+        "version": "7994d44005046d1413ea31d046577cdda33b8b2470f30281fd9c8b3c99fe2d96",
+        "signature": "7994d44005046d1413ea31d046577cdda33b8b2470f30281fd9c8b3c99fe2d96"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.dom.d.ts": {
+        "version": "f2039e0dbc31f69183f6377b368c033802dfdcf77e5fd214def06c1fd7b225ed",
+        "signature": "f2039e0dbc31f69183f6377b368c033802dfdcf77e5fd214def06c1fd7b225ed"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.core.d.ts": {
+        "version": "734ddc145e147fbcd55f07d034f50ccff1086f5a880107665ec326fb368876f6",
+        "signature": "734ddc145e147fbcd55f07d034f50ccff1086f5a880107665ec326fb368876f6"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.collection.d.ts": {
+        "version": "4a0862a21f4700de873db3b916f70e41570e2f558da77d2087c9490f5a0615d8",
+        "signature": "4a0862a21f4700de873db3b916f70e41570e2f558da77d2087c9490f5a0615d8"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.generator.d.ts": {
+        "version": "765e0e9c9d74cf4d031ca8b0bdb269a853e7d81eda6354c8510218d03db12122",
+        "signature": "765e0e9c9d74cf4d031ca8b0bdb269a853e7d81eda6354c8510218d03db12122"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.iterable.d.ts": {
+        "version": "285958e7699f1babd76d595830207f18d719662a0c30fac7baca7df7162a9210",
+        "signature": "285958e7699f1babd76d595830207f18d719662a0c30fac7baca7df7162a9210"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.promise.d.ts": {
+        "version": "d4deaafbb18680e3143e8b471acd650ed6f72a408a33137f0a0dd104fbe7f8ca",
+        "signature": "d4deaafbb18680e3143e8b471acd650ed6f72a408a33137f0a0dd104fbe7f8ca"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.proxy.d.ts": {
+        "version": "5e72f949a89717db444e3bd9433468890068bb21a5638d8ab15a1359e05e54fe",
+        "signature": "5e72f949a89717db444e3bd9433468890068bb21a5638d8ab15a1359e05e54fe"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.reflect.d.ts": {
+        "version": "f5b242136ae9bfb1cc99a5971cccc44e99947ae6b5ef6fd8aa54b5ade553b976",
+        "signature": "f5b242136ae9bfb1cc99a5971cccc44e99947ae6b5ef6fd8aa54b5ade553b976"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.symbol.d.ts": {
+        "version": "9ae2860252d6b5f16e2026d8a2c2069db7b2a3295e98b6031d01337b96437230",
+        "signature": "9ae2860252d6b5f16e2026d8a2c2069db7b2a3295e98b6031d01337b96437230"
+      },
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts": {
+        "version": "3e0a459888f32b42138d5a39f706ff2d55d500ab1031e0988b5568b0f67c2303",
+        "signature": "3e0a459888f32b42138d5a39f706ff2d55d500ab1031e0988b5568b0f67c2303"
+      },
+      "./src/edxl-de/edxl-de-key.ts": {
+        "version": "6529a3c10dd445ce16fda1a9606a5ec0ca23ed43016b313af5311a7710249f5e",
+        "signature": "3f39ce3bb8eb190edb637b6340cac9677b8eb367b2fac7130e37eda8c1255ed1"
+      },
+      "./src/core/heartbeat/system_admin_heartbeat-value.ts": {
+        "version": "d412d8a4bebbe381bfd7c6191c2c94ad3df02345cedf8cf876528d6576643923",
+        "signature": "7ad3ee22cca110e9819b0ad74ab35e9e9fdf8740a2538d16eacc36e1820ca89c"
+      },
+      "./src/core/heartbeat/system_heartbeat-value.ts": {
+        "version": "09e47eaadba1ac86e2d0b2756b8e067371b42956f5c0461a6f2c2e712b0771f5",
+        "signature": "62e5ff00b3491ba7e1298e96783af85905f2a286c5b576ac98a62b37d773b3a1"
+      },
+      "./src/core/large-data/system_large_data_update-value.ts": {
+        "version": "98b7f974135ba83328d3848f6fffbb6fb308857a04f2a6006b11ca5628a87c24",
+        "signature": "8af938a88b6145232a84c4dad15fce59b579e161a3512a85c3504d716c2f5738"
+      },
+      "./src/core/large-data/system_map_layer_update-value.ts": {
+        "version": "df63b24fdee7c9bbc13354f552daf66420ee936624bbf6e59cd2546f000ebf36",
+        "signature": "d8b5f7341ec776cf037bfc260e0f96fec1e51e9ad186bd64249487a6f2c7c510"
+      },
+      "./src/core/log/system_logging-value.ts": {
+        "version": "1722d3cfddbf6ab179c8d7e0e9c8e5c36940a6a41e5c1c7b9de08a2f9e9bb348",
+        "signature": "7c2a6c0b6770894d9a8f0b72e5a8e1ed517f4f3cdaa0f6b3dca1c8da887395e7"
+      },
+      "./src/core/ost/system_observer_tool_answer-value.ts": {
+        "version": "877f6640db883d27cf77761d3c8d31d9125dfe9bbf87c059668a59faee2b409c",
+        "signature": "f0be19f1ae672faa540f062f360cd72a3495c3044b09084771619ad0cce82269"
+      },
+      "./src/core/ost/system_request_change_of_trial_stage-value.ts": {
+        "version": "1b284b36c2a16463d273f4f77dc3a37c1383d9c3a4213e8a6502be12d7c5492e",
+        "signature": "907c3e4207f92ef65a2c29ec110a3861009e9aaea5b12727cf129c11cde98ba5"
+      },
+      "./src/core/topic/system_topic_access_invite-value.ts": {
+        "version": "bfcf1f0ef52834e5c176117ad66c6a04b00e037da2e1ca13c8ae55146f859238",
+        "signature": "e5c42e84fab48bb0b09dd516471870f789447d4bf81e9836b7593683849c7a3d"
+      },
+      "./src/core/topic/system_topic_create_request-value.ts": {
+        "version": "16258a922f642abed2ffda7b767d448802b9e664f1a29bd84fc6ec1b9637b62a",
+        "signature": "6ee4ff08f716576eaf2e11ba994f4fc2c6387e713e98913229e617159cf90778"
+      },
+      "./src/core/topic/system_topic_remove-value.ts": {
+        "version": "f0f5d23fecb9602564afb8fda49ee3091b36ada6cc5597504e32d764e7a88292",
+        "signature": "b1b9883b52c9c0d74feb0faba32c78cc2fb15ac5e39229f4f3c01454807d0f37"
+      },
+      "./src/core/topic/system_topic_remove_request-value.ts": {
+        "version": "20d6adde4ed90021877032a31847f34e04bcff1e0869442acfcdd018d634f225",
+        "signature": "8331738294980260d6a14aa3d9e5fa2b9127bbe9df78ccb7a961164052e1ba5f"
+      },
+      "./src/core/trial-mgmt/system_tm_phase_message-value.ts": {
+        "version": "83cf349506e5ad5050f9b6344329491d980bde0f516046f94090d9bb34c71856",
+        "signature": "24d3d8f7e9fb170c585c54663a778bd8e5d1e3db769ebd801eaa9b6f5e084a13"
+      },
+      "./src/core/trial-mgmt/system_tm_role_player-value.ts": {
+        "version": "bd3beeaf8d3993c88e0806d5ba8e9d09fb583ea354e7645ad12905b55da0b1d6",
+        "signature": "3d2609c26a8c59e0922fd08b2ce2c6857605eb76fd88a42cbb0bcf15144293a8"
+      },
+      "./src/standard/geojson/standard_geojson-value.ts": {
+        "version": "cfc5691d1aa03dc4298f1a37548047afe081d6023f90be0c24d473be70ce03ff",
+        "signature": "f48e66117f16e473f9ab5d8d92fed0abc30d328eb5904e5506885b11e34914b5"
+      },
+      "./src/sim/configuration/simulation_heartbeat-value.ts": {
+        "version": "09e47eaadba1ac86e2d0b2756b8e067371b42956f5c0461a6f2c2e712b0771f5",
+        "signature": "62e5ff00b3491ba7e1298e96783af85905f2a286c5b576ac98a62b37d773b3a1"
+      },
+      "./src/sim/configuration/simulation_session_mgmt-value.ts": {
+        "version": "b22e53ba7af82a914d206ba62bea168069baddc790973f63090ebbad4bd4ff7d",
+        "signature": "1e18e2ae40a1239eb940b8ca39a3670a2e92059a61da1b4e239af3f07880e41a"
+      },
+      "./src/sim/configuration/simulation_time_mgmt-value.ts": {
+        "version": "21e0f686ed71fb5999b2e9fa2d9ad8bdbe6e6c74fd65a762cede0fed1adfc7b6",
+        "signature": "b94dfd9d59a0be319992ddb2897afc3cd171dc188febea660f64f04c5810d1c2"
+      },
+      "./src/sim/entity/simulation_entity_item-value.ts": {
+        "version": "4f0bcceb369b08e9e89a12dd7ca9d6dcdd2b698e3aa732f56450169ce2cba339",
+        "signature": "cc86f3bf49a210927b2ebbc4272ecce2dd6d94a0d5d2560b149a912fdf45fdcc"
+      },
+      "./src/sim/entity/simulation_entity_featurecollection-value.ts": {
+        "version": "ae1d94c8888da450d2735419a257efb9a42533c5959d48364679e79972a1792d",
+        "signature": "5b37c38131f03d55656925c682b372413a1a5adef4b264b91a7354634f893d76"
+      },
+      "./src/sim/entity/simulation_entity_post-value.ts": {
+        "version": "39d62a0a8ea12e77b53f06a09dfbe1a30e9fe5d0ad55a4100165f6e343a07e10",
+        "signature": "bbe11c1da4093341bee6d19c0d35c3110791d6bfe18b9d953b9695a5ace9a004"
+      },
+      "./src/sim/geofencing/geofencing_event-value.ts": {
+        "version": "04078a6a496ae2c760b607a72038bd8793d4bcd1e7e19c95091a90cf3efe4274",
+        "signature": "dbb2181f7804918ecb5cba718b0b222558e41f38f88038533c11e4d3629cab07"
+      },
+      "./src/sim/request/simulation_request_move-value.ts": {
+        "version": "9b058704370dc1f2a299469d4955699b741293bae9bf932f1abd62cc4d0fe31e",
+        "signature": "207d3d72da1667cbe3a80e499f06a6f15242b54e40564ccbcf5f70926f86920a"
+      },
+      "./src/sim/request/simulation_request_ownership-value.ts": {
+        "version": "78554a3acc9c4403dca0e2a1d6bb877fabe8155027a065de160b1fa5d9ee0766",
+        "signature": "deec09aa3e497e116cde3d32314c22bf009bfbb8ab4a17fd95eabc1bcd936988"
+      },
+      "./src/sim/request/simulation_request_route-value.ts": {
+        "version": "1f19f0b31405c52d2720e2cabdb45ed7ceb98fd0fd7683c54d08eb1207d7976b",
+        "signature": "183817ba3ba06833eaefc09ad7fdc2d56179d95d68559f36813651c9fa3cb1f7"
+      },
+      "./src/sim/request/simulation_request_startinject-value.ts": {
+        "version": "17c6f5e98109fd29d7413bb8e8953034590a8f42eb2f3c1f64113fa72f8612ef",
+        "signature": "a361d717fa9f339dabaad1ce005fdcae9ee067f25b69c7b8ed417ad4dcf5a914"
+      },
+      "./src/sim/specific/sumo/simulation_affected_area-value.ts": {
+        "version": "2bede765cae96c758d9bdeac477c9c8798aa73a50175312b794472fe17d03d26",
+        "signature": "93ca0932d603ca8009157d5fb481684c0e0dfbef9571cab8f0f5e1a618e2a26b"
+      },
+      "./src/sim/specific/sumo/simulation_sumo_configuration-value.ts": {
+        "version": "c44e6d47cc0a4720e7c383b4960696c7cb59fa6fcefb80a917d7adf1c34832ef",
+        "signature": "de5cd2e158a04b3cc7eb14025a578853600f2b2afdf4f9cf8d36782d42e244f1"
+      },
+      "./src/standard/cap/standard_cap-value.ts": {
+        "version": "ebcd3c17f0acdeca90e239a3f695445388cc4889ac2f08730d6155c602c0092f",
+        "signature": "497fd437f0d7062a12b860274ffd951305eb6177f55b838f2288e89afb1c9218"
+      },
+      "./src/standard/emsi/standard_emsi-value.ts": {
+        "version": "379ccc361118f60b4a56c1c29bb23ce454b418667e446b18763bb5fa6a06f085",
+        "signature": "26ada855089a1a33a05e0f09c38e83aaddfcd180720e4c474c3fd914d4c451d8"
+      },
+      "./src/standard/geojson-sim/standard_geojson_sim-value.ts": {
+        "version": "6e7882d221bcd78a20565310878a7398ec5911998c9bc4665958767772074b5e",
+        "signature": "34e483c2dd4a0cd89cd74e4cd07bbcd0492102c17828840207a609a63b47ca24"
+      },
+      "./src/standard/mlp/standard_mlp-value.ts": {
+        "version": "c492efe23408f2c8b8515f449834d457c0bf5bc0daf992376585448f338810f1",
+        "signature": "610dc450bfda9c4608b1917d6bab8f8f9d4ee929f63d3fc405c3088c58b460d2"
+      },
+      "./src/standard/named-geojson/standard_named_geojson-value.ts": {
+        "version": "afef0233d948437fd6efef129ef8e54030e822938cd3396eb596669b86feacfe",
+        "signature": "26d054d9665e4ce92873ca1cdc9b194c305261dbd7536e740582495d08418604"
+      },
+      "./src/standard/photo-geojson/photo_geojson-value.ts": {
+        "version": "34ea0458bcb63de7fe3ef3b97e1fb771a4d3534e15486e139c9682bc31f97546",
+        "signature": "96db4f63250534c8a98fd9e64e8360e050c04dcf532e5eaa58fd85de0864caa0"
+      },
+      "./src/utils/index.ts": {
+        "version": "ca52325c8af0eea95a3d126d50a2156c7ca58e72d5de7ab6c517c9178392b9ca",
+        "signature": "f86244f198d93d36dd5d24c85ed8d49b97ebde09a4b7c62b98c8e01bd66e51a1"
+      },
+      "./src/index.ts": {
+        "version": "7333cce3831f4afc53b77656fc4806d3cc928c4b896d1e102aa83274ee8ca37f",
+        "signature": "11e23f1bc48245af552fe17dde07d185f8d5e3a1e8fd3271af56b37b32a7e799"
+      },
+      "./src/core/time/system_timing-value.ts": {
+        "version": "4cbd1f619fdbb38ef5e93854c05ddab8338bba564bd6312c7cd3a03effbda604",
+        "signature": "c01897831e61e2952dc9f1155d8f18f31ffce7ed315cfd5227988ea86a7201ce"
+      },
+      "./src/core/time/system_timing_control-value.ts": {
+        "version": "f58250a65887cae05c7f0145bc26ceb473f674605a35835c6c44c5e4f7e24902",
+        "signature": "389d4ac8981b75b28670ed878de148d6efd9629c357a11f11a3c7cf3cd2385f6"
+      },
+      "./src/core/trial-mgmt/system_tm_session_mgmt-value.ts": {
+        "version": "0f6108dfc870b0c0d3ed9917111edb067957e96e2f2567c566ffb69590895a00",
+        "signature": "c2c2f6a2c400aa357d403592718f20f8c2175bcd17c13009d570eefc2f519644"
+      },
+      "./src/sim/support/simulation_entity_aggregation-value.ts": {
+        "version": "07ac7f6b1081b8a938b51d7daa086e4eefc33402bea1d17fff284eac29b76d61",
+        "signature": "7819d4fdfea5a9ae205d71fd5c884ffe15bdbbcda6fb42d31a24a36b1b025715"
+      },
+      "./src/sim/support/simulation_entity_deletion-value.ts": {
+        "version": "a318a65be2eb6fa47dab362ab445183478ef6500d0a93a02a9a6603534e8d0c8",
+        "signature": "ad068f48be0d70e9be0c9b15f02f5f4668d419f9103a02eae98ab979ce0c86b1"
+      },
+      "./src/sim/support/simulation_request_cancellation-value.ts": {
+        "version": "012b3180d36eb3c1b28769aad26ee21b793f12686e2a0cf246ee57e951ea5fa7",
+        "signature": "86092cea7ef697437e00373848cc876de8f0cd5b3596e6e7f8666ea7437d65f8"
+      },
+      "./src/sim/support/simulation_response-value.ts": {
+        "version": "a2501c9c2503148f0b08177759588bb8a8424f73af8f4c5822be9fde5e7143c8",
+        "signature": "42dfba14f71bef3c2d279883f82fdabf16e6b34bbbe15f06d6669f83e372acaf"
+      }
+    },
+    "options": {
+      "composite": true,
+      "target": 2,
+      "module": 1,
+      "lib": [
+        "lib.es2015.d.ts",
+        "lib.es2015.d.ts",
+        "lib.dom.d.ts"
+      ],
+      "declaration": true,
+      "sourceMap": true,
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      "moduleResolution": 2,
+      "resolveJsonModule": true,
+      "watch": true,
+      "configFilePath": "./tsconfig.json"
+    },
+    "referencedMap": {
+      "./src/sim/entity/simulation_entity_featurecollection-value.ts": [
+        "./src/sim/entity/simulation_entity_item-value.ts"
+      ],
+      "./src/sim/entity/simulation_entity_post-value.ts": [
+        "./src/sim/entity/simulation_entity_item-value.ts"
+      ],
+      "./src/sim/request/simulation_request_move-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/sim/request/simulation_request_route-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/standard/named-geojson/standard_named_geojson-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/standard/photo-geojson/photo_geojson-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/utils/index.ts": [
+        "./src/index.ts"
+      ],
+      "./src/index.ts": [
+        "./src/edxl-de/edxl-de-key.ts",
+        "./src/core/heartbeat/system_admin_heartbeat-value.ts",
+        "./src/core/heartbeat/system_heartbeat-value.ts",
+        "./src/core/large-data/system_large_data_update-value.ts",
+        "./src/core/large-data/system_map_layer_update-value.ts",
+        "./src/core/log/system_logging-value.ts",
+        "./src/core/ost/system_observer_tool_answer-value.ts",
+        "./src/core/ost/system_request_change_of_trial_stage-value.ts",
+        "./src/core/topic/system_topic_access_invite-value.ts",
+        "./src/core/topic/system_topic_create_request-value.ts",
+        "./src/core/topic/system_topic_remove-value.ts",
+        "./src/core/topic/system_topic_remove_request-value.ts",
+        "./src/core/trial-mgmt/system_tm_phase_message-value.ts",
+        "./src/core/trial-mgmt/system_tm_role_player-value.ts",
+        "./src/standard/geojson/standard_geojson-value.ts",
+        "./src/sim/configuration/simulation_heartbeat-value.ts",
+        "./src/sim/configuration/simulation_session_mgmt-value.ts",
+        "./src/sim/configuration/simulation_time_mgmt-value.ts",
+        "./src/sim/entity/simulation_entity_featurecollection-value.ts",
+        "./src/sim/entity/simulation_entity_item-value.ts",
+        "./src/sim/entity/simulation_entity_post-value.ts",
+        "./src/sim/geofencing/geofencing_event-value.ts",
+        "./src/sim/request/simulation_request_move-value.ts",
+        "./src/sim/request/simulation_request_ownership-value.ts",
+        "./src/sim/request/simulation_request_route-value.ts",
+        "./src/sim/request/simulation_request_startinject-value.ts",
+        "./src/sim/specific/sumo/simulation_affected_area-value.ts",
+        "./src/sim/specific/sumo/simulation_sumo_configuration-value.ts",
+        "./src/standard/cap/standard_cap-value.ts",
+        "./src/standard/emsi/standard_emsi-value.ts",
+        "./src/standard/geojson-sim/standard_geojson_sim-value.ts",
+        "./src/standard/mlp/standard_mlp-value.ts",
+        "./src/standard/named-geojson/standard_named_geojson-value.ts",
+        "./src/standard/photo-geojson/photo_geojson-value.ts",
+        "./src/utils/index.ts"
+      ]
+    },
+    "exportedModulesMap": {
+      "./src/sim/entity/simulation_entity_featurecollection-value.ts": [
+        "./src/sim/entity/simulation_entity_item-value.ts"
+      ],
+      "./src/sim/entity/simulation_entity_post-value.ts": [
+        "./src/sim/entity/simulation_entity_item-value.ts"
+      ],
+      "./src/sim/request/simulation_request_move-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/sim/request/simulation_request_route-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/standard/named-geojson/standard_named_geojson-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/standard/photo-geojson/photo_geojson-value.ts": [
+        "./src/index.ts"
+      ],
+      "./src/utils/index.ts": [
+        "./src/index.ts"
+      ],
+      "./src/index.ts": [
+        "./src/edxl-de/edxl-de-key.ts",
+        "./src/core/heartbeat/system_admin_heartbeat-value.ts",
+        "./src/core/heartbeat/system_heartbeat-value.ts",
+        "./src/core/large-data/system_large_data_update-value.ts",
+        "./src/core/large-data/system_map_layer_update-value.ts",
+        "./src/core/log/system_logging-value.ts",
+        "./src/core/ost/system_observer_tool_answer-value.ts",
+        "./src/core/ost/system_request_change_of_trial_stage-value.ts",
+        "./src/core/topic/system_topic_access_invite-value.ts",
+        "./src/core/topic/system_topic_create_request-value.ts",
+        "./src/core/topic/system_topic_remove-value.ts",
+        "./src/core/topic/system_topic_remove_request-value.ts",
+        "./src/core/trial-mgmt/system_tm_phase_message-value.ts",
+        "./src/core/trial-mgmt/system_tm_role_player-value.ts",
+        "./src/standard/geojson/standard_geojson-value.ts",
+        "./src/sim/configuration/simulation_heartbeat-value.ts",
+        "./src/sim/configuration/simulation_session_mgmt-value.ts",
+        "./src/sim/configuration/simulation_time_mgmt-value.ts",
+        "./src/sim/entity/simulation_entity_featurecollection-value.ts",
+        "./src/sim/entity/simulation_entity_item-value.ts",
+        "./src/sim/entity/simulation_entity_post-value.ts",
+        "./src/sim/geofencing/geofencing_event-value.ts",
+        "./src/sim/request/simulation_request_move-value.ts",
+        "./src/sim/request/simulation_request_ownership-value.ts",
+        "./src/sim/request/simulation_request_route-value.ts",
+        "./src/sim/request/simulation_request_startinject-value.ts",
+        "./src/sim/specific/sumo/simulation_affected_area-value.ts",
+        "./src/sim/specific/sumo/simulation_sumo_configuration-value.ts",
+        "./src/standard/cap/standard_cap-value.ts",
+        "./src/standard/emsi/standard_emsi-value.ts",
+        "./src/standard/geojson-sim/standard_geojson_sim-value.ts",
+        "./src/standard/mlp/standard_mlp-value.ts",
+        "./src/standard/named-geojson/standard_named_geojson-value.ts",
+        "./src/standard/photo-geojson/photo_geojson-value.ts",
+        "./src/utils/index.ts"
+      ]
+    },
+    "semanticDiagnosticsPerFile": [
+      "./src/edxl-de/edxl-de-key.ts",
+      "./src/core/heartbeat/system_admin_heartbeat-value.ts",
+      "./src/core/heartbeat/system_heartbeat-value.ts",
+      "./src/core/large-data/system_large_data_update-value.ts",
+      "./src/core/large-data/system_map_layer_update-value.ts",
+      "./src/core/log/system_logging-value.ts",
+      "./src/core/ost/system_observer_tool_answer-value.ts",
+      "./src/core/ost/system_request_change_of_trial_stage-value.ts",
+      "./src/core/topic/system_topic_access_invite-value.ts",
+      "./src/core/topic/system_topic_create_request-value.ts",
+      "./src/core/topic/system_topic_remove-value.ts",
+      "./src/core/topic/system_topic_remove_request-value.ts",
+      "./src/core/trial-mgmt/system_tm_phase_message-value.ts",
+      "./src/core/trial-mgmt/system_tm_role_player-value.ts",
+      "./src/standard/geojson/standard_geojson-value.ts",
+      "./src/sim/configuration/simulation_heartbeat-value.ts",
+      "./src/sim/configuration/simulation_session_mgmt-value.ts",
+      "./src/sim/configuration/simulation_time_mgmt-value.ts",
+      "./src/sim/entity/simulation_entity_item-value.ts",
+      "./src/sim/entity/simulation_entity_featurecollection-value.ts",
+      "./src/sim/entity/simulation_entity_post-value.ts",
+      "./src/sim/geofencing/geofencing_event-value.ts",
+      "./src/sim/request/simulation_request_move-value.ts",
+      "./src/sim/request/simulation_request_ownership-value.ts",
+      "./src/sim/request/simulation_request_route-value.ts",
+      "./src/sim/request/simulation_request_startinject-value.ts",
+      "./src/sim/specific/sumo/simulation_affected_area-value.ts",
+      "./src/sim/specific/sumo/simulation_sumo_configuration-value.ts",
+      "./src/standard/cap/standard_cap-value.ts",
+      "./src/standard/emsi/standard_emsi-value.ts",
+      "./src/standard/geojson-sim/standard_geojson_sim-value.ts",
+      "./src/standard/mlp/standard_mlp-value.ts",
+      "./src/standard/named-geojson/standard_named_geojson-value.ts",
+      "./src/standard/photo-geojson/photo_geojson-value.ts",
+      "./src/utils/index.ts",
+      "./src/index.ts",
+      "./src/core/time/system_timing-value.ts",
+      "./src/core/time/system_timing_control-value.ts",
+      "./src/core/trial-mgmt/system_tm_session_mgmt-value.ts",
+      "./src/sim/support/simulation_entity_aggregation-value.ts",
+      "./src/sim/support/simulation_entity_deletion-value.ts",
+      "./src/sim/support/simulation_request_cancellation-value.ts",
+      "./src/sim/support/simulation_response-value.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es5.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.dom.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.collection.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.generator.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.iterable.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.promise.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.proxy.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.reflect.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.symbol.d.ts",
+      "./node_modules/.pnpm/registry.npmjs.org/typescript/3.8.3/node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts"
+    ]
+  },
+  "version": "3.8.3"
+}

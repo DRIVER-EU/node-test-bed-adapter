@@ -1,20 +1,10 @@
 {
   "name": "node-test-bed-adapter",
+  "private": true,
   "version": "0.8.10",
   "description": "An adapter to connect a node.js application to the test-bed's Common Information Space or Common Simulation Space.",
-  "main": "./dist/lib/index.js",
-  "typings": "./dist/lib/index.d.ts",
   "scripts": {
-    "start": "tsc -w",
-    "patch-release": "npm version patch && npm publish && git push --follow-tags",
-    "minor-release": "npm version minor && npm publish && git push --follow-tags",
-    "test": "jasmine-ts --config=src/test/jasmine.json || true",
-    "watch": "nodemon --exec npm run test",
-    "producer": "node dist/example/producer.js",
-    "consumer": "node dist/example/consumer.js",
-    "time": "node dist/example/consumer-time.js",
-    "startDocker": "./start-docker.sh",
-    "stopDocker": "docker-compose down"
+    "start": "pnpm recursive run dev"
   },
   "repository": {
     "type": "git",
@@ -34,25 +24,7 @@
     "url": "https://github.com/DRIVER-EU/node-test-bed-adapter/issues"
   },
   "homepage": "https://github.com/DRIVER-EU/node-test-bed-adapter#readme",
-  "dependencies": {
-    "@types/bluebird": "^3.5.29",
-    "avsc": "^5.4.18",
-    "axios": "^0.19.0",
-    "bluebird": "^3.7.2",
-    "form-data": "^3.0.0",
-    "kafka-node": "5.0.0",
-    "url": "^0.11.0"
-  },
   "devDependencies": {
-    "@types/geojson": "^7946.0.7",
-    "@types/jasmine": "^3.5.0",
-    "@types/node": "^12.12.21",
-    "@types/proxyquire": "^1.3.28",
-    "jasmine": "^3.5.0",
-    "jasmine-ts": "^0.3.0",
-    "node-gyp": "^5.0.7",
-    "proxyquire": "^2.1.3",
-    "ts-node": "^8.5.4",
-    "typescript": "^3.7.3"
+    "pnpm": "^4.11.5"
   }
 }
