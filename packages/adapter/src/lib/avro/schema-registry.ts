@@ -1,8 +1,8 @@
-import { ITestBedOptions } from '../models/test-bed-options';
 import { default as axios, AxiosRequestConfig } from 'axios';
-import * as url from 'url';
-import { Logger, isUnique } from '..';
 import { Type } from 'avsc';
+import * as url from 'url';
+import { ITestBedOptions } from '../models';
+import { Logger, isUnique, isSchemaRegistryAvailable } from '..';
 import { HeartbeatTopic, LogTopic } from '../avro';
 
 export interface ISchema {
@@ -66,6 +66,8 @@ export class SchemaRegistry {
    */
   private schemaMeta: { [key: string]: any } = {};
   private wrapUnions: boolean | 'auto' | 'never' | 'always';
+  private retryTimeout: number;
+  private maxConnectionRetries: number;
 
   constructor(private options: ITestBedOptions) {
     axios.defaults.timeout = 30000;
@@ -74,6 +76,10 @@ export class SchemaRegistry {
     const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
     this.selectedTopics = [...consume, ...produce].filter(isUnique);
+    this.retryTimeout = options.retryTimeout ? options.retryTimeout : 5;
+    this.maxConnectionRetries = options.maxConnectionRetries
+      ? options.maxConnectionRetries
+      : 20;
   }
 
   public init() {
@@ -87,7 +93,7 @@ export class SchemaRegistry {
 
     const tryToInitialize = () => {
       return new Promise((resolve, reject) => {
-        this.isSchemaRegistryAvailable()
+        isSchemaRegistryAvailable(this.options, this.log)
           .then(() => this.fetchTopics())
           .then(t => this.storeTopics(t))
           .then(topics =>
@@ -180,39 +186,6 @@ export class SchemaRegistry {
       return;
     }
     this.schemaTopics = this.schemaTopics.filter(st => st !== t && st !== k);
-  }
-
-  private isSchemaRegistryAvailable() {
-    const MAX_RETRIES = 20;
-    return new Promise(resolve => {
-      const srUrl = this.options.schemaRegistry;
-      let retries = MAX_RETRIES;
-      const intervalId = setInterval(() => {
-        axios
-          .get(srUrl)
-          .then(() => {
-            this.log.debug(
-              `isSchemaRegistryAvailable - Accessed schema registry in ${MAX_RETRIES -
-                retries}x.`
-            );
-            clearInterval(intervalId);
-            resolve();
-          })
-          .catch(() => {
-            retries--;
-            this.log.warn(
-              `isSchemaRegistryAvailable - Access schema registry at ${srUrl}. Retried ${MAX_RETRIES -
-                retries}x.`
-            );
-            if (retries === 0) {
-              this.log.error(
-                `isSchemaRegistryAvailable - Cannot access schema registry at ${srUrl}. Retried ${MAX_RETRIES}x. Exiting...`
-              );
-              process.exit(1);
-            }
-          });
-      }, 5000);
-    });
   }
 
   private processSelectedTopics() {

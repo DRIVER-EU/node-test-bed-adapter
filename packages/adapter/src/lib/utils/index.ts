@@ -1,10 +1,11 @@
 import * as fs from 'fs';
+import { default as axios } from 'axios';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { DataType, ILargeDataUpdate } from 'test-bed-schemas';
 import { TestBedAdapter, ProduceRequest, Logger } from '..';
 import { LargeDataUpdateTopic } from '../avro';
-import { ISendResponse } from '../models';
+import { ISendResponse, ITestBedOptions } from '../models';
 
 export const clone = <T>(model: T) => {
   return JSON.parse(JSON.stringify(model)) as T;
@@ -134,3 +135,41 @@ export const largeFileUploadCallback = (
 /** Is unique filter for array filter method */
 export const isUnique = <T>(value: T, index: number, arr: T[]) =>
   arr.indexOf(value) === index;
+
+/** Check if the schema registry is available */
+export const isSchemaRegistryAvailable = (
+  options: ITestBedOptions,
+  log: Logger
+) => {
+  const timeout = (options.retryTimeout || 5) * 1000;
+  const maxRetries = options.maxConnectionRetries || 20;
+  return new Promise(resolve => {
+    let retries = maxRetries;
+    const intervalId = setInterval(() => {
+      const url = options.schemaRegistry;
+      axios
+        .get(url)
+        .then(() => {
+          log.info(
+            `isSchemaRegistryAvailable - Accessed schema registry in ${maxRetries -
+              retries}x.`
+          );
+          clearInterval(intervalId);
+          resolve();
+        })
+        .catch(() => {
+          retries--;
+          log.warn(
+            `isSchemaRegistryAvailable - Failed to access schema registry at ${url}. Retried ${maxRetries -
+              retries}x.`
+          );
+          if (retries === 0) {
+            log.error(
+              `isSchemaRegistryAvailable - Cannot access schema registry at ${url}. Retried ${maxRetries}x. Exiting...`
+            );
+            process.exit(1);
+          }
+        });
+    }, timeout);
+  });
+};

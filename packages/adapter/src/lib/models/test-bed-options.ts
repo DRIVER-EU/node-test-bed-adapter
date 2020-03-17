@@ -28,7 +28,7 @@ export interface ITestBedOptions extends KafkaClientOptions {
   /** Avro parser setting: whether to wrap union types in schema*/
   wrapUnions?: boolean | 'auto' | 'never' | 'always';
   /**
-   * If true (default), automatically register typical system schema's. In normal situations,
+   * If true (default), automatically register typical Test-bed schema's. In normal situations,
    * you should at least register the HeartbeatTopic, LogTopic and, optionally, the TimeTopic.
    * - consumer topics:
    *   - TimeTopic: for listening to the time

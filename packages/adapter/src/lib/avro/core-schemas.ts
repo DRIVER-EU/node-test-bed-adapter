@@ -17,5 +17,5 @@ export const CoreSubscribeTopics = [TimeTopic, AccessInviteTopic];
 
 export const CorePublishTopics = (usesLargeDataService = false) =>
   usesLargeDataService
-    ? [HeartbeatTopic, LargeDataUpdateTopic, LogTopic]
+    ? [HeartbeatTopic, LogTopic, LargeDataUpdateTopic]
     : [HeartbeatTopic, LogTopic];
