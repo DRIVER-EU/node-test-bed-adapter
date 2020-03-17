@@ -259,15 +259,19 @@ export class TestBedAdapter extends EventEmitter {
    * Create topics by requesting their metadata.
    * It only works when `auto.create.topics.enable = true`.
    */
-  public async createTopics(topics: string[], isAsync: boolean) {
-    return new Promise((resolve, reject) => {
+  public async createTopics(topics: string[]) {
+    return new Promise<string[]>((resolve, reject) => {
       if (this.producer) {
-        this.producer.createTopics(topics, isAsync, (err, data) => {
-          if (err) {
-            reject(err);
+        this.producer.createTopics(
+          topics,
+          true,
+          (err: NodeJS.ErrnoException, data: string[]) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(data);
           }
-          resolve(data);
-        });
+        );
       } else {
         reject('Producer does not exist!');
       }
@@ -431,6 +435,11 @@ export class TestBedAdapter extends EventEmitter {
     cb?: (err?: Error, uploadUrl?: string) => void
   ) {
     this.largeFileUploadService.upload(file, isPrivate, cb);
+  }
+
+  /** List of the uploaded schemas, if any */
+  public get uploadedSchemas() {
+    return this.schemaPublisher ? this.schemaPublisher.uploadedSchemas : [];
   }
 
   // PRIVATE METHODS

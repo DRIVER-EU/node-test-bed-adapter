@@ -66,8 +66,6 @@ export class SchemaRegistry {
    */
   private schemaMeta: { [key: string]: any } = {};
   private wrapUnions: boolean | 'auto' | 'never' | 'always';
-  private retryTimeout: number;
-  private maxConnectionRetries: number;
 
   constructor(private options: ITestBedOptions) {
     axios.defaults.timeout = 30000;
@@ -76,10 +74,6 @@ export class SchemaRegistry {
     const consume = options.consume ? options.consume.map(c => c.topic) : [];
     const produce = options.produce ? options.produce : [];
     this.selectedTopics = [...consume, ...produce].filter(isUnique);
-    this.retryTimeout = options.retryTimeout ? options.retryTimeout : 5;
-    this.maxConnectionRetries = options.maxConnectionRetries
-      ? options.maxConnectionRetries
-      : 20;
   }
 
   public init() {

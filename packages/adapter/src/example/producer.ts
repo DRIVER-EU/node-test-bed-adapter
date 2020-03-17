@@ -49,7 +49,8 @@ class Producer {
       autoRegisterSchemas: true,
       autoRegisterDefaultSchemas: true,
       wrapUnions: 'auto',
-      schemaFolder: `${__dirname}/../../src/data/schemas`,
+      schemaFolder:
+        process.env.SCHEMA_FOLDER || `${__dirname}/../../src/data/schemas`,
       // produce: ['standard_geojson'],
       produce: ['standard_cap', 'standard_geojson', TimeTopic],
       logging: {

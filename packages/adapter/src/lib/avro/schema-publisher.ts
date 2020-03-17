@@ -25,6 +25,7 @@ export class SchemaPublisher {
   private schemaFolder: string;
   private isInitialized = false;
   private log = Logger.instance;
+  private topics = [] as string[];
 
   constructor(private options: ITestBedOptions) {
     this.schemaFolder = path.resolve(process.cwd(), options.schemaFolder || '');
@@ -41,6 +42,14 @@ export class SchemaPublisher {
       isSchemaRegistryAvailable(this.options, this.log).then(() => {
         const files = findFilesInDir(this.schemaFolder, '.avsc');
         const missing = findMissingKeyFiles(files);
+        this.topics = files
+          .filter(file => /-value/i.test(file))
+          .map(file =>
+            path
+              .basename(file)
+              .replace(path.extname(file), '')
+              .replace('-value', '')
+          );
         Promise.map([...files, ...missing], (f, i) =>
           this.uploadSchema(f, i >= files.length)
         )
@@ -48,6 +57,10 @@ export class SchemaPublisher {
           .catch(err => reject(err));
       });
     });
+  }
+
+  public get uploadedSchemas() {
+    return [...this.topics];
   }
 
   private uploadSchema(schemaFilename: string, useDefaultKeySchema: boolean) {
