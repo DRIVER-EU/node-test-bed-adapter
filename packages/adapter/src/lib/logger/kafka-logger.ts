@@ -2,6 +2,7 @@ import { TestBedAdapter } from '../test-bed-adapter';
 import { ICanLog, LogLevel, LogLevelToType } from '.';
 import { ProduceRequest } from 'kafka-node';
 import { ILog as ILogMessage } from 'test-bed-schemas';
+import { LogTopic } from '..';
 
 export interface IKafkaLoggerOptions {
   adapter: TestBedAdapter;
@@ -14,7 +15,6 @@ export interface IKafkaLoggerOptions {
  * source: https://github.com/jackielihf/winston-k/blob/master/logger.js
  */
 export class KafkaLogger implements ICanLog {
-  private static LogTopic = 'system_logging';
   private adapter: TestBedAdapter;
   private id: string | number;
   private isInitialized = false;
@@ -23,7 +23,7 @@ export class KafkaLogger implements ICanLog {
     this.id = options.clientId;
     this.adapter = options.adapter;
     this.adapter
-      .addProducerTopics(KafkaLogger.LogTopic)
+      .addProducerTopics(LogTopic)
       .then(() => (this.isInitialized = true));
   }
 
@@ -37,7 +37,7 @@ export class KafkaLogger implements ICanLog {
     }
     const payload: ProduceRequest[] = [
       {
-        topic: KafkaLogger.LogTopic,
+        topic: LogTopic,
         messages: {
           id: this.id,
           level: LogLevelToType(level),

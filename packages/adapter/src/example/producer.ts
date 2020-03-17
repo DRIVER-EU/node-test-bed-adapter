@@ -46,10 +46,11 @@ class Producer {
       clientId: this.id,
       fetchAllSchemas: false,
       fetchAllVersions: false,
-      // autoRegisterSchemas: true,
       autoRegisterSchemas: true,
+      autoRegisterDefaultSchemas: true,
       wrapUnions: 'auto',
       schemaFolder: `${__dirname}/../../src/data/schemas`,
+      // produce: ['standard_geojson'],
       produce: ['standard_cap', 'standard_geojson', TimeTopic],
       logging: {
         logToConsole: LogLevel.Info,

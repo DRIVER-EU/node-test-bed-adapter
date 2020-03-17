@@ -327,13 +327,13 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public addProducerTopics(topics?: string | string[]) {
-    return new Promise<string[]>((resolve, reject) => {
+    return new Promise<string[]>(async (resolve, reject) => {
       if (!topics || (topics instanceof Array && topics.length === 0)) {
         return resolve([]);
       }
       topics = topics instanceof Array ? topics : [topics];
-      const newTopics = this.initializeProducerTopics(topics);
-      if (this.producer && newTopics.length > 0) {
+      const newTopics = await this.initializeProducerTopics(topics);
+      if (this.producer && newTopics && newTopics.length > 0) {
         this.producer.createTopics(newTopics, false, (error, _data) => {
           if (error) {
             return this.emitErrorMsg(
@@ -654,36 +654,37 @@ export class TestBedAdapter extends EventEmitter {
    * Add the topics to the configuration and initialize the encoders/validators.
    * @param topics topics to add
    */
-  private initializeProducerTopics(topics?: string[]) {
+  private async initializeProducerTopics(topics?: string[]) {
     if (!topics) {
       return [];
     }
     const newTopics: string[] = [];
-    topics.forEach(t => {
-      if (this.producerTopics.hasOwnProperty(t)) return;
+    for (const topic of topics) {
+      if (this.producerTopics.hasOwnProperty(topic)) return;
+      await this.schemaRegistry.registerNewTopic(topic);
       if (
         !(
-          this.schemaRegistry.valueSchemas.hasOwnProperty(t) ||
-          this.schemaRegistry.valueSchemas.hasOwnProperty(t + '-value')
+          this.schemaRegistry.valueSchemas.hasOwnProperty(topic) ||
+          this.schemaRegistry.valueSchemas.hasOwnProperty(topic + '-value')
         )
       ) {
         this.log.error(
-          `initializeProducerTopics - no schema registered for topic ${t}`
+          `initializeProducerTopics - no schema registered for topic ${topic}`
         );
-        return;
+        continue;
       }
-      newTopics.push(t);
-      if (this.config.produce && this.config.produce.indexOf(t) < 0) {
-        this.config.produce.push(t);
+      newTopics.push(topic);
+      if (this.config.produce && this.config.produce.indexOf(topic) < 0) {
+        this.config.produce.push(topic);
       }
-      const initializedTopic = { topic: t } as IInitializedTopic;
-      const avro = avroHelperFactory(this.schemaRegistry, t);
+      const initializedTopic = { topic: topic } as IInitializedTopic;
+      const avro = avroHelperFactory(this.schemaRegistry, topic);
       initializedTopic.encode = avro.encode;
       initializedTopic.encodeKey = avro.encodeKey;
       initializedTopic.isValid = avro.isValid;
       initializedTopic.isKeyValid = avro.isKeyValid;
-      this.producerTopics[t] = initializedTopic;
-    });
+      this.producerTopics[topic] = initializedTopic;
+    }
     return newTopics;
   }
 
@@ -697,7 +698,10 @@ export class TestBedAdapter extends EventEmitter {
       }
       this.isConnected = true;
       const sendHeartbeat = () => {
-        if (!this.isConnected) {
+        if (
+          !this.isConnected ||
+          !this.producerTopics.hasOwnProperty(HeartbeatTopic)
+        ) {
           return;
         }
         if (!this.producer) {
