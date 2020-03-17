@@ -1,4 +1,3 @@
-import * as path from 'path';
 import { TestBedAdapter, Logger, LogLevel } from '../lib';
 
 const log = Logger.instance;
