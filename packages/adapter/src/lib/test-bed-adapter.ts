@@ -256,6 +256,25 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   /**
+   * Create topics by requesting their metadata.
+   * It only works when `auto.create.topics.enable = true`.
+   */
+  public async createTopics(topics: string[], isAsync: boolean) {
+    return new Promise((resolve, reject) => {
+      if (this.producer) {
+        this.producer.createTopics(topics, isAsync, (err, data) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(data);
+        });
+      } else {
+        reject('Producer does not exist!');
+      }
+    });
+  }
+
+  /**
    * Add topics (encoding utf8)
    *
    * @param topics Array of topics to add

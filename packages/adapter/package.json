@@ -1,6 +1,6 @@
 {
   "name": "node-test-bed-adapter",
-  "version": "0.9.4",
+  "version": "0.9.6",
   "description": "An adapter to connect a node.js application to the Test-bed's Common Information Space or Common Simulation Space.",
   "main": "./dist/lib/index.js",
   "typings": "./dist/lib/index.d.ts",
@@ -44,7 +44,7 @@
     "form-data": "^3.0.0",
     "kafka-node": "5.0.0",
     "url": "^0.11.0",
-    "test-bed-schemas": "^0.3.1"
+    "test-bed-schemas": "^0.3.2"
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.7",
