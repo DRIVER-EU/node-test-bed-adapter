@@ -376,14 +376,14 @@ export class TestBedAdapter extends EventEmitter {
   /**
    * Get the simulation time as UTC Date.
    */
-  public get trialTime() {
+  public get simulationTime() {
     return this.timeService.simulationTime;
   }
 
   /**
    * Get the simulation state.
    */
-  public get state(): TimeState {
+  public get timeState(): TimeState {
     return this.timeService.timeState;
   }
 
@@ -391,8 +391,8 @@ export class TestBedAdapter extends EventEmitter {
    * Positive number, indicating how fast the simulation / trial time moves with respect
    * to the actual time. A value of 0 means a pause, 1 is as fast as real-time.
    */
-  public get trialTimeSpeed() {
-    return this.timeService.trialTimeSpeed;
+  public get simulationSpeed() {
+    return this.timeService.simulationSpeed;
   }
 
   /**

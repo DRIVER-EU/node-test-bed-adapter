@@ -57,7 +57,7 @@ class Producer {
     });
     this.adapter.on('error', e => console.error(e));
     this.adapter.on('ready', () => {
-      log.info(`Current simulation time: ${this.adapter.trialTime}`);
+      log.info(`Current simulation time: ${this.adapter.simulationTime}`);
       log.info('Producer is connected');
       this.sendPhotoGeoJSON();
       // this.sendGeoJSON();

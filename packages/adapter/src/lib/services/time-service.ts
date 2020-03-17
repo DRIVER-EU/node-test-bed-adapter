@@ -76,7 +76,7 @@ export class TimeService {
    * Positive number, indicating how fast the simulation / trial time moves with respect
    * to the actual time. A value of 0 means a pause, 1 is as fast as real-time.
    */
-  public get trialTimeSpeed(): number {
+  public get simulationSpeed(): number {
     return this.simSpeed;
   }
 }

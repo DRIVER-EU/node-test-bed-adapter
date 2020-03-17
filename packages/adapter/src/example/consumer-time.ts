@@ -3,7 +3,13 @@
 // const kafkaLogging = require('kafka-node/logging');
 // kafkaLogging.setLoggerProvider(consoleLoggerProvider);
 
-import { TestBedAdapter, Logger, LogLevel, ITopicMetadataItem, IAdapterMessage } from '../lib/index';
+import {
+  TestBedAdapter,
+  Logger,
+  LogLevel,
+  ITopicMetadataItem,
+  IAdapterMessage,
+} from '../lib/index';
 
 const log = Logger.instance;
 
@@ -28,18 +34,22 @@ class TimeConsumer {
         logToConsole: LogLevel.Info,
         logToFile: LogLevel.Info,
         logToKafka: LogLevel.Warn,
-        logFile: 'log.txt'
-      }
+        logFile: 'log.txt',
+      },
     });
     this.adapter.on('ready', () => {
       setInterval(() => {
-        const time = this.adapter.trialTime;
-        const speed = this.adapter.trialTimeSpeed;
-        const state = this.adapter.state;
-        process.stdout.write(`Time: ${time.toUTCString()}; Speed: ${speed}; State: ${state}    \r`);
+        const time = this.adapter.simulationTime;
+        const speed = this.adapter.simulationSpeed;
+        const state = this.adapter.timeState;
+        process.stdout.write(
+          `Time: ${time.toUTCString()}; Speed: ${speed}; State: ${state}    \r`
+        );
       }, 100);
     });
-    this.adapter.on('error', err => log.error(`Consumer received an error: ${err}`));
+    this.adapter.on('error', err =>
+      log.error(`Consumer received an error: ${err}`)
+    );
     this.adapter.connect();
   }
 }
