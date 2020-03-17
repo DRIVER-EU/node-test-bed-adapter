@@ -1,4 +1,4 @@
-import { ILog } from './logger';
+import { ICanLog } from './logger';
 import { LogLevel } from './log-levels';
 
 /**
@@ -6,8 +6,12 @@ import { LogLevel } from './log-levels';
  *
  * Color codes are taken from [here](https://stackoverflow.com/a/41407246/319711).
  */
-export class ConsoleLogger implements ILog {
-  log(level: LogLevel, msg: string, _callback?: (err: any, result: any) => void) {
+export class ConsoleLogger implements ICanLog {
+  log(
+    level: LogLevel,
+    msg: string,
+    _callback?: (err: any, result: any) => void
+  ) {
     switch (level) {
       case LogLevel.Critical:
       case LogLevel.Error:

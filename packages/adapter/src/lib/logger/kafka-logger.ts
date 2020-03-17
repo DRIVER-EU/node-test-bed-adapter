@@ -1,5 +1,5 @@
 import { TestBedAdapter } from '../test-bed-adapter';
-import { ILog, LogLevel, LogLevelToType } from '.';
+import { ICanLog, LogLevel, LogLevelToType } from '.';
 import { ProduceRequest } from 'kafka-node';
 import { ILog as ILogMessage } from 'test-bed-schemas';
 
@@ -13,7 +13,7 @@ export interface IKafkaLoggerOptions {
  * Based on winston-k
  * source: https://github.com/jackielihf/winston-k/blob/master/logger.js
  */
-export class KafkaLogger implements ILog {
+export class KafkaLogger implements ICanLog {
   private static LogTopic = 'system_logging';
   private adapter: TestBedAdapter;
   private id: string | number;

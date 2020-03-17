@@ -1,13 +1,17 @@
 import { EventEmitter } from 'events';
 import { LogLevel } from './log-levels';
 
-export interface ILog {
-  log(level: LogLevel, msg: string, callback?: (err?: Error, result?: any) => void): void;
+export interface ICanLog {
+  log(
+    level: LogLevel,
+    msg: string,
+    callback?: (err?: Error, result?: any) => void
+  ): void;
 }
 
 export interface ILogger {
   /** The actual logger instance */
-  logger: ILog;
+  logger: ICanLog;
   /** The minimum log level: messages with a higher log level will be ignored. */
   minLevel: LogLevel;
 }
@@ -72,7 +76,10 @@ export class Logger extends EventEmitter {
   }
 
   private setMinLogLevel() {
-    this.minLevel = this.loggers.reduce((p, c) => (c.minLevel < p ? c.minLevel : p), Number.MAX_SAFE_INTEGER);
+    this.minLevel = this.loggers.reduce(
+      (p, c) => (c.minLevel < p ? c.minLevel : p),
+      Number.MAX_SAFE_INTEGER
+    );
   }
 
   private log(level: LogLevel, msg: string | Object) {
@@ -80,14 +87,16 @@ export class Logger extends EventEmitter {
       return;
     }
     const message = typeof msg === 'object' ? JSON.stringify(msg) : msg;
-    this.loggers.filter((logger) => level >= logger.minLevel).forEach((logger) =>
-      logger.logger.log(level, message, (err, result) => {
-        if (err) {
-          this.emit('error', err);
-        } else if (result) {
-          this.emit('message', result);
-        }
-      })
-    );
+    this.loggers
+      .filter(logger => level >= logger.minLevel)
+      .forEach(logger =>
+        logger.logger.log(level, message, (err, result) => {
+          if (err) {
+            this.emit('error', err);
+          } else if (result) {
+            this.emit('message', result);
+          }
+        })
+      );
   }
 }
