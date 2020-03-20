@@ -1,4 +1,26 @@
-import { ILocation } from '../..';
+/**
+ * A location is defined as a WGS84-based standard representation of a location on
+ * earth
+ */
+export interface ILocation {
+  /** In decimal degrees, ranging from [-90, 90] where 0 is the equator */
+  latitude: number;
+  /**
+   * In decimal degrees, ranging from (-180, 180] where 0 is the Prime Meridian
+   * (line going through the geographic north, Greenwich, and the geographic south)
+   */
+  longitude: number;
+  /**
+   * Optional in meters, where 0 is the surface of the WGS84-based ellipsoid, or
+   * another agreed upon common ground level (specified inside the configuration
+   * guidelines). A positive number indicates a location outside the ellipsoid (or
+   * above the ground level), while a negative number indicates a location inside
+   * the ellipsoid (or below the ground level). If an altitude is not provided, it
+   * is presumed that the location is at the ground level of the provided latitude
+   * and longitude coordinates
+   */
+  altitude?: null | undefined | number;
+}
 
 /**
  * Straight – move in a direct line to all waypoints without taking into account
@@ -11,7 +33,7 @@ export enum MoveType {
   Straight = 'Straight',
   CrossCountry = 'CrossCountry',
   OnlyRoads = 'OnlyRoads',
-  RoadsAndCrossCountry = 'RoadsAndCrossCountry',
+  RoadsAndCrossCountry = 'RoadsAndCrossCountry'
 }
 
 /**
@@ -45,8 +67,9 @@ export interface IRequestMove {
   /** Optional type of movement */
   moveType: MoveType;
   /**
-   * Optional feature collection identifier of the preferred route that should be
-   * followed. This property should not be used together with the waypoints property
+   * Optional unique identifier of a feature collection representing the preferred
+   * route that should be followed. This property should not be used together with
+   * the waypoints property
    */
   route?: null | undefined | string;
   /**

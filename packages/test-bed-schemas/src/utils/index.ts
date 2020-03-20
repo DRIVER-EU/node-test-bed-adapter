@@ -75,7 +75,7 @@ export const geojsonToAvro = (
 };
 
 /** Convert a flat object to an AVRO representation, where all numbers will either be int or double. */
-export const mapToAvro = (props: { [key: string]: any } | null) =>
+export const mapToAvro = (props: { [key: string]: any } | null | undefined) =>
   props && Object.keys(props).length > 0
     ? Object.keys(props).reduce((acc, key) => {
         const val = props[key];

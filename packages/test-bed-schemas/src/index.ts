@@ -12,17 +12,25 @@ export * from './core/topic/system_topic_remove-value';
 export * from './core/topic/system_topic_remove_request-value';
 export * from './core/trial-mgmt/system_tm_phase_message-value';
 export * from './core/trial-mgmt/system_tm_role_player-value';
-export * from './core/time/system_timing-value';
-export * from './core/time/system_timing_control-value';
+export * from './sim/configuration/system_timing_control-value';
 export * from './standard/geojson/standard_geojson-value';
 export { IHeartbeat as ISimulationHeartbeat } from './sim/configuration/simulation_heartbeat-value';
 export * from './sim/configuration/simulation_session_mgmt-value';
 export * from './sim/configuration/simulation_time_mgmt-value';
-export * from './sim/entity/simulation_entity_featurecollection-value';
+export {
+  IAddress,
+  MarkerSize,
+  IProperties,
+  IFeature,
+  IFeatureCollection,
+} from './sim/entity/simulation_entity_featurecollection-value';
 export * from './sim/entity/simulation_entity_item-value';
 export * from './sim/entity/simulation_entity_post-value';
 export * from './sim/geofencing/geofencing_event-value';
-export * from './sim/request/simulation_request_move-value';
+export {
+  MoveType,
+  IRequestMove,
+} from './sim/request/simulation_request_move-value';
 export * from './sim/request/simulation_request_ownership-value';
 export * from './sim/request/simulation_request_route-value';
 export * from './sim/request/simulation_request_startinject-value';

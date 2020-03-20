@@ -312,8 +312,6 @@ export interface IAggregatedFeature {
    * Optional feature specific properties (as defined by the GeoJSON standard)
    */
   properties?: null | undefined | IProperties;
-  /** Optional orientation of the feature */
-  orientation?: null | undefined | IOrientation;
   /**
    * Optional bounding box around the feature in the following order [west, south,
    * east, north]. Length(bbox)=2xn, where n is the number of dimensions
