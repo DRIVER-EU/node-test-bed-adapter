@@ -1,6 +1,6 @@
 {
   "name": "test-bed-schemas",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Schema's commonly used for the Common Information Space or Common Simulation Space.",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
