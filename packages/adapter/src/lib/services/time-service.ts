@@ -7,7 +7,7 @@ import { ITimeManagement, TimeState } from 'test-bed-schemas';
 export class TimeService {
   private updatedSimTimeAt: number = Date.now();
   /**
-   * The date and time the trialTime was updated as the number of milliseconds
+   * The date and time the simulationTime was updated as the number of milliseconds
    * from the unix epoch, 1 January 1970 00:00:00.000 UTC.
    */
   private timestamp = Date.now();

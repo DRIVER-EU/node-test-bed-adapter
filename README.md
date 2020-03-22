@@ -60,7 +60,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
   - also, it seems that the schema registry does not support sub-schema's, so we need to flatten them. Created a tool for that, [avro-schema-parser](npmjs.org/avro-schema-parser)
   - Schema's are automatically loaded on start-up from the registry. Topics that have no corresponding schema are ignored! For a list of schema's, see [here](github.com/DRIVER-EU/avro-schemas).
 - Automatically publish schema's to the registry: using options `schemaFolder` and `autoRegisterSchemas`. See `producer.ts` in the example folder.
-- Added the time service: through it, you can get the trialTime, trialTimeSpeed, state, and elapsed trial time.
+- Added the time service: through it, you can get the simulationTime, simulationSpeed, state, and elapsed trial time.
 - Listens to topic access invite messages: when the admin tool sends them, the adapter will download the required schema's and start listening or publishing to them. You can still specify the consume/produce topics regularly, by specifying it on initialization, but when the Test-bed is operating in secure mode, you may not get access to these topics before receiving an invitation.
 - Added the uploadFile service for uploading files to the Test-bed. Also added a helper callback method that automatically publishes a messsage to the system_large_file_update topic.
 - Added support for GeoJSON processing: see `./src/example/producer.ts`.
