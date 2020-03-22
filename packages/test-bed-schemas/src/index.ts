@@ -12,11 +12,10 @@ export * from './core/topic/system_topic_remove-value';
 export * from './core/topic/system_topic_remove_request-value';
 export * from './core/trial-mgmt/system_tm_phase_message-value';
 export * from './core/trial-mgmt/system_tm_role_player-value';
-export * from './sim/configuration/system_timing_control-value';
 export * from './standard/geojson/standard_geojson-value';
-export { IHeartbeat as ISimulationHeartbeat } from './sim/configuration/simulation_heartbeat-value';
-export * from './sim/configuration/simulation_session_mgmt-value';
 export * from './sim/configuration/simulation_time_mgmt-value';
+export * from './sim/configuration/simulation_time_control-value';
+export * from './sim/configuration/simulation_session_mgmt-value';
 export {
   IAddress,
   MarkerSize,
