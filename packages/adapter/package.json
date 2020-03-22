@@ -45,7 +45,7 @@
     "form-data": "^3.0.0",
     "kafka-node": "5.0.0",
     "url": "^0.11.0",
-    "test-bed-schemas": "^0.3.3"
+    "test-bed-schemas": "^0.3.5"
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.7",
