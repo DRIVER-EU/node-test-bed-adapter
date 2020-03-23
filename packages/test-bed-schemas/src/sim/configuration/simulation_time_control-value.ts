@@ -1,4 +1,4 @@
-export enum Command {
+export enum TimeCommand {
   Init = 'Init',
   Start = 'Start',
   Pause = 'Pause',
@@ -13,7 +13,7 @@ export enum Command {
  */
 export interface ITimeControl {
   /** The type of command to switch the state of the time-service. */
-  command: Command;
+  command: TimeCommand;
   /**
    * Optional UNIX Epoch time in milliseconds marking the fictive date and time the
    * session should run with.
