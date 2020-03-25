@@ -111,7 +111,7 @@ export class TestBedAdapter extends EventEmitter {
       if (err) {
         return console.error(err);
       }
-      this.origin = `${info.hostname}, ${info.localIP}, ${info.externalIP}`;
+      this.origin = JSON.stringify(info);
     });
   }
 
