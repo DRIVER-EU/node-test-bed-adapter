@@ -1,282 +1,140 @@
 {
+	"_comment": "",
   "name": "Item",
   "namespace": "eu.driver.model.sim.entity",
-  "doc":
-    "Common Simulation Space Item, representing a visual entity inside the simulation world. *Copyright (C) 2017-2018 XVR Simulation B.V., Delft, The Netherlands, Martijn Hendriks <hendriks @ xvrsim.com>. This file is part of DRIVER+ WP923 Test-bed infrastructure project. This file is licensed under the MIT license : https://github.com/DRIVER-EU/avro-schemas/blob/master/LICENSE*",
+  "doc": "An item is a specific entity that is bound to one position in the world. It should represent a tangible object, person or vehicle. *Copyright (C) 2019-2020 XVR Simulation B.V., Delft, The Netherlands, Martijn Hendriks <hendriks @ xvrsim.com>. This file is licensed under the MIT license : https://github.com/DRIVER-EU/avro-schemas/blob/master/LICENSE*",
   "type": "record",
   "fields": [
     {
-      "name": "guid",
-      "doc": "Globally unique identifier for this entity",
+      "name": "id",
+      "doc": "Unique identifier of the item",
       "type": "string"
     },
-    {
-      "name": "name",
-      "doc": "Name of this entity",
-      "type": "string"
-    },
-    {
-      "name": "owner",
-      "doc": "Identifier of the simulator currently responsible for this entity",
-      "type": "string"
-    },
-    {
+		{
       "name": "location",
-      "doc": "Location of this item",
+      "doc": "Location of the item",
       "type": {
         "name": "Location",
-        "namespace": "eu.driver.model.sim.geo",
-        "doc": "WGS84-based standard representation of a location on earth",
+        "namespace": "eu.driver.model.sim.support",
+        "doc": "A location is defined as a WGS84-based standard representation of a location on earth",
         "type": "record",
         "fields": [
           {
             "name": "latitude",
-            "doc": "Latitude in degrees (-90, 90] - 0 is equator",
+            "doc": "In decimal degrees, ranging from [-90, 90] where 0 is the equator",
             "type": "double"
           },
           {
             "name": "longitude",
-            "doc": "Longitude in degrees (-180, 180] - 0 is line [geographic north - Greenwich - geographic south]",
+            "doc": "In decimal degrees, ranging from (-180, 180] where 0 is the Prime Meridian (line going through the geographic north, Greenwich, and the geographic south)",
             "type": "double"
           },
           {
             "name": "altitude",
-            "doc": "Altitude in meters - 0 is surface of WGS84-based ellipsoid",
+            "doc": "Optional in meters, where 0 is the surface of the WGS84-based ellipsoid",
             "type": ["null", "double"],
             "default": null
           }
         ]
       }
     },
-    {
+		{
       "name": "orientation",
-      "doc": "Orientation of this item",
-      "type": {
-        "name": "Orientation",
-        "namespace": "eu.driver.model.sim.geo",
-        "doc":
-          "WGS84/Aviation-based representation of an orientation on earth - Right-handed item-specific reference system, with in base-setting heading/yaw-axis pointing down (to the centre of the earth), pitch-axis pointing to the right, roll/bank-axis pointing forward",
-        "type": "record",
-        "fields": [
-          {
-            "name": "yaw",
-            "doc":
-              "Yaw or heading in degrees [0, 360) - 0 is pointing towards geographic north - yaw of 90 is EAST, yaw of 270 is WEST",
-            "type": "double"
-          },
-          {
-            "name": "pitch",
-            "doc":
-              "Pitch in degrees (-90, 90] - 0 is perpendicular to line [origin of item - centre of WGS84-based ellipsoid] - pitch of +45 is 45 degrees pointing upwards, -45 is 45 degrees pointing downwards",
-            "type": "double"
-          },
-          {
-            "name": "roll",
-            "doc":
-              "Roll or bank in degrees (-180, 180] - 0 is perpendicular to line [origin of item - centre of WGS84-based ellipsoid] - bank of +45 is 45 degrees roll to the right, -45 is 45 degrees roll to the left",
-            "type": "double"
-          }
-        ]
-      }
+      "doc": "Optional orientation of the item",
+      "type": [
+				"null",
+				{
+					"name": "Orientation",
+					"namespace": "eu.driver.model.sim.support",
+					"doc": "An orientation is defined in the aviation axes conventions representation. It is a left-handed item-centric reference system, with in default initial state its heading/yaw-axis pointing up (away from the centre of the WGS84-based ellipsoid), its pitch-axis pointing to the right, and its roll/bank-axis pointing forward",
+					"type": "record",
+					"fields": [
+						{
+							"name": "yaw",
+							"doc": "In decimal degrees, ranging from [0, 360) where 0 is pointing towards the geographic north. The yaw value is applied in a clockwise rotation over the item’s heading/yaw-axis. A yaw value of 90 makes the item face east, while a yaw of 270 makes it face west",
+							"type": "double"
+						},
+						{
+							"name": "pitch",
+							"doc": "In decimal degrees, ranging from [-90, 90] where 0 is perpendicular to the line between the item’s location and the centre of the WGS84-based ellipsoid. The pitch value is applied in a counter-clockwise rotation over the item’s pitch-axis. A pitch value of 45 makes the item face 45 degrees upwards, while a pitch of -20 makes it face 20 degrees downwards",
+							"type": "double"
+						},
+						{
+							"name": "roll",
+							"doc": "In decimal degrees, ranging from (-180, 180] where 0 is perpendicular to the line between the item’s location and the centre of the WGS84-based ellipsoid. The roll value is applied in a clockwise rotation over the item’s roll/bank-axis. A roll value of 45 makes the item roll 45 degrees to the right, while a roll of -50 makes it roll 50 degrees to the left",
+							"type": "double"
+						}
+					]
+				}
+			],
+			"default": null
     },
     {
       "name": "velocity",
-      "doc": "Movement vector of the item, including the magnitude",
-      "type": {
-        "name": "Velocity",
-        "namespace": "eu.driver.model.sim.geo",
-        "doc":
-          "WGS84/Aviation-based representation of a velocity vector. Right-handed item-specific reference system, with in base-setting heading/yaw-axis pointing down (to the centre of the earth), pitch-axis pointing to the right, roll/bank-axis pointing forward",
-        "type": "record",
-        "fields": [
-          {
-            "name": "yaw",
-            "doc":
-              "Yaw or heading in degrees [0, 360) - 0 is pointing towards geographic north - yaw of 90 is EAST, yaw of 270 is WEST",
-            "type": "double"
-          },
-          {
-            "name": "pitch",
-            "doc":
-              "Pitch in degrees (-90, 90] - 0 is perpendicular to line [origin of item - centre of WGS84-based ellipsoid] - pitch of +45 is 45 degrees pointing upwards, -45 is 45 degrees pointing downwards",
-            "type": "double"
-          },
-          {
-            "name": "magnitude",
-            "doc": "Velocity in meter per second [0, inf) - 0 is standing still relative to the earth",
-            "type": "double"
-          }
-        ]
-      }
-    },
-    {
-      "name": "visibleForParticipant",
-      "doc": "Indication whether or not this item is visible for all participants",
-      "type": "boolean"
-    },
-    {
-      "name": "movable",
-      "doc": "Indication whether or not this item is movable in the simulation world",
-      "type": "boolean"
-    },
-    {
-      "name": "itemType",
-      "doc": "Concrete type of this item - can be of type ObjectType, PersonType or VehicleType",
+      "doc": "Optional velocity of the item",
       "type": [
-        "null",
-        {
-          "name": "ObjectType",
-          "namespace": "eu.driver.model.sim.entity.item",
-          "doc": "Information if the item is an object",
-          "type": "record",
-          "fields": [
-            {
-              "name": "subType",
-              "doc": "Sub type of objects that this item is",
-              "type": {
-                "name": "ObjectSubType",
-                "type": "enum",
-                "symbols": ["PROP", "TOOL"]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PersonType",
-          "namespace": "eu.driver.model.sim.entity.item",
-          "doc": "Information if the item is a person",
-          "type": "record",
-          "fields": [
-            {
-              "name": "gender",
-              "doc": "Gender of the person",
-              "type": {
-                "name": "PersonSubType",
-                "type": "enum",
-                "symbols": ["MALE", "FEMALE", "UNKNOWN"]
-              }
-            }
-          ]
-        },
-        {
-          "name": "VehicleType",
-          "namespace": "eu.driver.model.sim.entity.item",
-          "doc": "Information if the item is a vehicle",
-          "type": "record",
-          "fields": [
-            {
-              "name": "subType",
-              "doc": "Sub type of vehicles that this item is",
-              "type": {
-                "name": "VehicleSubType",
-                "type": "enum",
-                "symbols": ["CAR", "VAN", "TRUCK", "BOAT", "PLANE", "HELICOPTER", "MOTORCYCLE"]
-              }
-            }
-          ]
-        }
-      ],
-      "default": null
+				"null",
+				{
+					"name": "Velocity",
+					"namespace": "eu.driver.model.sim.support",
+					"doc": "A velocity is defined in the aviation axes conventions representation of a velocity vector. It is a left-handed item-centric reference system, with in default initial state its heading/yaw-axis pointing up (away from the centre of the WGS84-based ellipsoid), its pitch-axis pointing to the right, and its roll/bank-axis pointing forward",
+					"type": "record",
+					"fields": [
+						{
+							"name": "yaw",
+							"doc": "In decimal degrees, ranging from [0, 360) where 0 is pointing towards the geographic north. The yaw value is applied in a clockwise rotation over the item’s heading/yaw-axis. A yaw value of 90 makes the item face east, while a yaw of 270 makes it face west",
+							"type": "double"
+						},
+						{
+							"name": "pitch",
+							"doc": "In decimal degrees, ranging from [-90, 90] where 0 is perpendicular to the line between the item’s location and the centre of the WGS84-based ellipsoid. The pitch value is applied in a counter-clockwise rotation over the item’s pitch-axis. A pitch value of 45 makes the item face 45 degrees upwards, while a pitch of -20 makes it face 20 degrees downwards",
+							"type": "double"
+						},
+						{
+							"name": "magnitude",
+							"doc": "In meter per seconds, ranging from [0, infinity) where 0 is standing still relative to the earth’s rotation",
+							"type": "double"
+						}
+					]
+				}
+			],
+			"default": null
     },
     {
-      "name": "scenarioLabel",
-      "doc": "Scenario type of this item - can be of type EnvironmentLabel, IncidentLabel or RescueLabel",
-      "type": [
-        "null",
-        {
-          "name": "EnvironmentLabel",
-          "namespace": "eu.driver.model.sim.entity.item",
-          "doc": "Information if the item is labeled as environment",
-          "type": "record",
-          "fields": [
-            {
-              "name": "subLabel",
-              "doc": "Sub label of environment that this item has",
-              "type": {
-                "name": "EnvironmentSubLabel",
-                "type": "enum",
-                "symbols": ["FOLIAGE", "ROAD"]
-              }
-            }
-          ]
-        },
-        {
-          "name": "IncidentLabel",
-          "namespace": "eu.driver.model.sim.entity.item",
-          "doc": "Information if the item is labeled as incident",
-          "type": "record",
-          "fields": [
-            {
-              "name": "subLabel",
-              "doc": "Sub label of incident that this item has",
-              "type": {
-                "name": "IncidentSubLabel",
-                "type": "enum",
-                "symbols": ["FIRE", "CRASH"]
-              }
-            }
-          ]
-        },
-        {
-          "name": "RescueLabel",
-          "namespace": "eu.driver.model.sim.entity.item",
-          "doc": "Information if the item is labeled as rescue",
-          "type": "record",
-          "fields": [
-            {
-              "name": "subLabel",
-              "doc": "Sub label of rescue that this item has",
-              "type": {
-                "name": "RescueSubLabel",
-                "type": "enum",
-                "symbols": ["POLICE", "MEDICAL", "FIRE", "SECURITY", "MILITARY"]
-              }
-            }
-          ]
-        }
-      ],
-      "default": null
-    },
-    {
-      "name": "userTags",
-      "doc": "List of all tags the user provided associated with this item",
-      "type": [
-        "null",
-        {
-          "type": "array",
-          "items": "string"
-        }
-      ],
-      "default": null
-    },
-    {
-      "name": "physicalConnections",
-      "doc": "List of physical connection entities references (represented by their GUIDs) this item has",
-      "type": [
-        "null",
-        {
-          "type": "array",
-          "items": "string"
-        }
-      ],
-      "default": null
-    },
-    {
-      "name": "group",
-      "doc": "Reference to the group connection entity (represented by its GUID) this item is part of",
+      "name": "name",
+      "doc": "Optional name of the item",
       "type": ["null", "string"],
-      "default": null
+			"default": null
+    },
+		{
+      "name": "type",
+      "doc": "Optional type of the item",
+      "type": ["null", "string"],
+			"default": null
     },
     {
-      "name": "formation",
-      "doc": "Reference to the formation connection entity (represented by its GUID) this item is part of",
+      "name": "owner",
+      "doc": "Optional unique identifier of the connected application owning the item",
       "type": ["null", "string"],
-      "default": null
+			"default": null
+    },
+		{
+      "name": "timestamp",
+			"doc": "Optional UNIX Epoch time in milliseconds marking the time the update was performed",
+      "type": ["null", "long"],
+      "logicalType": "timestamp-millis",
+			"default": null
     },
     {
-      "name": "unit",
-      "doc": "Reference to the unit connection entity (represented by its GUID) this item is part of",
-      "type": ["null", "string"],
+      "name": "tags",
+      "doc": "Optional map containing item specific information: key – unique name of the specific property; value – value of that property",
+      "type": [
+        "null",
+        {
+          "type": "map",
+          "values": "string"
+        }
+      ],
       "default": null
     }
   ]
