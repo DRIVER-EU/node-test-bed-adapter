@@ -1,0 +1,39 @@
+{
+  "name": "test-bed-schemas",
+  "version": "0.3.8",
+  "description": "Schema's commonly used for the Common Information Space or Common Simulation Space.",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev": "tsc -w",
+    "build": "tsc",
+    "start": "npm run dev",
+    "dry-run": "npm publish --dry-run",
+    "patch-release": "npm run clean && npm run build && npm version patch && npm publish && git push --follow-tags",
+    "minor-release": "npm run clean && npm run build && npm version minor && npm publish && git push --follow-tags",
+    "major-release": "npm run clean && npm run build && npm version major && npm publish && git push --follow-tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DRIVER-EU/node-test-bed-adapter.git"
+  },
+  "keywords": [
+    "kafka",
+    "node",
+    "typescript",
+    "test-bed",
+    "cis",
+    "css"
+  ],
+  "author": "Erik Vullings <erik.vullings@gmail.com> (http://www.tno.nl)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DRIVER-EU/node-test-bed-adapter/issues"
+  },
+  "homepage": "https://github.com/DRIVER-EU/node-test-bed-adapter#readme",
+  "devDependencies": {
+    "typescript": "^3.8.3",
+    "rimraf": "3.0.2"
+  }
+}

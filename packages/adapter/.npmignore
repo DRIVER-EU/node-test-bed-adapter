@@ -1,0 +1,16 @@
+.editorconfig
+.gitignore
+.travis.yml
+data
+src
+node_modules
+package-lock.json
+yarn.lock
+tsconfig.json
+tslint.json
+log.txt
+tsconfig.tsbuildinfo
+pnpm-lock.yaml
+*.sh
+example
+*.spec.js
