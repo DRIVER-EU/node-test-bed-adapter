@@ -29,9 +29,8 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
     /** Check whether the message is valid */
     isValid: (obj: Object) => valueSchema.type.isValid(obj, { errorHook }),
     /** Encode the message or messages */
-    encode: (obj: Object) => {
-      return toMessageBuffer(obj, valueSchema.type, valueSchema.srId);
-    },
+    encode: (obj: Object) =>
+      toMessageBuffer(obj, valueSchema.type, valueSchema.srId),
     /** Decode the message or messages */
     decode: (buf: Buffer) => fromMessageBuffer(valueSchema.type, buf, sr).value,
     /** Check whether the key is valid */
@@ -39,17 +38,13 @@ export const avroHelperFactory = (sr: SchemaRegistry, topic: string) => {
       return keySchema ? keySchema.type.isValid(key, { errorHook }) : true;
     },
     /** Encode the key */
-    encodeKey: (key: IDefaultKey) => {
-      return keySchema
-        ? toMessageBuffer(key, keySchema.type, keySchema.srId)
-        : key;
-    },
+    encodeKey: (key: IDefaultKey) =>
+      keySchema ? toMessageBuffer(key, keySchema.type, keySchema.srId) : key,
     /** Decode the key */
-    decodeKey: (buf: Buffer): IDefaultKey => {
-      return keySchema && buf instanceof Buffer
+    decodeKey: (buf: Buffer): IDefaultKey =>
+      keySchema && buf instanceof Buffer
         ? fromMessageBuffer(keySchema.type, buf, sr).value
-        : buf;
-    },
+        : buf,
     /** Convert the object to a string */
     toString: (buf: Buffer | Object) =>
       typeof buf === 'object'
