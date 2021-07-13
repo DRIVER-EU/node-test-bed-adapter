@@ -18,7 +18,12 @@ const MAGIC_BYTE = 0;
  * @param optLength Optional initial buffer length. Set it high enough to avoid having to resize. Defaults to 1024.
  * @return {Buffer} Serialized value.
  */
-export const toMessageBuffer = (val: any, type: Type, schemaId: number, optLength?: number): Buffer => {
+export const toMessageBuffer = (
+  val: any,
+  type: Type,
+  schemaId: number,
+  optLength?: number
+): Buffer => {
   const length = optLength || 1024;
   const buf = Buffer.alloc(length);
 
@@ -44,9 +49,15 @@ export const toMessageBuffer = (val: any, type: Type, schemaId: number, optLengt
  *   @param {number} schemaId The schema id.
  *   @param {Object} value The decoded avro value.
  */
-export const fromMessageBuffer = (type: Type, encodedMessage: Buffer, sr: SchemaRegistry) => {
+export const fromMessageBuffer = (
+  type: Type,
+  encodedMessage: Buffer,
+  sr: SchemaRegistry
+) => {
   if (encodedMessage[0] !== MAGIC_BYTE) {
     Logger.instance.error('Message not serialized with magic byte!');
+    Logger.instance.debug(`type: ${JSON.stringify(type)}`);
+    Logger.instance.debug(`encodedMessage: ${encodedMessage.toString()}`);
     return { value: undefined, schemaId: undefined };
   }
 
@@ -56,7 +67,9 @@ export const fromMessageBuffer = (type: Type, encodedMessage: Buffer, sr: Schema
   let decoded: IAvroDecoded;
   if (!sr.schemaTypeById[schemaKey]) {
     // use default type
-    Logger.instance.warn(`Could not find schema ${schemaId}. Is this an old schema version?`);
+    Logger.instance.warn(
+      `Could not find schema ${schemaId}. Is this an old schema version?`
+    );
     decoded = type.decode(encodedMessage, 5);
   } else {
     decoded = sr.schemaTypeById[schemaKey].decode(encodedMessage, 5);

@@ -115,13 +115,26 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
-  public connect() {
+  public async connect() {
     return new Promise<void>(async (resolve, reject) => {
-      await this.initLogger();
-      await this.schemaPublisher.init();
+      try {
+        await this.initLogger();
+        await this.schemaPublisher.init();
+      } catch (e) {
+        this.emitErrorMsg(
+          `Error before initializing the testbed connection: ${e}`
+        );
+      }
       this.client = new KafkaClient(this.config);
       this.client.on('ready', async () => {
-        await this.initialize();
+        try {
+          await this.initialize();
+        } catch (e) {
+          this.emitErrorMsg(
+            `Error in initializing the testbed connection: ${e}`,
+            reject
+          );
+        }
         resolve();
       });
       this.client.on('error', (error) => {
@@ -447,18 +460,25 @@ export class TestBedAdapter extends EventEmitter {
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {
-    return new Promise<void>(async (resolve) => {
-      await this.schemaRegistry.init();
-      await this.initProducer();
-      await this.addProducerTopics(this.config.produce);
-      await this.addKafkaLogger();
-      await this.initConsumer();
-      await this.addConsumerTopics(
-        this.config.consume,
-        this.config.fromOffset
-      ).catch((e) => this.log.error(e));
-      await this.startHeartbeat();
-      await this.emit('ready');
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        await this.schemaRegistry.init();
+        await this.initProducer();
+        await this.addProducerTopics(this.config.produce);
+        await this.addKafkaLogger();
+        await this.initConsumer();
+        await this.addConsumerTopics(
+          this.config.consume,
+          this.config.fromOffset
+        );
+        await this.startHeartbeat();
+        this.emit('ready');
+      } catch (err) {
+        return this.emitErrorMsg(
+          `Error initializing kafka services: ${err}`,
+          reject
+        );
+      }
       resolve();
     });
   }
@@ -474,27 +494,24 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
-  private initLogger() {
-    return new Promise<void>((resolve) => {
-      const loggers: ILogger[] = [];
-      const logOptions = this.config.logging;
-      if (logOptions) {
-        if (logOptions.logToConsole) {
-          loggers.push({
-            logger: new ConsoleLogger(),
-            minLevel: logOptions.logToConsole,
-          });
-        }
-        if (logOptions.logToFile) {
-          loggers.push({
-            logger: new FileLogger(logOptions.logFile || 'log.txt'),
-            minLevel: logOptions.logToFile,
-          });
-        }
-        this.log.initialize(loggers);
+  private async initLogger() {
+    const loggers: ILogger[] = [];
+    const logOptions = this.config.logging;
+    if (logOptions) {
+      if (logOptions.logToConsole) {
+        loggers.push({
+          logger: new ConsoleLogger(),
+          minLevel: logOptions.logToConsole,
+        });
       }
-      resolve();
-    });
+      if (logOptions.logToFile) {
+        loggers.push({
+          logger: new FileLogger(logOptions.logFile || 'log.txt'),
+          minLevel: logOptions.logToFile,
+        });
+      }
+      this.log.initialize(loggers);
+    }
   }
 
   /** If required, add the Kafka logger too (after the producer has been initialised). */
@@ -646,6 +663,31 @@ export class TestBedAdapter extends EventEmitter {
     this.schemaRegistry.unregisterTopic(remove.topicName);
   }
 
+  private assertOffsetInRange(t: OffsetFetchRequest) {
+    if (!this.client || !t.hasOwnProperty('offset')) return;
+    const partition = t.partition || 0;
+    const topic = t.topic;
+    const offset = new Offset(this.client);
+    offset.fetchLatestOffsets([topic], (error, offsets) => {
+      if (error) return this.emitErrorMsg(error);
+      if (
+        !offsets ||
+        !offsets[topic] ||
+        !offsets[topic].hasOwnProperty(partition)
+      )
+        return this.emitErrorMsg(`Could not fetch latest offset for ${topic}`);
+      this.log.debug(`Latest offsets:\n${JSON.stringify(offsets)}`);
+      const configuredOffset =
+        t.offset! === -1 ? Number.MAX_SAFE_INTEGER : t.offset!;
+      t.offset = Math.min(configuredOffset, offsets[topic][partition]);
+      this.log.info(`Set offset of topic ${topic} to ${t.offset}`);
+    });
+  }
+
+  private removeAdditionalFields(t: OffsetFetchRequest): OffsetFetchRequest {
+    return { offset: t.offset, partition: t.partition, topic: t.topic };
+  }
+
   /**
    * Add the topics to the configuration and initialize the decoders.
    * @param topics topics to add
@@ -663,6 +705,8 @@ export class TestBedAdapter extends EventEmitter {
         );
         return;
       }
+      this.assertOffsetInRange(t);
+      t = this.removeAdditionalFields(t);
       newTopics.push(t);
       if (
         this.config.consume &&
@@ -754,6 +798,7 @@ export class TestBedAdapter extends EventEmitter {
           }
         );
       };
+      this.log.info(`Started heartbeat`);
       sendHeartbeat();
       resolve();
     });
