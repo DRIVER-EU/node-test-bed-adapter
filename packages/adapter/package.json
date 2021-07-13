@@ -41,7 +41,7 @@
   "dependencies": {
     "@types/bluebird": "^3.5.32",
     "avsc": "^5.4.22",
-    "axios": "^0.20.0",
+    "axios": "^0.21.1",
     "bluebird": "^3.7.2",
     "form-data": "^3.0.0",
     "kafka-node": "5.0.0",
