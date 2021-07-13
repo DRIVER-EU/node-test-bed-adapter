@@ -115,8 +115,8 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
-  public connect(): Promise<{}> {
-    return new Promise(async (resolve, reject) => {
+  public connect() {
+    return new Promise<void>(async (resolve, reject) => {
       await this.initLogger();
       await this.schemaPublisher.init();
       this.client = new KafkaClient(this.config);
@@ -124,7 +124,7 @@ export class TestBedAdapter extends EventEmitter {
         await this.initialize();
         resolve();
       });
-      this.client.on('error', error => {
+      this.client.on('error', (error) => {
         this.emitErrorMsg(error, reject);
       });
       this.client.on('reconnect', () => {
@@ -134,7 +134,7 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public disconnect() {
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       if (this.client) {
         this.client.close(() => {
           this.isConnected = false;
@@ -209,7 +209,7 @@ export class TestBedAdapter extends EventEmitter {
     payloads = payloads instanceof Array ? payloads : [payloads];
     const pl: ProduceRequest[] = [];
     let hasError = false;
-    payloads.forEach(payload => {
+    payloads.forEach((payload) => {
       if (!this.producerTopics.hasOwnProperty(payload.topic)) {
         return cb(
           `Topic ${
@@ -295,11 +295,11 @@ export class TestBedAdapter extends EventEmitter {
         return;
       }
       (topics as any[])
-        .map(t => (typeof t === 'string' ? t : (t as Topic).topic))
-        .forEach(t => (this.callbacks[t] = cb));
+        .map((t) => (typeof t === 'string' ? t : (t as Topic).topic))
+        .forEach((t) => (this.callbacks[t] = cb));
     };
 
-    return new Promise<OffsetFetchRequest[]>(resolve => {
+    return new Promise<OffsetFetchRequest[] | void>((resolve) => {
       if (!topics) {
         return resolve();
       }
@@ -328,8 +328,9 @@ export class TestBedAdapter extends EventEmitter {
                   )
                 : count > 3;
               process.stderr.write(
-                `addConsumerTopics - Error ${error}. Waiting ${++count *
-                  5} seconds...\r`
+                `addConsumerTopics - Error ${error}. Waiting ${
+                  ++count * 5
+                } seconds...\r`
               );
               setTimeout(addTopics, 5000);
               return;
@@ -446,7 +447,7 @@ export class TestBedAdapter extends EventEmitter {
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {
-    return new Promise<void>(async resolve => {
+    return new Promise<void>(async (resolve) => {
       await this.schemaRegistry.init();
       await this.initProducer();
       await this.addProducerTopics(this.config.produce);
@@ -455,7 +456,7 @@ export class TestBedAdapter extends EventEmitter {
       await this.addConsumerTopics(
         this.config.consume,
         this.config.fromOffset
-      ).catch(e => this.log.error(e));
+      ).catch((e) => this.log.error(e));
       await this.startHeartbeat();
       await this.emit('ready');
       resolve();
@@ -463,18 +464,18 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private initProducer() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (!this.client) {
         return this.emitErrorMsg('Client not ready!', reject);
       }
       this.producer = new Producer(this.client);
-      this.producer.on('error', error => this.emitErrorMsg(error));
+      this.producer.on('error', (error) => this.emitErrorMsg(error));
       resolve(); // The producer does not emit the ready event.
     });
   }
 
   private initLogger() {
-    return new Promise(resolve => {
+    return new Promise<void>((resolve) => {
       const loggers: ILogger[] = [];
       const logOptions = this.config.logging;
       if (logOptions) {
@@ -498,7 +499,7 @@ export class TestBedAdapter extends EventEmitter {
 
   /** If required, add the Kafka logger too (after the producer has been initialised). */
   private addKafkaLogger() {
-    return new Promise(resolve => {
+    return new Promise<void>((resolve) => {
       if (!this.producer) {
         return resolve();
       }
@@ -517,7 +518,7 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private initConsumer() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (!this.client) {
         return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
       }
@@ -527,14 +528,14 @@ export class TestBedAdapter extends EventEmitter {
         autoCommit: true,
         fromOffset: this.config.fromOffset,
       });
-      this.consumer.on('message', message => this.handleMessage(message));
-      this.consumer.on('error', error => this.emitErrorMsg(error));
+      this.consumer.on('message', (message) => this.handleMessage(message));
+      this.consumer.on('error', (error) => this.emitErrorMsg(error));
 
       /*
        * If consumer get `offsetOutOfRange` event, fetch data from the smallest(oldest) offset
        */
       const offset = new Offset(this.client);
-      this.consumer.on('offsetOutOfRange', topic => {
+      this.consumer.on('offsetOutOfRange', (topic) => {
         this.emit('offsetOutOfRange', topic);
         topic.maxNum = 2;
         if (this.client) {
@@ -569,7 +570,7 @@ export class TestBedAdapter extends EventEmitter {
       ? (consumerTopic.decode(message.value as Buffer) as Object | Object[])
       : message.value.toString();
     const decodedKey =
-      consumerTopic.decodeKey && (message.key as any) instanceof Buffer
+      consumerTopic && (message.key as any) instanceof Buffer
         ? (consumerTopic.decodeKey(message.key as any) as IDefaultKey)
         : key
         ? key
@@ -654,7 +655,7 @@ export class TestBedAdapter extends EventEmitter {
       return [];
     }
     const newTopics: OffsetFetchRequest[] = [];
-    topics.forEach(t => {
+    topics.forEach((t) => {
       if (this.consumerTopics.hasOwnProperty(t.topic)) return;
       if (!this.schemaRegistry.valueSchemas.hasOwnProperty(t.topic)) {
         this.log.error(
@@ -665,7 +666,7 @@ export class TestBedAdapter extends EventEmitter {
       newTopics.push(t);
       if (
         this.config.consume &&
-        this.config.consume.filter(fr => fr.topic === t.topic).length === 0
+        this.config.consume.filter((fr) => fr.topic === t.topic).length === 0
       ) {
         this.config.consume.push(t);
       }
@@ -720,7 +721,7 @@ export class TestBedAdapter extends EventEmitter {
    * Start transmitting a heartbeat message.
    */
   private startHeartbeat() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (this.isConnected) {
         return resolve();
       }
@@ -745,7 +746,7 @@ export class TestBedAdapter extends EventEmitter {
               origin: this.origin,
             } as IHeartbeat,
           },
-          error => {
+          (error) => {
             if (error) {
               this.log.error(error);
             }
@@ -788,13 +789,13 @@ export class TestBedAdapter extends EventEmitter {
       opt.produce = [];
     }
     if (opt.autoRegisterDefaultSchemas) {
-      const consumerTopics = opt.consume.map(t => t.topic);
-      CoreSubscribeTopics.filter(t => consumerTopics.indexOf(t) < 0).forEach(
-        t => opt.consume && opt.consume.push({ topic: t })
+      const consumerTopics = opt.consume.map((t) => t.topic);
+      CoreSubscribeTopics.filter((t) => consumerTopics.indexOf(t) < 0).forEach(
+        (t) => opt.consume && opt.consume.push({ topic: t })
       );
       CorePublishTopics(opt.largeFileService ? true : false)
-        .filter(t => opt.produce && opt.produce.indexOf(t) < 0)
-        .forEach(t => opt.produce && opt.produce.push(t));
+        .filter((t) => opt.produce && opt.produce.indexOf(t) < 0)
+        .forEach((t) => opt.produce && opt.produce.push(t));
     }
     if (!/\/$/.test(opt.schemaRegistry)) {
       opt.schemaRegistry = opt.schemaRegistry + '/';

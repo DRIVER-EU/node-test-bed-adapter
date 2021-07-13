@@ -27,7 +27,7 @@ export const findFilesInDir = (directoryName: string, ext: string) => {
     return [];
   }
 
-  fs.readdirSync(directoryName).forEach(f => {
+  fs.readdirSync(directoryName).forEach((f) => {
     const filename = path.join(directoryName, f);
     const stat = fs.lstatSync(filename);
     if (stat.isDirectory()) {
@@ -48,10 +48,10 @@ export const findFilesInDir = (directoryName: string, ext: string) => {
  */
 export const findMissingKeyFiles = (files: string[]) => {
   return files
-    .filter(f => path.basename(f).indexOf('-value.avsc') >= 0)
+    .filter((f) => path.basename(f).indexOf('-value.avsc') >= 0)
     .reduce((p, c) => {
       const keyFile = c.replace('-value.avsc', '-key.avsc');
-      if (files.filter(f => f.indexOf(keyFile) >= 0).length > 0) {
+      if (files.filter((f) => f.indexOf(keyFile) >= 0).length > 0) {
         return p;
       }
       p.push(keyFile);
@@ -67,7 +67,7 @@ export const findMissingKeyFiles = (files: string[]) => {
  * @returns RFC4122 version 4 compliant GUID
  */
 export const uuid4 = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     // tslint:disable-next-line:no-bitwise
     const r = (Math.random() * 16) | 0;
     // tslint:disable-next-line:no-bitwise
@@ -108,7 +108,7 @@ export const largeFileUploadCallback = (
   title?: string,
   description?: string,
   dataType = DataType.other,
-  cb: (err: any, data?: ISendResponse) => void = err =>
+  cb: (err: any, data?: ISendResponse) => void = (err) =>
     err ? Logger.instance.error(err) : undefined
 ) => {
   return (err?: Error, url?: string) => {
@@ -143,7 +143,7 @@ export const isSchemaRegistryAvailable = (
 ) => {
   const timeout = (options.retryTimeout || 5) * 1000;
   const maxRetries = options.maxConnectionRetries || 20;
-  return new Promise(resolve => {
+  return new Promise<void>((resolve) => {
     let retries = maxRetries;
     const intervalId = setInterval(() => {
       const url = options.schemaRegistry;
@@ -151,8 +151,9 @@ export const isSchemaRegistryAvailable = (
         .get(url)
         .then(() => {
           log.info(
-            `isSchemaRegistryAvailable - Accessed schema registry in ${maxRetries -
-              retries}x.`
+            `isSchemaRegistryAvailable - Accessed schema registry in ${
+              maxRetries - retries
+            }x.`
           );
           clearInterval(intervalId);
           resolve();
@@ -160,8 +161,9 @@ export const isSchemaRegistryAvailable = (
         .catch(() => {
           retries--;
           log.warn(
-            `isSchemaRegistryAvailable - Failed to access schema registry at ${url}. Retried ${maxRetries -
-              retries}x.`
+            `isSchemaRegistryAvailable - Failed to access schema registry at ${url}. Retried ${
+              maxRetries - retries
+            }x.`
           );
           if (retries === 0) {
             log.error(
