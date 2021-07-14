@@ -1,4 +1,4 @@
-import { IFeatureCollection } from '..';
+import { IFeatureCollection, ILineString, IMultiLineString, IMultiPoint, IMultiPolygon, IPoint, IPolygon } from '..';
 
 /**
  * Deep copy function for TypeScript.
@@ -74,19 +74,41 @@ export const geojsonToAvro = (
   return avro;
 };
 
+/** 
+ * Convert a GeoJSON geometry to an AVRO representation
+ * @default namespace = 'eu.driver.model.geojson'
+ */
+export const geometryToAvro: (
+  geometry?: IPoint | IMultiPoint | ILineString | IMultiLineString | IPolygon | IMultiPolygon,
+  namespace?: string
+) => Record<string, IPoint | IMultiPoint | ILineString | IMultiLineString | IPolygon | IMultiPolygon> | undefined = (
+  geometry?: IPoint | IMultiPoint | ILineString | IMultiLineString | IPolygon | IMultiPolygon,
+  namespace = 'eu.driver.model.geojson'
+) => {
+    if (!geometry) {
+      return;
+    }
+    return {
+      [`${namespace}.${geometry.type}`]: {
+        type: geometry.type,
+        coordinates: geometry.coordinates,
+      } as IPoint | IMultiPoint | ILineString | IMultiLineString | IPolygon | IMultiPolygon,
+    };
+  };
+
 /** Convert a flat object to an AVRO representation, where all numbers will either be int or double. */
 export const mapToAvro = (props: { [key: string]: any } | null | undefined) =>
   props && Object.keys(props).length > 0
     ? Object.keys(props).reduce((acc, key) => {
-        const val = props[key];
-        acc[key] = {} as { [key: string]: any };
-        if (typeof val === 'object') {
-          acc[key].string = JSON.stringify(val);
-        } else if (typeof val === 'number') {
-          acc[key][isInt(val) ? 'int' : 'double'] = val;
-        } else {
-          acc[key][typeof val] = val;
-        }
-        return acc;
-      }, {} as { [key: string]: any })
+      const val = props[key];
+      acc[key] = {} as { [key: string]: any };
+      if (typeof val === 'object') {
+        acc[key].string = JSON.stringify(val);
+      } else if (typeof val === 'number') {
+        acc[key][isInt(val) ? 'int' : 'double'] = val;
+      } else {
+        acc[key][typeof val] = val;
+      }
+      return acc;
+    }, {} as { [key: string]: any })
     : props;
