@@ -36,7 +36,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 
 - Connect to Kafka
 - Connect to Kafka using SSL
-- Publish heartbeat (topic: connect-status-heartbeat)
+- Publish heartbeat (topic: system-heartbeat). It requires that you produce the heartbeat topic.
 - Validate AVRO messages
 - Encode/decode object and keys using AVRO helper factory
 - Setup test framework
@@ -64,13 +64,6 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 - Listens to topic access invite messages: when the admin tool sends them, the adapter will download the required schema's and start listening or publishing to them. You can still specify the consume/produce topics regularly, by specifying it on initialization, but when the Test-bed is operating in secure mode, you may not get access to these topics before receiving an invitation.
 - Added the uploadFile service for uploading files to the Test-bed. Also added a helper callback method that automatically publishes a messsage to the system_large_file_update topic.
 - Added support for GeoJSON processing: see `./src/example/producer.ts`.
-
-### To be done
-
-- Add support for [LogicalType](https://avro.apache.org/docs/current/spec.html#Logical+Types), e.g. Timestamp (millisecond precision), e.g. { "type": "long", "logicalType": "timestamp-millis" }, where the long stores the number of milliseconds from the Unix epoch, 1 January 1970 00:00:00.000 UTC.
-- Add to Travis CI
-- Pause consuming messages remotely
-- Pause publishing messages remotely
 
 ## Build
 

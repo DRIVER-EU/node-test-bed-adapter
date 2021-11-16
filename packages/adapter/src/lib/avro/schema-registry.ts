@@ -4,6 +4,7 @@ import * as url from 'url';
 import { ITestBedOptions } from '../models';
 import { Logger, isUnique, isSchemaRegistryAvailable } from '..';
 import { HeartbeatTopic, LogTopic } from '../avro';
+import { Message } from 'kafka-node';
 
 export interface ISchema {
   version: number | string;
@@ -169,7 +170,7 @@ export class SchemaRegistry {
       this.schemaTopics = [...this.schemaTopics, ...topics];
       return true;
     } catch (e) {
-      this.log.error(e);
+      this.log.error(e as string);
       return false;
     }
   }
@@ -242,7 +243,7 @@ export class SchemaRegistry {
           message:
             'registerSchemaLatest() - Error parsing schema... moving on:',
           topic: schemaObj.schemaTopicRaw,
-          error: ex.message,
+          error: (ex as Record<string, unknown>).message,
         });
         resolve(schemaObj);
       }
@@ -396,7 +397,7 @@ export class SchemaRegistry {
         this.log.warn({
           message: 'registerSchema() - Error parsing schema:',
           topic: schemaObj.schemaTopicRaw,
-          error: ex.message,
+          error: (ex as Record<string, unknown>).message,
         });
         resolve(schemaObj);
       }

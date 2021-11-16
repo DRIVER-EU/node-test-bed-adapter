@@ -1,6 +1,7 @@
 import * as dns from 'dns';
 import * as os from 'os';
 import * as http from 'http';
+import * as publicIp from 'public-ip';
 
 export interface IComputerInfo {
   hostname: string;
@@ -8,37 +9,30 @@ export interface IComputerInfo {
   externalIP?: string;
 }
 
-export const computerInfo = (
+export const computerInfo = async (
   cb: (data: IComputerInfo, err?: NodeJS.ErrnoException) => void
 ) => {
   const info = { hostname: os.hostname() } as IComputerInfo;
-  dns.lookup(os.hostname(), (err, address: string, __) => {
+  dns.lookup(os.hostname(), async (err, address: string, __) => {
     if (err) {
       cb(info, err);
     }
     info.localIP = address;
-    whatsMyIpAddress((addr, err) => {
-      if (err) {
-        cb(info, err);
-      }
-      info.externalIP = addr;
-      cb(info);
-    });
-  });
-};
+    const externalIp = await publicIp.v4({ onlyHttps: true });
+    info.externalIP = externalIp;
+    cb(info);
 
-export const whatsMyIpAddress = (
-  callback: (data?: string, err?: NodeJS.ErrnoException) => void
-) => {
-  const options = {
-    host: 'ipv4bot.whatismyipaddress.com',
-    port: 80,
-    path: '/',
-  };
-  http
-    .get(options, res => {
-      res.setEncoding('utf8');
-      res.on('data', chunk => callback(chunk, undefined));
-    })
-    .on('error', err => callback(undefined, err));
+    // publicIp
+    //   .v4({ onlyHttps: true })
+    //   .then((externalIp) => {
+    //     info.externalIP = externalIp;
+    //   })
+    //   .catch((e) => {
+    //     console.error(e);
+    //   })
+    //   .finally(() => {
+    //     console.log(JSON.stringify(info));
+    //     cb(info);
+    //   });
+  });
 };

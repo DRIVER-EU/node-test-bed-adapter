@@ -798,7 +798,8 @@ export class TestBedAdapter extends EventEmitter {
           }
         );
       };
-      this.log.info(`Started heartbeat`);
+      console.log('Started heartbeat');
+      this.log.info('Started heartbeat');
       sendHeartbeat();
       resolve();
     });
