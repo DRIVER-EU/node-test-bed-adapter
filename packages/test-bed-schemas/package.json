@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/DRIVER-EU/node-test-bed-adapter#readme",
   "devDependencies": {
-    "typescript": "^4.3.5",
+    "typescript": "^4.4.4",
     "rimraf": "3.0.2"
   }
 }
