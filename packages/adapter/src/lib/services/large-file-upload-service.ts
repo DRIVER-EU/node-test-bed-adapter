@@ -1,7 +1,7 @@
 import { ITestBedOptions, Logger } from '..';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as FormData from 'form-data';
+import FormData from 'form-data';
 import { default as axios } from 'axios';
 import { bufferToStream } from '../utils';
 
@@ -49,12 +49,12 @@ export class LargeFileUploadService {
     if (typeof file !== 'string') {
       this.uploadBuffer(file, isPrivate, cb);
     } else {
-      fs.exists(file, exists => {
+      fs.exists(file, (exists) => {
         if (exists) {
           this.uploadFile(file, isPrivate, cb);
         } else {
           const filePath = path.resolve(process.cwd(), file);
-          fs.exists(filePath, exists => {
+          fs.exists(filePath, (exists) => {
             if (exists) {
               this.uploadFile(file, isPrivate, cb);
             } else if (cb) {
@@ -113,10 +113,10 @@ export class LargeFileUploadService {
       .post(`${this.restUri}/upload`, form, {
         headers: form.getHeaders(),
       })
-      .then(res => {
+      .then((res) => {
         cb && res.data && cb(undefined, res.data.FileURL);
       })
-      .catch(err => {
+      .catch((err) => {
         cb ? cb(err) : this.log.error(err);
       });
   }

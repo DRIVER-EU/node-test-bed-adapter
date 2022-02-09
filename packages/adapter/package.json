@@ -1,6 +1,6 @@
 {
   "name": "node-test-bed-adapter",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "An adapter to connect a node.js application to the Test-bed's Common Information Space or Common Simulation Space.",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
@@ -14,10 +14,8 @@
     "patch-release": "npm run clean && npm run build && npm version patch && npm publish && git push --follow-tags",
     "minor-release": "npm run clean && npm run build && npm version minor && npm publish && git push --follow-tags",
     "test": "jasmine --config=src/test/jasmine.json",
-    "watch": "nodemon --exec npm run test",
     "producer": "node dist/example/producer.js",
     "consumer": "node dist/example/consumer.js",
-    "time": "node dist/example/consumer-time.js",
     "startDocker": "./start-docker.sh",
     "stopDocker": "docker-compose down"
   },
@@ -46,7 +44,7 @@
     "bluebird": "^3.7.2",
     "form-data": "^4.0.0",
     "kafka-node": "5.0.0",
-    "public-ip": "^5.0.0",
+    "public-ip": "4.0.4",
     "test-bed-schemas": "^0.4.0",
     "url": "^0.11.0"
   },

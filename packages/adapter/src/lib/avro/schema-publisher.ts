@@ -6,7 +6,7 @@ import {
 import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
-import * as Promise from 'bluebird';
+import Promise from 'bluebird';
 import { ITestBedOptions } from '../models';
 import { default as axios } from 'axios';
 import { Logger } from '..';
@@ -43,8 +43,8 @@ export class SchemaPublisher {
         const files = findFilesInDir(this.schemaFolder, '.avsc');
         const missing = findMissingKeyFiles(files);
         this.topics = files
-          .filter(file => /-value/i.test(file))
-          .map(file =>
+          .filter((file) => /-value/i.test(file))
+          .map((file) =>
             path
               .basename(file)
               .replace(path.extname(file), '')
@@ -54,7 +54,7 @@ export class SchemaPublisher {
           this.uploadSchema(f, i >= files.length)
         )
           .then(() => resolve())
-          .catch(err => reject(err));
+          .catch((err) => reject(err));
       });
     });
   }
@@ -90,13 +90,13 @@ export class SchemaPublisher {
           }
         )
       )
-        .then(response => {
+        .then((response) => {
           this.log.info(
             `uploadSchema() - Uploading ${schemaTopic} to ${uri} ready.`
           );
           resolve(response.data);
         })
-        .catch(err => {
+        .catch((err) => {
           this.suppressAxiosError(err, resolve, reject);
         });
     });

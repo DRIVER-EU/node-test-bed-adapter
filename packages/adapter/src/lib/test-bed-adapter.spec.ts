@@ -1,5 +1,5 @@
 import { TestBedAdapter, ITestBedOptions, ProduceRequest, LogLevel } from './';
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 import { EventEmitter } from 'events';
 import { KafkaClient } from 'kafka-node';
 
@@ -34,7 +34,7 @@ describe('TestBedAdapter', () => {
     }
   }
 
-  beforeAll(done => {
+  beforeAll((done) => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
     TestBedAdapterMock = proxyquire('./index', {
       'kafka-node': {
@@ -65,7 +65,7 @@ describe('TestBedAdapter', () => {
     expect(result.isConnected).toBe(false);
   });
 
-  it('should connect to the testbed', done => {
+  it('should connect to the testbed', (done) => {
     const tba = new TestBedAdapterMock({
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
@@ -82,7 +82,9 @@ describe('TestBedAdapter', () => {
   });
 
   it('should load the test-bed-config.json from the config folder', () => {
-    const testbed = new TestBedAdapterMock('./src/test/config/test-bed-config.json');
+    const testbed = new TestBedAdapterMock(
+      './src/test/config/test-bed-config.json'
+    );
     const configuration = testbed.configuration;
     expect(configuration.kafkaHost).toEqual('localhost:3501');
     expect(configuration.produce).toBeTruthy();
