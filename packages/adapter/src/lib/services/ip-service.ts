@@ -1,7 +1,6 @@
 import * as dns from 'dns';
 import * as os from 'os';
-import * as http from 'http';
-import * as publicIp from 'public-ip';
+import publicIp from 'public-ip';
 
 export interface IComputerInfo {
   hostname: string;
