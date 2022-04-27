@@ -113,7 +113,10 @@ export class SchemaRegistry {
 
     const missingSchemas = () =>
       this.selectedTopics.filter((t) => !this.valueSchemas.hasOwnProperty(t));
-    const isSuccess = () => missingSchemas().length === 0;
+    const isSuccess = () => {
+      const missing = missingSchemas();
+      return missing.length === 0 || (missing.length === 1 && !missing[0]);
+    };
 
     return new Promise<void>((resolve) => {
       let count = 0;
