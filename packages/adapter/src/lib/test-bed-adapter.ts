@@ -363,6 +363,18 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
+  public removeTopics(
+    topics: string[],
+    cb: (err: string, removed: number) => void
+  ) {
+    const consumer = this.consumer;
+    if (typeof consumer === 'undefined' || !topics || topics.length === 0) {
+      cb('No topics removed', 0);
+    } else {
+      consumer.removeTopics(topics, cb);
+    }
+  }
+
   public addProducerTopics(topics?: string | string[]) {
     return new Promise<string[]>(async (resolve, reject) => {
       if (!topics || (topics instanceof Array && topics.length === 0)) {
