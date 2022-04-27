@@ -17,21 +17,7 @@ export const computerInfo = async (
       cb(info, err);
     }
     info.localIP = address;
-    const externalIp = await publicIp.v4({ onlyHttps: true });
-    info.externalIP = externalIp;
+    info.externalIP = await publicIp.v4({ onlyHttps: true });
     cb(info);
-
-    // publicIp
-    //   .v4({ onlyHttps: true })
-    //   .then((externalIp) => {
-    //     info.externalIP = externalIp;
-    //   })
-    //   .catch((e) => {
-    //     console.error(e);
-    //   })
-    //   .finally(() => {
-    //     console.log(JSON.stringify(info));
-    //     cb(info);
-    //   });
   });
 };
