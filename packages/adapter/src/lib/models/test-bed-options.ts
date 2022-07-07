@@ -63,6 +63,8 @@ export interface ITestBedOptions extends KafkaClientOptions {
   maxConnectionRetries?: number;
   /** How many seconds should the adapter wait before trying to reconnect to the kafka server if the first time fails */
   retryTimeout?: number;
+  /** External IP address */
+  externalIP?: string;
   /** Specifiy logging options */
   logging?: {
     /** If set, log to file */

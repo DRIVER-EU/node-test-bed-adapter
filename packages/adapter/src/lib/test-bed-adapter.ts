@@ -107,7 +107,7 @@ export class TestBedAdapter extends EventEmitter {
     this.schemaPublisher = new SchemaPublisher(this.config);
     this.schemaRegistry = new SchemaRegistry(this.config);
     this.largeFileUploadService = new LargeFileUploadService(this.config);
-    computerInfo((info, err) => {
+    computerInfo(config.externalIP, (info, err) => {
       if (err) {
         return console.error(err);
       }
