@@ -17,7 +17,11 @@ export const computerInfo = async (
       cb(info, err);
     }
     info.localIP = address;
-    info.externalIP = await publicIp.v4({ onlyHttps: true });
-    cb(info);
+    try {
+      info.externalIP = await publicIp.publicIpv4({ onlyHttps: true });
+      cb(info);
+    } catch (err: unknown) {
+      cb(info, new Error("Couldn't find your IP"));
+    }
   });
 };
