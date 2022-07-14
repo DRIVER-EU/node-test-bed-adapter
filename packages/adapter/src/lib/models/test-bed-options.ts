@@ -45,6 +45,10 @@ export interface ITestBedOptions extends KafkaClientOptions {
   schemaFolder?: string;
   /** If set true, use the topics offset to retreive messages */
   fromOffset?: boolean;
+  /** The minimum bytes to include in the message set for this partition. This helps bound the size of the response. */
+  fetchMinBytes?: number;
+  /** The maximum bytes to include in the message set for this partition. This helps bound the size of the response. */
+  fetchMaxBytes?: number;
   /** If true (default false), fetch all schema versions (and not only the latest) */
   fetchAllVersions?: boolean;
   /** If true (default false), fetch all schema's (and not only the consume and produce topics) */

@@ -556,6 +556,8 @@ export class TestBedAdapter extends EventEmitter {
         keyEncoding: 'buffer',
         autoCommit: true,
         fromOffset: this.config.fromOffset,
+        fetchMinBytes: this.config.fetchMinBytes,
+        fetchMaxBytes: this.config.fetchMaxBytes,
       });
       this.consumer.on('message', (message) => this.handleMessage(message));
       this.consumer.on('error', (error) => this.emitErrorMsg(error));
