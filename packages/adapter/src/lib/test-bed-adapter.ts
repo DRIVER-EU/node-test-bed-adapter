@@ -10,6 +10,8 @@ import {
   OffsetFetchRequest,
   ProduceRequest,
   Topic,
+  CreateTopicRequest,
+  CreateTopicResponse,
 } from 'kafka-node';
 import { EventEmitter } from 'events';
 import { IInitializedTopic, ISendResponse, ITestBedOptions } from './models';
@@ -272,21 +274,35 @@ export class TestBedAdapter extends EventEmitter {
    * Create topics by requesting their metadata.
    * It only works when `auto.create.topics.enable = true`.
    */
-  public async createTopics(topics: string[]) {
-    return new Promise<string[]>((resolve, reject) => {
-      if (this.producer) {
-        this.producer.createTopics(
-          topics,
-          true,
-          (err: NodeJS.ErrnoException, data: string[]) => {
-            if (err) {
-              reject(err);
+  public async createTopics(topics: Array<string | CreateTopicRequest>) {
+    return new Promise<string[] | CreateTopicResponse[]>((resolve, reject) => {
+      if (this.producer && this.client) {
+        // Support deprecated string[] format
+        if (topics.every((t: any) => typeof t === 'string')) {
+          this.producer.createTopics(
+            topics as string[],
+            true,
+            (err: NodeJS.ErrnoException, data: string[]) => {
+              if (err) {
+                reject(err);
+              }
+              resolve(data);
             }
-            resolve(data);
-          }
-        );
+          );
+        } else {
+          // Default behaviour is calling createTopics with CreateTopicRequest[]
+          this.client.createTopics(
+            topics as CreateTopicRequest[],
+            (err: any, data: CreateTopicResponse[]) => {
+              if (err) {
+                reject(err);
+              }
+              resolve(data);
+            }
+          );
+        }
       } else {
-        reject('Producer does not exist!');
+        reject('Producer and Client do not exist!');
       }
     });
   }
@@ -500,7 +516,9 @@ export class TestBedAdapter extends EventEmitter {
       if (!this.client) {
         return this.emitErrorMsg('Client not ready!', reject);
       }
-      this.producer = new Producer(this.client);
+      this.producer = new Producer(this.client, {
+        partitionerType: this.config.partitionerType,
+      });
       this.producer.on('error', (error) => this.emitErrorMsg(error));
       resolve(); // The producer does not emit the ready event.
     });
@@ -839,6 +857,7 @@ export class TestBedAdapter extends EventEmitter {
         maxConnectionRetries: 10,
         autoRegisterDefaultSchemas: true,
         connectTimeout: 5000,
+        partitionerType: 2,
       } as ITestBedOptions,
       options
     );

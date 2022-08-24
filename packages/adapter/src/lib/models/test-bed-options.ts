@@ -80,4 +80,6 @@ export interface ITestBedOptions extends KafkaClientOptions {
     /** If set, log to Kafka */
     logToKafka?: LogLevel;
   };
+  /** Specify partitioner type of the producer, all-to-1-partition = 0, random = 1, cyclic = 2, keyed = 3, custom = 4, default == 2! */
+  partitionerType?: number;
 }
