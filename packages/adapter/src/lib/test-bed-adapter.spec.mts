@@ -1,12 +1,7 @@
-import {
-  TestBedAdapter,
-  ITestBedOptions,
-  ProduceRequest,
-  LogLevel,
-} from './index.mjs';
+import { TestBedAdapter, ITestBedOptions, LogLevel } from './index.mjs';
 import proxyquire from 'proxyquire';
 import { EventEmitter } from 'events';
-import { KafkaClient } from 'kafka-node';
+import { Kafka, ProducerRecord } from 'kafkajs';
 
 describe('TestBedAdapter', () => {
   let TestBedAdapterMock: typeof TestBedAdapter;
@@ -19,7 +14,7 @@ describe('TestBedAdapter', () => {
   }
 
   class ConsumerMock extends EventEmitter {
-    constructor(_client: KafkaClient, _topics: string[], _options: Object) {
+    constructor(_client: Kafka, _topics: string[], _options: Object) {
       super();
       setTimeout(() => this.emit('ready'), 10);
     }
@@ -28,13 +23,13 @@ describe('TestBedAdapter', () => {
   }
 
   class ProducerMock extends EventEmitter {
-    constructor(_client: KafkaClient, _topics: string[], _options: Object) {
+    constructor(_client: Kafka, _topics: string[], _options: Object) {
       super();
       setTimeout(() => this.emit('ready'), 10);
     }
 
     public createTopics(..._args: any[]) {}
-    public send(_pr: ProduceRequest[], cb: (err: any, result: any) => void) {
+    public send(_pr: ProducerRecord[], cb: (err: any, result: any) => void) {
       cb(null, '');
     }
   }
@@ -42,8 +37,8 @@ describe('TestBedAdapter', () => {
   beforeAll((done) => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 30000;
     TestBedAdapterMock = proxyquire('./index', {
-      'kafka-node': {
-        KafkaClient: KafkaClientMock,
+      kafkajs: {
+        Kafka: KafkaClientMock,
         Consumer: ConsumerMock,
         Producer: ProducerMock,
       },
@@ -63,7 +58,7 @@ describe('TestBedAdapter', () => {
 
   it('should not automatically connect to the testbed', () => {
     const result = new TestBedAdapterMock({
-      kafkaHost: 'localhost:3501',
+      brokers: ['localhost:3501'],
       schemaRegistry: 'localhost:3502',
       groupId: 'client',
     });
@@ -72,7 +67,7 @@ describe('TestBedAdapter', () => {
 
   it('should connect to the testbed', (done) => {
     const tba = new TestBedAdapterMock({
-      kafkaHost: 'localhost:3501',
+      brokers: ['localhost:3501'],
       schemaRegistry: 'localhost:3502',
       groupId: 'client',
       logging: {

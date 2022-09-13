@@ -1,15 +1,15 @@
 import { default as axios, AxiosRequestConfig } from 'axios';
-import { Type } from 'avsc';
+import avsc from 'avsc';
 import * as url from 'url';
-import { ITestBedOptions } from '../models';
-import { Logger, isUnique, isSchemaRegistryAvailable } from '../index.mjs';
-import { HeartbeatTopic, LogTopic } from '../avro';
-import { Message } from 'kafka-node';
+import { ITestBedOptions } from '../models/index.mjs';
+import { Logger } from '../logger/index.mjs';
+import { isUnique, isSchemaRegistryAvailable } from '../utils/index.mjs';
+import { HeartbeatTopic, LogTopic } from '../avro/index.mjs';
 
 export interface ISchema {
   version: number | string;
   topic: string;
-  type?: Type;
+  type?: avsc.Type;
   schemaType: string;
   schemaTopicRaw: string;
   responseRaw: {
@@ -30,7 +30,7 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public schemaTypeById: { [key: string]: Type } = {};
+  public schemaTypeById: { [key: string]: avsc.Type } = {};
 
   /**
    * A dict containing all the key schemas with key the bare topic name and
@@ -38,7 +38,8 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public keySchemas: { [topic: string]: { type: Type; srId: number } } = {};
+  public keySchemas: { [topic: string]: { type: avsc.Type; srId: number } } =
+    {};
 
   /**
    * A dict containing all the value schemas with value the instance of the "avsc" package.
@@ -47,7 +48,8 @@ export class SchemaRegistry {
    *
    * @type {Object}
    */
-  public valueSchemas: { [topic: string]: { type: Type; srId: number } } = {};
+  public valueSchemas: { [topic: string]: { type: avsc.Type; srId: number } } =
+    {};
 
   private log = Logger.instance;
   private selectedTopics: string[] = [];
@@ -243,7 +245,7 @@ export class SchemaRegistry {
       );
 
       try {
-        schemaObj.type = Type.forSchema(
+        schemaObj.type = avsc.Type.forSchema(
           JSON.parse(schemaObj.responseRaw.schema),
           {
             wrapUnions: this.wrapUnionType(schemaObj.topic),
@@ -264,15 +266,15 @@ export class SchemaRegistry {
       );
 
       this.schemaTypeById['schema-' + schemaObj.responseRaw.id] =
-        schemaObj.type as Type;
+        schemaObj.type as avsc.Type;
       if (schemaObj.schemaType.toLowerCase() === 'key') {
         this.keySchemas[schemaObj.topic] = {
-          type: schemaObj.type as Type,
+          type: schemaObj.type as avsc.Type,
           srId: schemaObj.responseRaw.id,
         };
       } else {
         this.valueSchemas[schemaObj.topic] = {
-          type: schemaObj.type as Type,
+          type: schemaObj.type as avsc.Type,
           srId: schemaObj.responseRaw.id,
         };
         this.schemaMeta[schemaObj.topic] = schemaObj.responseRaw;
@@ -398,7 +400,7 @@ export class SchemaRegistry {
       );
 
       try {
-        schemaObj.type = Type.forSchema(
+        schemaObj.type = avsc.Type.forSchema(
           JSON.parse(schemaObj.responseRaw.schema),
           {
             wrapUnions: this.wrapUnionType(schemaObj.topic),
@@ -419,7 +421,7 @@ export class SchemaRegistry {
 
       if (schemaObj.schemaType.toLowerCase() === 'value') {
         this.schemaTypeById['schema-' + schemaObj.responseRaw.id] =
-          schemaObj.type as Type;
+          schemaObj.type as avsc.Type;
       }
 
       resolve(schemaObj);

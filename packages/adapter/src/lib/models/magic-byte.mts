@@ -1,6 +1,6 @@
-import { SchemaRegistry } from '../avro/schema-registry';
-import { IAvroDecoded } from '../declarations/avro';
-import { Logger } from '../index.mjs';
+import { SchemaRegistry } from '../avro/schema-registry.mjs';
+import { IAvroDecoded } from '../declarations/avro.mjs';
+import { Logger } from '../logger/index.mjs';
 import { Type } from 'avsc';
 /**
  * Encode and decode an Avro message for Confluent schema registry (SR) with magic byte.
@@ -44,10 +44,7 @@ export const toMessageBuffer = (
  *
  * @param {avsc.Type} type The topic's Avro decoder.
  * @param {Buffer} encodedMessage The incoming message.
- * @param {kafka-avro.SchemaRegistry} sr The local SR instance.
- * @return {Object} Object with:
- *   @param {number} schemaId The schema id.
- *   @param {Object} value The decoded avro value.
+ * @param {SchemaRegistry} sr The schema registry.
  */
 export const fromMessageBuffer = (
   type: Type,

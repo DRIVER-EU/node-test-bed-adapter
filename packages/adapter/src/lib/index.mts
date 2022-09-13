@@ -1,12 +1,20 @@
-export * from 'kafka-node';
-export * from 'kafka-node';
-export * from './avro/avro-helper-factory';
-export * from './declarations/kafka-node-ext';
-export * from './logger/log-levels';
-export * from './logger/logger';
-export * from './models';
-export * from './utils';
-export * from './avro/core-topics';
+export * from 'kafkajs';
+export * from './avro/avro-helper-factory.mjs';
+export {
+  ConsoleLogger,
+  FileLogger,
+  ICanLog,
+  IKafkaLoggerOptions,
+  ILogger,
+  KafkaLogger,
+  LogLevel,
+  LogLevelToType,
+  LogLevelType,
+  Logger as AdapterLogger,
+} from './logger/index.mjs';
+export * from './models/index.mjs';
+export * from './utils/index.mjs';
+export * from './avro/core-topics.mjs';
 export * from 'test-bed-schemas';
 export { TestBedAdapter, OffsetOutOfRange } from './test-bed-adapter.mjs';
-export { IDefaultKey } from './avro/default-key-schema';
+export { IDefaultKey } from './avro/default-key-schema.mjs';

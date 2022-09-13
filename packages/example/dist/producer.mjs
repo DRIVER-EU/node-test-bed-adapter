@@ -1,11 +1,11 @@
 import * as path from 'path';
-import { TestBedAdapter, Logger, LogLevel, TimeState, DataType, TimeTopic, LargeDataUpdateTopic, RequestChangeOfTrialStage, } from 'node-test-bed-adapter';
+import { TestBedAdapter, AdapterLogger, LogLevel, TimeState, DataType, TimeTopic, LargeDataUpdateTopic, RequestChangeOfTrialStage, } from 'node-test-bed-adapter';
 import amberAlert from './data/example_amber_alert.json' assert { type: 'json' };
 import earthquakeAlert from './data/example_earthquake.json' assert { type: 'json' };
 import thunderstormAlert from './data/example_thunderstorm.json' assert { type: 'json' };
 import homelandSecurityAlert from './data/example_homeland_security.json' assert { type: 'json' };
 // import * as crowdTaskerMsg from '../data/geojson/crowdtasker.json';
-const log = Logger.instance;
+const log = AdapterLogger.instance;
 class Producer {
     id = 'tno-producer';
     adapter;
@@ -52,24 +52,25 @@ class Producer {
             this.sendCap();
             // this.sendGeoJSON();
             this.sendTime();
-            if (hasLargeFileService) {
-                this.uploadFile();
-            }
+            // if (hasLargeFileService) {
+            //   this.uploadFile();
+            // }
         });
         this.adapter.connect();
     }
     sendStageChangeRequest() {
-        const payloads = [
-            {
-                topic: 'system_request_change_of_trial_stage',
-                messages: {
-                    // ostTrialId: 1,
-                    ostTrialSessionId: 1,
-                    ostTrialStageId: 1,
+        const payloads = {
+            topic: 'system_request_change_of_trial_stage',
+            messages: [
+                {
+                    value: {
+                        // ostTrialId: 1,
+                        ostTrialSessionId: 1,
+                        ostTrialStageId: 1,
+                    },
                 },
-                attributes: 1, // Gzip
-            },
-        ];
+            ],
+        };
         this.adapter.send(payloads, (error, data) => {
             if (error) {
                 log.error(error);
@@ -83,7 +84,7 @@ class Producer {
     //   const geojson = geojsonToAvro(
     //     (crowdTaskerMsg as unknown) as IFeatureCollection
     //   );
-    //   const payloads: ProduceRequest[] = [
+    //   const payloads: AdapterProducerRecord[] = [
     //     {
     //       topic: 'standard_geojson',
     //       messages: geojson,
@@ -114,9 +115,8 @@ class Producer {
             state: TimeState.Initialization,
         };
         const pr = {
-            messages: time,
+            messages: [{ value: time }],
             topic: TimeTopic,
-            attributes: 1,
         };
         this.adapter.send(pr, (err, data) => {
             if (err) {
@@ -129,28 +129,15 @@ class Producer {
     }
     /** Will only work if you are authorized to send CAP messages. */
     sendCap() {
-        const payloads = [
-            {
-                topic: 'standard_cap',
-                messages: amberAlert,
-                attributes: 1, // Gzip
-            },
-            {
-                topic: 'standard_cap',
-                messages: earthquakeAlert,
-                attributes: 1, // Gzip
-            },
-            {
-                topic: 'standard_cap',
-                messages: thunderstormAlert,
-                attributes: 1, // Gzip
-            },
-            {
-                topic: 'standard_cap',
-                messages: homelandSecurityAlert,
-                attributes: 1, // Gzip
-            },
-        ];
+        const payloads = {
+            topic: 'standard_cap',
+            messages: [
+                { value: amberAlert },
+                { value: earthquakeAlert },
+                { value: thunderstormAlert },
+                { value: homelandSecurityAlert },
+            ],
+        };
         this.adapter.send(payloads, (error, data) => {
             if (error) {
                 log.error(error);
@@ -172,7 +159,7 @@ class Producer {
  * @param dataType data type of the message
  * @param callback to return the result of the large file upload (default logs errors)
  */
-export const largeFileUploadCallback = (adapter, title, description, dataType = DataType.other, cb = (err) => err ? Logger.instance.error(err) : undefined) => {
+export const largeFileUploadCallback = (adapter, title, description, dataType = DataType.other, cb = (err) => err ? AdapterLogger.instance.error(err) : undefined) => {
     return (err, url) => {
         if (err) {
             return cb(err);
@@ -183,13 +170,10 @@ export const largeFileUploadCallback = (adapter, title, description, dataType = 
             description,
             dataType,
         };
-        const payload = [
-            {
-                topic: LargeDataUpdateTopic,
-                messages: msg,
-                attributes: 1, // Gzip
-            },
-        ];
+        const payload = {
+            topic: LargeDataUpdateTopic,
+            messages: [{ value: msg }],
+        };
         adapter.send(payload, cb);
     };
 };

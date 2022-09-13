@@ -1,19 +1,17 @@
 import * as path from 'path';
 import {
   TestBedAdapter,
-  Logger,
+  AdapterLogger,
   LogLevel,
-  ProduceRequest,
-  IFeatureCollection,
   ILargeDataUpdate,
   TimeState,
   ITimeManagement,
   DataType,
-  ISendResponse,
   TimeTopic,
   LargeDataUpdateTopic,
   RequestChangeOfTrialStage,
-  geojsonToAvro,
+  AdapterProducerRecord,
+  RecordMetadata,
 } from 'node-test-bed-adapter';
 import amberAlert from './data/example_amber_alert.json' assert { type: 'json' };
 import earthquakeAlert from './data/example_earthquake.json' assert { type: 'json' };
@@ -21,7 +19,7 @@ import thunderstormAlert from './data/example_thunderstorm.json' assert { type: 
 import homelandSecurityAlert from './data/example_homeland_security.json' assert { type: 'json' };
 // import * as crowdTaskerMsg from '../data/geojson/crowdtasker.json';
 
-const log = Logger.instance;
+const log = AdapterLogger.instance;
 
 class Producer {
   private id = 'tno-producer';
@@ -70,25 +68,26 @@ class Producer {
       this.sendCap();
       // this.sendGeoJSON();
       this.sendTime();
-      if (hasLargeFileService) {
-        this.uploadFile();
-      }
+      // if (hasLargeFileService) {
+      //   this.uploadFile();
+      // }
     });
     this.adapter.connect();
   }
 
   private sendStageChangeRequest() {
-    const payloads: ProduceRequest[] = [
-      {
-        topic: 'system_request_change_of_trial_stage',
-        messages: {
-          // ostTrialId: 1,
-          ostTrialSessionId: 1,
-          ostTrialStageId: 1,
+    const payloads: AdapterProducerRecord = {
+      topic: 'system_request_change_of_trial_stage',
+      messages: [
+        {
+          value: {
+            // ostTrialId: 1,
+            ostTrialSessionId: 1,
+            ostTrialStageId: 1,
+          },
         },
-        attributes: 1, // Gzip
-      },
-    ];
+      ],
+    };
     this.adapter.send(payloads, (error, data) => {
       if (error) {
         log.error(error);
@@ -103,7 +102,7 @@ class Producer {
   //   const geojson = geojsonToAvro(
   //     (crowdTaskerMsg as unknown) as IFeatureCollection
   //   );
-  //   const payloads: ProduceRequest[] = [
+  //   const payloads: AdapterProducerRecord[] = [
   //     {
   //       topic: 'standard_geojson',
   //       messages: geojson,
@@ -144,10 +143,9 @@ class Producer {
       state: TimeState.Initialization,
     } as ITimeManagement;
     const pr = {
-      messages: time,
+      messages: [{ value: time }],
       topic: TimeTopic,
-      attributes: 1,
-    } as ProduceRequest;
+    } as AdapterProducerRecord;
     this.adapter.send(pr, (err, data) => {
       if (err) {
         console.error(err);
@@ -159,28 +157,15 @@ class Producer {
 
   /** Will only work if you are authorized to send CAP messages. */
   private sendCap() {
-    const payloads: ProduceRequest[] = [
-      {
-        topic: 'standard_cap',
-        messages: amberAlert,
-        attributes: 1, // Gzip
-      },
-      {
-        topic: 'standard_cap',
-        messages: earthquakeAlert,
-        attributes: 1, // Gzip
-      },
-      {
-        topic: 'standard_cap',
-        messages: thunderstormAlert,
-        attributes: 1, // Gzip
-      },
-      {
-        topic: 'standard_cap',
-        messages: homelandSecurityAlert,
-        attributes: 1, // Gzip
-      },
-    ];
+    const payloads: AdapterProducerRecord = {
+      topic: 'standard_cap',
+      messages: [
+        { value: amberAlert },
+        { value: earthquakeAlert },
+        { value: thunderstormAlert },
+        { value: homelandSecurityAlert },
+      ],
+    };
     this.adapter.send(payloads, (error, data) => {
       if (error) {
         log.error(error);
@@ -208,8 +193,8 @@ export const largeFileUploadCallback = (
   title?: string,
   description?: string,
   dataType = DataType.other,
-  cb: (err: any, data?: ISendResponse) => void = (err) =>
-    err ? Logger.instance.error(err) : undefined
+  cb: (err: any, data?: RecordMetadata[]) => void = (err) =>
+    err ? AdapterLogger.instance.error(err) : undefined
 ) => {
   return (err?: Error, url?: string) => {
     if (err) {
@@ -221,13 +206,10 @@ export const largeFileUploadCallback = (
       description,
       dataType,
     } as ILargeDataUpdate;
-    const payload: ProduceRequest[] = [
-      {
-        topic: LargeDataUpdateTopic,
-        messages: msg,
-        attributes: 1, // Gzip
-      },
-    ];
+    const payload: AdapterProducerRecord = {
+      topic: LargeDataUpdateTopic,
+      messages: [{ value: msg }],
+    };
     adapter.send(payload, cb);
   };
 };

@@ -1,38 +1,51 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ITopicsMetadata } from './declarations/kafka-node-ext';
 import {
-  KafkaClient,
+  Kafka,
   Producer,
-  Offset,
   Message,
-  ProduceRequest,
-  Topic,
-  CreateTopicRequest,
-  CreateTopicResponse,
-  ConsumerGroup,
-} from 'kafka-node';
+  Consumer,
+  RecordMetadata,
+  ITopicConfig,
+  EachMessagePayload,
+  KafkaConfig,
+  ITopicMetadata,
+  Partitioners,
+} from 'kafkajs';
 import { EventEmitter } from 'events';
-import { IInitializedTopic, ISendResponse, ITestBedOptions } from './models';
+import {
+  IInitializedTopic,
+  ITestBedOptions,
+  AvroMessage,
+  AdapterProducerRecord,
+  AdapterMessage,
+} from './models/index.mjs';
 import {
   SchemaRegistry,
   SchemaPublisher,
-  IDefaultKey,
   avroHelperFactory,
   CorePublishTopics,
   AccessRemoveTopic,
-} from './avro';
-import { clone, uuid4, isEmptyObject } from './utils';
+  TimeTopic,
+  AccessInviteTopic,
+  AdminHeartbeatTopic,
+  HeartbeatTopic,
+  CoreSubscribeTopics,
+} from './avro/index.mjs';
+import { clone, uuid4 } from './utils/index.mjs';
 import {
   Logger,
   FileLogger,
   KafkaLogger,
   ConsoleLogger,
   ILogger,
-} from './logger';
-import { IAdapterMessage } from './index.mjs';
+} from './logger/index.mjs';
 import { Type } from 'avsc';
-import { LargeFileUploadService, TimeService, computerInfo } from './services';
+import {
+  LargeFileUploadService,
+  TimeService,
+  computerInfo,
+} from './services/index.mjs';
 import {
   IAdminHeartbeat,
   TimeState,
@@ -41,13 +54,6 @@ import {
   ITimeManagement,
   ITopicRemove,
 } from 'test-bed-schemas';
-import {
-  TimeTopic,
-  AccessInviteTopic,
-  AdminHeartbeatTopic,
-  HeartbeatTopic,
-  CoreSubscribeTopics,
-} from './avro';
 
 export interface OffsetOutOfRange {
   message: string;
@@ -65,7 +71,7 @@ export interface TestBedAdapter {
     listener: (error: OffsetOutOfRange) => void
   ): this;
   on(event: 'raw', listener: (message: Message) => void): this;
-  on(event: 'message', listener: (message: IAdapterMessage) => void): this;
+  on(event: 'message', listener: (message: AdapterMessage) => void): this;
   on(event: 'time', listener: (message: ITimeManagement) => void): this;
   on(event: 'heartbeat', listener: (message: IAdminHeartbeat) => void): this;
 }
@@ -79,10 +85,10 @@ export class TestBedAdapter extends EventEmitter {
   private schemaRegistry: SchemaRegistry;
   private largeFileUploadService: LargeFileUploadService;
   private log = Logger.instance;
-  private client?: KafkaClient;
+  private client?: Kafka;
   private producer?: Producer;
-  private consumer?: ConsumerGroup;
-  private config: ITestBedOptions;
+  private consumer?: Consumer;
+  private config: ITestBedOptions & KafkaConfig;
   /** Map of all initialized topics, i.e. with validators/encoders/decoders */
   private consumerTopics: { [topic: string]: IInitializedTopic } = {};
   private producerTopics: { [topic: string]: IInitializedTopic } = {};
@@ -117,50 +123,64 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public async connect() {
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        await this.initLogger();
-        await this.schemaPublisher.init();
-      } catch (e) {
-        this.emitErrorMsg(
-          `Error before initializing the testbed connection: ${e}`
-        );
-      }
-      this.client = new KafkaClient(this.config);
-      this.client.on('ready', async () => {
-        try {
-          await this.initialize();
-        } catch (e) {
-          this.emitErrorMsg(
-            `Error in initializing the testbed connection: ${e}`,
-            reject
-          );
-        }
-        resolve();
-      });
-      this.client.on('error', (error) => {
-        this.emitErrorMsg(error, reject);
-      });
-      this.client.on('reconnect', () => {
-        this.emit('reconnect');
-      });
-    });
+    try {
+      await this.initLogger();
+      await this.schemaPublisher.init();
+    } catch (e) {
+      this.emitErrorMsg(
+        `Error before initializing the testbed connection: ${e}`
+      );
+    }
+    this.client = new Kafka(this.config);
+    await this.initialize();
+    // return new Promise<void>(async (resolve) => {
+    // try {
+    //   await this.initLogger();
+    //   await this.schemaPublisher.init();
+    // } catch (e) {
+    //   this.emitErrorMsg(
+    //     `Error before initializing the testbed connection: ${e}`
+    //   );
+    // }
+    // this.client = new Kafka(this.config);
+    // await this.initialize();
+
+    // this.client.on('ready', async () => {
+    //   try {
+    //     await this.initialize();
+    //   } catch (e) {
+    //     this.emitErrorMsg(
+    //       `Error in initializing the testbed connection: ${e}`,
+    //       reject
+    //     );
+    //   }
+    //   resolve();
+    // });
+    // this.client.on('error', (error) => {
+    //   this.emitErrorMsg(error, reject);
+    // });
+    // this.client.on('reconnect', () => {
+    //   this.emit('reconnect');
+    // });
+    // });
   }
 
   public disconnect() {
-    return new Promise<boolean>((resolve) => {
-      if (this.client) {
-        this.client.close(() => {
-          this.isConnected = false;
-          this.client = undefined;
-          this.consumer = undefined;
-          this.producer = undefined;
-          resolve(true);
-        });
-      } else {
-        resolve(false);
-      }
-    });
+    this.consumer?.disconnect();
+    this.producer?.disconnect();
+    // return new Promise<boolean>((resolve) => {
+    //   if (this.client) {
+    //     this.client.close(() => {
+    //       this.isConnected = false;
+    //       this.client = undefined;
+    //       this.consumer = undefined;
+    //       this.producer = undefined;
+    //       resolve(true);
+    //     });
+    //   } else {
+    //     resolve(false);
+    //   }
+    // });
   }
 
   /**
@@ -183,82 +203,64 @@ export class TestBedAdapter extends EventEmitter {
     if (!this.consumer) {
       return this.emitErrorMsg('Consumer not ready!');
     }
-    this.consumer.pause();
+    const topics = Object.keys(this.consumerTopics).map((topic) => ({ topic }));
+    this.consumer.pause(topics);
   }
 
   public resume() {
     if (!this.consumer) {
       return this.emitErrorMsg('Consumer not ready!');
     }
-    this.consumer.resume();
+    const topics = Object.keys(this.consumerTopics).map((topic) => ({ topic }));
+    this.consumer.resume(topics);
   }
 
-  // public pauseTopics() {
-  //   if (!this.consumer) {
-  //     return this.emitErrorMsg('Consumer not ready!');
-  //   }
-  //   this.consumer.pause();
-  // }
-
-  // public resumeTopics(topics: string[]) {
-  //   if (!this.consumer) {
-  //     return this.emitErrorMsg('Consumer not ready!');
-  //   }
-  //   this.consumer.resumeTopics(topics);
-  // }
-
+  /** Deprecated: use disconnect */
   public close() {
-    if (this.client) {
-      this.client.close();
-    }
+    this.disconnect();
   }
 
-  public send(
-    payloads: ProduceRequest | ProduceRequest[],
-    cb: (error?: any, data?: ISendResponse) => any
+  public async send(
+    payload: AdapterProducerRecord,
+    cb: (error?: any, data?: RecordMetadata[]) => any
   ) {
+    const keyFactory = () => ({
+      distributionID: uuid4(),
+      senderID: this.config.clientId || this.config.groupId,
+      dateTimeSent: Date.now(),
+      dateTimeExpires: 0,
+      distributionStatus: 'Exercise',
+      distributionKind: 'Unknown',
+    });
+
     if (!this.producer) {
       return this.emitErrorMsg('Producer not ready!');
     }
-    payloads = payloads instanceof Array ? payloads : [payloads];
-    const pl: ProduceRequest[] = [];
-    let hasError = false;
-    payloads.forEach((payload) => {
-      if (!this.producerTopics.hasOwnProperty(payload.topic)) {
-        return cb(
-          `Topic ${
-            payload.topic
-          } not found: please register first! ${JSON.stringify(payload)}`,
-          undefined
-        );
-      }
-      const topic = this.producerTopics[payload.topic];
-      const key =
-        !payload.key || isEmptyObject(payload.key)
-          ? {
-              distributionID: uuid4(),
-              senderID: this.config.clientId,
-              dateTimeSent: Date.now(),
-              dateTimeExpires: 0,
-              distributionStatus: 'Exercise',
-              distributionKind: 'Unknown',
-            }
-          : payload.key;
-      if (topic.isValid(payload.messages) && topic.isKeyValid(key)) {
-        const messages = topic.encode(payload.messages);
-        pl.push({
-          ...payload,
-          messages,
-          key: topic.encodeKey ? topic.encodeKey(key) : payload.key,
-        });
-      } else {
-        hasError = true;
-      }
-    });
-    if (hasError) {
-      return cb('Error validating message', undefined);
+    const topic = this.producerTopics[payload.topic];
+    if (!topic) {
+      return cb(
+        `Topic ${
+          payload.topic
+        } not found: please register first! ${JSON.stringify(payload)}`,
+        undefined
+      );
+    }
+    const key = topic.encodeKey(keyFactory());
+
+    const plMessages = payload.messages.map((m) => ({
+      ...m,
+      key: m.key || key,
+    }));
+    if (topic.isValid(plMessages)) {
+      const messages = plMessages.map((message) => topic.encode(message));
+      const recordMetadata =
+        this.producer &&
+        (await this.producer.send({ ...payload, messages }).catch((e) => {
+          cb(JSON.stringify(e));
+        }));
+      recordMetadata && cb(undefined, recordMetadata);
     } else {
-      this.producer && this.producer.send(pl, cb);
+      return cb('Error validating message', undefined);
     }
   }
 
@@ -273,122 +275,151 @@ export class TestBedAdapter extends EventEmitter {
    * Create topics by requesting their metadata.
    * It only works when `auto.create.topics.enable = true`.
    */
-  public async createTopics(topics: CreateTopicRequest[]) {
-    return new Promise<CreateTopicResponse[]>((resolve, reject) => {
-      if (this.client) {
-        // Default behaviour is calling createTopics with CreateTopicRequest[]
-        this.client.createTopics(
-          topics,
-          (err: any, data: CreateTopicResponse[]) => {
-            if (err) {
-              reject(err);
-            }
-            resolve(data);
-          }
-        );
-      } else {
-        reject('Producer and Client do not exist!');
-      }
+  public async createTopics(topics: ITopicConfig[]) {
+    if (!this.client) {
+      return false;
+    }
+    const admin = this.client.admin();
+    await admin.connect();
+    const metadata = await admin.fetchTopicMetadata({
+      topics: topics.map((t) => t.topic),
     });
+    const existingTopics = metadata.topics.map((md) => md.name);
+    const newTopics = topics.filter((t) => existingTopics.indexOf(t.topic) < 0);
+    if (newTopics.length === 0) {
+      return true;
+    }
+    const success = await admin.createTopics({ topics: newTopics });
+    if (!success) {
+      console.warn(
+        `Could not create the following topics: ${JSON.stringify(topics)}`
+      );
+    }
+    await admin.disconnect();
+    return success;
   }
 
   /**
    * Add topics (encoding utf8)
    *
    * @param topics Array of topics to add
-   * @param cb optional callback method to invoke when a message is received
    */
-  public addConsumerTopics(
-    topics?: string | string[],
-    cb?: (error: string, message: Message) => void
-  ) {
-    const registerCallback = (topics: string[] | Topic[]) => {
-      if (!cb) {
-        return;
-      }
-      (topics as any[])
-        .map((t) => (typeof t === 'string' ? t : (t as Topic).topic))
-        .forEach((t) => (this.callbacks[t] = cb));
-    };
-
-    return new Promise<string[] | void>((resolve) => {
-      if (!topics) {
-        return resolve();
-      }
-      topics = topics instanceof Array ? topics : [topics];
-      if (topics.length === 0) {
-        return resolve();
-      }
-      const newTopics = this.initializeConsumerTopics(topics);
-      const consumer = this.consumer;
-      if (typeof consumer === 'undefined' || newTopics.length === 0) {
-        return [];
-      }
-      let count = 0;
-      const addTopics = () => {
-        consumer.addTopics(newTopics, (error, added) => {
-          if (error) {
-            count === 0
-              ? this.log.info(`Initializing topics...`)
-              : count <= 3
-              ? this.log.info(
-                  `Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`
-                )
-              : count > 3;
-            process.stderr.write(
-              `addConsumerTopics - Error ${error}. Waiting ${
-                ++count * 5
-              } seconds...\r`
-            );
-            setTimeout(addTopics, 5000);
-            return;
-          }
-          this.log.info(
-            `\nSubscribed to topic(s): ${
-              added instanceof Array ? added.join(', ') : added
-            }.`
-          );
-          registerCallback(added);
-          resolve(newTopics);
-        });
-      };
-      addTopics();
-    });
-  }
-
-  public removeTopics(
-    topics: string[],
-    cb: (err: string, removed: number) => void
-  ) {
-    const consumer = this.consumer;
-    if (typeof consumer === 'undefined' || !topics || topics.length === 0) {
-      cb('No topics removed', 0);
-    } else {
-      consumer.removeTopics(topics, cb);
+  public async addConsumerTopics(topics?: string | string[]) {
+    if (!topics || topics.length === 0 || !this.consumer) {
+      return;
     }
+    const myTopics = topics instanceof Array ? topics : [...topics];
+
+    const newTopics = this.initializeConsumerTopics(myTopics);
+
+    await this.consumer.subscribe({
+      topics: newTopics,
+      fromBeginning: this.config.fromOffset === 'earliest',
+    });
+    await this.consumer.run({
+      eachMessage: async (message) => this.handleMessage(message),
+    });
+
+    // const registerCallback = (topics: string[]) => {
+    //   if (!cb) {
+    //     return;
+    //   }
+    //   (topics as any[])
+    //     .map((t) => (typeof t === 'string' ? t : (t as Topic).topic))
+    //     .forEach((t) => (this.callbacks[t] = cb));
+    // };
+
+    // return new Promise<string[] | void>((resolve) => {
+    //   if (!topics) {
+    //     return resolve();
+    //   }
+    //   topics = topics instanceof Array ? topics : [topics];
+    //   if (topics.length === 0) {
+    //     return resolve();
+    //   }
+    //   const newTopics = this.initializeConsumerTopics(topics);
+    //   const consumer = this.consumer;
+    //   if (typeof consumer === 'undefined' || newTopics.length === 0) {
+    //     return [];
+    //   }
+    //   let count = 0;
+    //   const addTopics = () => {
+    //     consumer.addTopics(newTopics, (error, added) => {
+    //       if (error) {
+    //         count === 0
+    //           ? this.log.info(`Initializing topics...`)
+    //           : count <= 3
+    //           ? this.log.info(
+    //               `Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`
+    //             )
+    //           : count > 3;
+    //         process.stderr.write(
+    //           `addConsumerTopics - Error ${error}. Waiting ${
+    //             ++count * 5
+    //           } seconds...\r`
+    //         );
+    //         setTimeout(addTopics, 5000);
+    //         return;
+    //       }
+    //       this.log.info(
+    //         `\nSubscribed to topic(s): ${
+    //           added instanceof Array ? added.join(', ') : added
+    //         }.`
+    //       );
+    //       registerCallback(added);
+    //       resolve(newTopics);
+    //     });
+    //   };
+    //   addTopics();
+    // });
   }
 
-  public addProducerTopics(topics?: string | string[]) {
-    return new Promise<string[]>(async (resolve, reject) => {
-      if (!topics || (topics instanceof Array && topics.length === 0)) {
-        return resolve([]);
-      }
-      topics = topics instanceof Array ? topics : [topics];
-      const newTopics = await this.initializeProducerTopics(topics);
-      if (this.producer && newTopics && newTopics.length > 0) {
-        this.producer.createTopics(newTopics, false, (error, _data) => {
-          if (error) {
-            return this.emitErrorMsg(
-              `addProducerTopics - Error ${error}`,
-              reject
-            );
-          }
-          resolve(newTopics);
-        });
-      } else {
-        resolve([]);
-      }
-    });
+  // public removeTopics(
+  //   topics: string[],
+  //   cb: (err: string, removed: number) => void
+  // ) {
+  //   const consumer = this.consumer;
+  //   if (typeof consumer === 'undefined' || !topics || topics.length === 0) {
+  //     cb('No topics removed', 0);
+  //   } else {
+  //     consumer.(topics, cb);
+  //   }
+  // }
+
+  public async addProducerTopics(topics?: string | string[]) {
+    if (!topics || topics.length === 0) {
+      return;
+    }
+    const newTopics = await this.initializeProducerTopics(
+      typeof topics === 'string' ? [topics] : topics
+    );
+
+    await this.createTopics(
+      newTopics.map((topic) => ({
+        topic,
+        numPartitions: this.config.partitions,
+      }))
+    );
+    // return new Promise<string[]>(async (resolve, reject) => {
+    //   if (!topics || (topics instanceof Array && topics.length === 0)) {
+    //     return resolve([]);
+    //   }
+    //   topics = topics instanceof Array ? topics : [topics];
+    //   const newTopics = await this.initializeProducerTopics(topics);
+    //   if (this.producer && newTopics && newTopics.length > 0) {
+    //     this.producer.createTopics(newTopics, false, (error, _data) => {
+    //       if (error) {
+    //         return this.emitErrorMsg(
+    //           `addProducerTopics - Error ${error}`,
+    //           reject
+    //         );
+    //       }
+    //       resolve(newTopics);
+    //     });
+    //   } else {
+    //     resolve([]);
+    //   }
+    // });
   }
 
   /**
@@ -397,22 +428,19 @@ export class TestBedAdapter extends EventEmitter {
    * @param topics If topics is an empty array, retreive the metadata of all topics
    * @param cb callback function to return the metadata results
    */
-  public loadMetadataForTopics(
+  public async loadMetadataForTopics(
     topics: string[],
-    cb: (error?: any, results?: ITopicsMetadata) => void
+    cb: (error?: any, results?: ITopicMetadata[]) => void
   ) {
-    if (!this.isConnected) {
+    if (!this.client || !this.isConnected) {
       cb('Client is not connected');
+      return;
     }
-    (this.client as any).loadMetadataForTopics(
-      topics,
-      (error?: any, results?: ITopicsMetadata) => {
-        if (error) {
-          cb(error, undefined);
-        }
-        cb(null, results);
-      }
-    );
+    const admin = this.client.admin();
+    await admin.connect();
+    const metadata = await admin.fetchTopicMetadata({ topics });
+    await admin.disconnect();
+    cb(undefined, metadata.topics);
   }
 
   /**
@@ -467,8 +495,8 @@ export class TestBedAdapter extends EventEmitter {
   private initialize() {
     return new Promise<void>(async (resolve, reject) => {
       try {
+        this.initProducer();
         await this.schemaRegistry.init();
-        await this.initProducer();
         await this.addProducerTopics(this.config.produce);
         await this.addKafkaLogger();
         await this.initConsumer(this.config.consume);
@@ -486,16 +514,24 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   private initProducer() {
-    return new Promise<void>((resolve, reject) => {
-      if (!this.client) {
-        return this.emitErrorMsg('Client not ready!', reject);
-      }
-      this.producer = new Producer(this.client, {
-        partitionerType: this.config.partitionerType,
-      });
-      this.producer.on('error', (error) => this.emitErrorMsg(error));
-      resolve(); // The producer does not emit the ready event.
+    if (!this.client) {
+      return this.emitErrorMsg('Client not ready!');
+    }
+    this.producer = this.client.producer({
+      allowAutoTopicCreation: true,
+      createPartitioner: Partitioners.DefaultPartitioner,
     });
+    this.producer.connect();
+    // return new Promise<void>((resolve, reject) => {
+    //   if (!this.client) {
+    //     return this.emitErrorMsg('Client not ready!', reject);
+    //   }
+    //   this.producer = this.client.producer({
+    //     allowAutoTopicCreation: true,
+    //   });
+    //   this.producer.on('error', (error) => this.emitErrorMsg(error));
+    //   resolve(); // The producer does not emit the ready event.
+    // });
   }
 
   private async initLogger() {
@@ -538,89 +574,101 @@ export class TestBedAdapter extends EventEmitter {
     });
   }
 
-  private initConsumer(topics?: string | string[]) {
+  private async initConsumer(topics?: string | string[]) {
     if (!topics || topics.length === 0) {
       return;
     }
-    return new Promise<void>((resolve, reject) => {
-      if (!this.client) {
-        return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
-      }
-      this.consumer = new ConsumerGroup(
-        {
-          kafkaHost: this.config.kafkaHost,
-          groupId: this.groupId,
-          encoding: 'buffer',
-          keyEncoding: 'buffer',
-          protocol: ['roundrobin'],
-          autoCommit: true,
-          fromOffset: this.config.fromOffset || 'latest',
-          outOfRangeOffset: 'earliest',
-          fetchMinBytes: this.config.fetchMinBytes,
-          fetchMaxBytes: this.config.fetchMaxBytes,
-        },
-        topics
-      );
-      this.consumer.on('message', (message) => this.handleMessage(message));
-      this.consumer.on('error', (error) => this.emitErrorMsg(error));
-
-      /*
-       * If consumer get `offsetOutOfRange` event, fetch data from the smallest(oldest) offset
-       */
-      const offset = new Offset(this.client);
-      this.consumer.on('offsetOutOfRange', (topic) => {
-        this.emit('offsetOutOfRange', topic);
-        topic.maxNum = 2;
-        if (this.client) {
-          offset.fetch([topic], (err, offsets) => {
-            if (err) {
-              return console.error(err);
-            }
-            const min = Math.min.apply(
-              null,
-              offsets[topic.topic][topic.partition]
-            );
-            if (this.consumer) {
-              this.consumer.setOffset(topic.topic, topic.partition, min);
-            }
-          });
-        }
-      });
-      resolve();
+    if (!this.client) {
+      return this.emitErrorMsg('initConsumer() - Client not ready!');
+    }
+    const consumer = this.client.consumer({
+      groupId: this.groupId,
+      minBytes: this.config.fetchMinBytes,
+      maxBytes: this.config.fetchMaxBytes,
+      sessionTimeout: this.config.sessionTimeout,
+      rebalanceTimeout: this.config.rebalanceTimeout,
     });
+    consumer.on('consumer.crash', (ev) =>
+      this.emitErrorMsg(JSON.stringify(ev))
+    );
+    this.consumer = consumer;
+    const run = async () => {
+      await consumer.connect();
+      await consumer.subscribe({
+        topics: typeof topics === 'string' ? [topics] : topics,
+        fromBeginning: this.config.fromOffset === 'earliest',
+      });
+      await consumer.run({
+        eachMessage: async (message) => this.handleMessage(message),
+      });
+    };
+    run().catch((e) => {
+      console.error(e);
+    });
+    // return new Promise<void>((resolve, reject) => {
+    //   if (!this.client) {
+    //     return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
+    //   }
+    //   this.consumer = this.client.consumer(
+    //     {
+    //       groupId: this.groupId,
+    //       minBytes: this.config.fetchMinBytes,
+    //       maxBytes: this.config.fetchMaxBytes,
+    //       sessionTimeout: this.config.sessionTimeout,
+    //       rebalanceTimeout: this.config.rebalanceTimeout,
+    //     }
+    //   );
+    //   await this.consumer.connect()
+    //   this.consumer.on('message', (message) => this.handleMessage(message));
+    //   this.consumer.on('error', (error) => this.emitErrorMsg(error));
+
+    //   /*
+    //    * If consumer get `offsetOutOfRange` event, fetch data from the smallest(oldest) offset
+    //    */
+    //   const offset = new Offset(this.client);
+    //   this.consumer.on('offsetOutOfRange', (topic) => {
+    //     this.emit('offsetOutOfRange', topic);
+    //     topic.maxNum = 2;
+    //     if (this.client) {
+    //       offset.fetch([topic], (err, offsets) => {
+    //         if (err) {
+    //           return console.error(err);
+    //         }
+    //         const max = Math.min.apply(
+    //           null,
+    //           offsets[topic.topic][topic.partition]
+    //         );
+    //         if (this.consumer) {
+    //           this.consumer.setOffset(topic.topic, topic.partition, min);
+    //         }
+    //       });
+    //     }
+    //   });
+    //   resolve();
+    // });
   }
 
-  private handleMessage(message: Message) {
-    const { topic, value, key, offset, partition, highWaterOffset } = message;
-    if (!value) {
+  private handleMessage(payload: EachMessagePayload) {
+    const { topic, partition, message } = payload;
+
+    const consumerTopic = this.consumerTopics[topic];
+    if (!consumerTopic || !consumerTopic.decode) {
+      this.emit('raw', payload);
       return;
     }
-    if (!this.consumerTopics.hasOwnProperty(topic)) {
-      this.emit('raw', message);
-    }
-    const consumerTopic = this.consumerTopics[topic];
-    const decodedValue = consumerTopic.decode
-      ? (consumerTopic.decode(message.value as Buffer) as Object | Object[])
-      : message.value.toString();
-    const decodedKey =
-      consumerTopic && (message.key as any) instanceof Buffer
-        ? (consumerTopic.decodeKey(message.key as any) as IDefaultKey)
-        : key
-        ? key
-        : '';
+    const { key, value } = consumerTopic.decode(message);
+
     switch (topic) {
       default:
         this.emit('message', {
           topic,
-          offset,
           partition,
-          highWaterOffset,
-          value: decodedValue,
-          key: decodedKey,
-        } as IAdapterMessage);
+          key,
+          value,
+        } as AdapterMessage);
         break;
       case TimeTopic:
-        const timeMessage = decodedValue as ITimeManagement;
+        const timeMessage = value as ITimeManagement;
         if (timeMessage) {
           this.timeService.setSimTime(timeMessage);
           this.emit('time', timeMessage);
@@ -631,17 +679,17 @@ export class TestBedAdapter extends EventEmitter {
         }
         break;
       case AccessInviteTopic:
-        const invitation = decodedValue as ITopicInvite;
+        const invitation = value as ITopicInvite;
         if (invitation.id.toLowerCase() === this.groupId.toLowerCase()) {
           this.registerTopic(invitation);
         }
         break;
       case AccessRemoveTopic:
-        const remove = decodedValue as ITopicRemove;
+        const remove = value as ITopicRemove;
         this.unregisterTopic(remove);
         break;
       case AdminHeartbeatTopic:
-        const ahb = decodedValue as IAdminHeartbeat;
+        const ahb = value as IAdminHeartbeat;
         // console.log(`Admin heartbeat received`);
         // console.log(JSON.stringify(ahb));
         this.emit('heartbeat', ahb);
@@ -654,12 +702,7 @@ export class TestBedAdapter extends EventEmitter {
       invitation.subscribeAllowed &&
       (await this.schemaRegistry.registerNewTopic(invitation.topicName))
     ) {
-      this.addConsumerTopics(invitation.topicName, (err, msg) => {
-        if (err) {
-          return this.log.error(err);
-        }
-        this.handleMessage(msg);
-      });
+      this.addConsumerTopics(invitation.topicName);
     }
     if (
       invitation.publishAllowed &&
@@ -680,25 +723,26 @@ export class TestBedAdapter extends EventEmitter {
    * @param topics topics to add
    */
   private initializeConsumerTopics(topics?: string[]) {
-    if (!topics) {
+    if (!topics || topics.length === 0) {
       return [];
     }
-    const newTopics: string[] = [];
-    topics.forEach((topic) => {
-      if (this.consumerTopics.hasOwnProperty(topic)) return;
+    const newTopics = topics.reduce((acc, topic) => {
+      if (this.consumerTopics.hasOwnProperty(topic)) {
+        return acc;
+      }
       if (!this.schemaRegistry.valueSchemas.hasOwnProperty(topic)) {
         this.log.error(
           `initializeConsumerTopics - no schema registered for topic ${topic}`
         );
-        return;
+        return acc;
       }
-      newTopics.push(topic);
+      acc.push(topic);
       const initializedTopic = { topic } as IInitializedTopic;
       const avro = avroHelperFactory(this.schemaRegistry, topic);
       initializedTopic.decode = avro.decode;
-      initializedTopic.decodeKey = avro.decodeKey;
       this.consumerTopics[topic] = initializedTopic;
-    });
+      return acc;
+    }, [] as string[]);
     return newTopics;
   }
 
@@ -707,12 +751,12 @@ export class TestBedAdapter extends EventEmitter {
    * @param topics topics to add
    */
   private async initializeProducerTopics(topics?: string[]) {
-    if (!topics) {
+    if (!topics || topics.length === 0) {
       return [];
     }
     const newTopics: string[] = [];
     for (const topic of topics) {
-      if (this.producerTopics.hasOwnProperty(topic)) return;
+      if (this.producerTopics.hasOwnProperty(topic)) continue;
       await this.schemaRegistry.registerNewTopic(topic);
       if (
         !(
@@ -738,7 +782,6 @@ export class TestBedAdapter extends EventEmitter {
       initializedTopic.encode = avro.encode;
       initializedTopic.encodeKey = avro.encodeKey;
       initializedTopic.isValid = avro.isValid;
-      initializedTopic.isKeyValid = avro.isKeyValid;
       this.producerTopics[topic] = initializedTopic;
     }
     return newTopics;
@@ -747,45 +790,49 @@ export class TestBedAdapter extends EventEmitter {
   /**
    * Start transmitting a heartbeat message.
    */
-  private startHeartbeat() {
-    return new Promise<void>((resolve, reject) => {
-      if (this.isConnected) {
-        return resolve();
+  private async startHeartbeat() {
+    // return new Promise<void>((resolve, reject) => {
+    if (this.isConnected) {
+      return;
+      // return resolve();
+    }
+    this.isConnected = true;
+    const sendHeartbeat = async () => {
+      if (
+        !this.isConnected ||
+        !this.producerTopics.hasOwnProperty(HeartbeatTopic)
+      ) {
+        return;
       }
-      this.isConnected = true;
-      const sendHeartbeat = () => {
-        if (
-          !this.isConnected ||
-          !this.producerTopics.hasOwnProperty(HeartbeatTopic)
-        ) {
-          return;
-        }
-        if (!this.producer) {
-          return this.emitErrorMsg('Producer not ready!', reject);
-        }
-        this.send(
-          {
-            attributes: 1,
-            topic: HeartbeatTopic,
-            messages: {
-              id: this.config.clientId,
-              alive: Date.now(),
-              origin: this.origin,
-            } as IHeartbeat,
-          },
-          (error) => {
-            if (error) {
-              this.log.error(error);
-            }
-            setTimeout(sendHeartbeat, this.config.heartbeatInterval || 5000);
+      if (!this.producer) {
+        return this.emitErrorMsg('Producer not ready!');
+      }
+      await this.send(
+        {
+          topic: HeartbeatTopic,
+          messages: [
+            {
+              value: {
+                id: this.config.clientId,
+                alive: Date.now(),
+                origin: this.origin,
+              } as IHeartbeat,
+            },
+          ],
+        },
+        (error) => {
+          if (error) {
+            this.log.error(error);
           }
-        );
-      };
-      console.log('Started heartbeat');
-      this.log.info('Started heartbeat');
-      sendHeartbeat();
-      resolve();
-    });
+          setTimeout(sendHeartbeat, this.config.heartbeatInterval || 5000);
+        }
+      );
+    };
+    console.log('Started heartbeat');
+    this.log.info('Started heartbeat');
+    await sendHeartbeat();
+    // resolve();
+    // });
   }
 
   /**
@@ -796,6 +843,7 @@ export class TestBedAdapter extends EventEmitter {
     const opt = Object.assign(
       {
         kafkaHost: 'broker:3501',
+        brokers: [],
         schemaRegistry: 'schema_registry:3502',
         clientId: '',
         groupId: '',
@@ -813,9 +861,17 @@ export class TestBedAdapter extends EventEmitter {
         autoRegisterDefaultSchemas: false,
         connectTimeout: 5000,
         partitionerType: 2,
-      } as ITestBedOptions,
+        partitions: 1,
+      } as ITestBedOptions & KafkaConfig,
       options
     );
+    if (
+      opt.brokers.length === 0 &&
+      opt.brokers instanceof Array &&
+      opt.kafkaHost
+    ) {
+      opt.brokers.push(...opt.kafkaHost.split(',').map((b) => b.trim()));
+    }
     if (!opt.groupId && opt.clientId) {
       opt.groupId = opt.clientId;
       if (!opt.groupId)

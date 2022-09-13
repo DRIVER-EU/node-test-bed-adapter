@@ -1,9 +1,9 @@
-import { ITestBedOptions, Logger } from '../index.mjs';
+import { AdapterLogger, ITestBedOptions } from '../index.mjs';
 import * as fs from 'fs';
 import * as path from 'path';
 import FormData from 'form-data';
 import { default as axios } from 'axios';
-import { bufferToStream } from '../utils';
+import { bufferToStream } from '../utils/index.mjs';
 
 /**
  * Service to help the user upload large files to the Test-bed.
@@ -12,7 +12,7 @@ import { bufferToStream } from '../utils';
  */
 export class LargeFileUploadService {
   private restUri?: string;
-  private log = Logger.instance;
+  private log = AdapterLogger.instance;
 
   constructor(options: ITestBedOptions) {
     if (!options.largeFileService) {
@@ -21,7 +21,7 @@ export class LargeFileUploadService {
 
     const addHttp = (s: string) => (s.startsWith('http') ? s : `http://${s}`);
     const removeTrailingSlash = (s: string) =>
-      s.endsWith('/') ? s.substr(0, s.length - 1) : s;
+      s.endsWith('/') ? s.substring(0, s.length - 1) : s;
     this.restUri = removeTrailingSlash(addHttp(options.largeFileService));
     this.log.info('URL: ' + this.restUri);
   }
@@ -49,8 +49,8 @@ export class LargeFileUploadService {
     if (typeof file !== 'string') {
       this.uploadBuffer(file, isPrivate, cb);
     } else {
-      fs.exists(file, (exists) => {
-        if (exists) {
+      fs.exists(file, (existing) => {
+        if (existing) {
           this.uploadFile(file, isPrivate, cb);
         } else {
           const filePath = path.resolve(process.cwd(), file);

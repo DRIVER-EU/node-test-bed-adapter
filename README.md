@@ -2,7 +2,7 @@
 
 This is the test-bed adapter for node.js: it allows you to easily connect JavaScript and typescript services to the Apache Kafka test-bed via Node.js. Although it is specifically created for connecting to our [test-bed](https://github.com/DRIVER-EU/test-bed), it should work for any Apache Kafka version too.
 
-The implementation is a wrapper around [kafka-node](https://www.npmjs.com/package/kafka-node), offering support for:
+The implementation is a wrapper around [kafkajs](https://www.npmjs.com/package/kafkajs), offering support for:
 
 - AVRO schema's and messages: both key's and values should have a schema as explained [here](https:/github.com/DRIVER-EU/avro-schemas).
 - Logging via console, file and via Kafka: you can set for each log provider the log level (e.g. error or debug).
@@ -40,7 +40,7 @@ See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/
 - Validate AVRO messages
 - Encode/decode object and keys using AVRO helper factory
 - Setup test framework
-- Create kafka-node mock using proxyquire
+- Create kafkajs mock using proxyquire
 - Publish and consume CAP messages (for testing purposes)
 - Test sending messages using GZip compression (set attributes to 1in ProduceRequest payload)
 - Test sending an array of CAP messages - creating a Buffer per message.

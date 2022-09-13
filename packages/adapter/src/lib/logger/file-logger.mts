@@ -1,6 +1,5 @@
-import * as fs from 'fs';
-import { ICanLog } from './logger';
-import { LogLevel } from './log-levels';
+import { appendFile } from 'fs';
+import { ICanLog, LogLevel } from './index.mjs';
 
 /**
  * A simple file logger that appends the text to a log file.
@@ -13,7 +12,7 @@ export class FileLogger implements ICanLog {
     msg: string,
     callback?: (err: any, result: any) => void
   ) {
-    fs.appendFile(this.file, msg + '\n', err => {
+    appendFile(this.file, msg + '\n', (err) => {
       if (callback) {
         return callback(err, null);
       }

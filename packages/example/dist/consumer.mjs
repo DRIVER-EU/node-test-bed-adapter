@@ -1,9 +1,9 @@
 // UNCOMMENT IF YOU WANT TO ENHANCE THE LOG OUTPUT OF KAFKA
 // import { consoleLoggerProvider } from './console-logger-provider';
-// const kafkaLogging = require('kafka-node/logging');
+// const kafkaLogging = require('kafkajs/logging');
 // kafkaLogging.setLoggerProvider(consoleLoggerProvider);
-import { TestBedAdapter, Logger, LogLevel, } from 'node-test-bed-adapter';
-const log = Logger.instance;
+import { TestBedAdapter, AdapterLogger, LogLevel, } from 'node-test-bed-adapter';
+const log = AdapterLogger.instance;
 class Consumer {
     id = 'tno-consumer';
     adapter;
@@ -46,25 +46,14 @@ class Consumer {
             console.error(`Consumer received an offsetOutOfRange error on topic ${err.topic}.`);
         });
     }
-    getTopics() {
-        this.adapter.loadMetadataForTopics([], (error, results) => {
+    async getTopics() {
+        await this.adapter.loadMetadataForTopics([], (error, results) => {
             if (error) {
                 return log.error(error);
             }
             if (results && results.length > 0) {
                 results.forEach((result) => {
-                    if (result.hasOwnProperty('metadata')) {
-                        console.log('TOPICS');
-                        const metadata = result.metadata;
-                        for (let key in metadata) {
-                            const md = metadata[key];
-                            console.log(`Topic: ${key}, partitions: ${Object.keys(md).length}`);
-                        }
-                    }
-                    else {
-                        console.log('NODE');
-                        console.log(result);
-                    }
+                    console.log(JSON.stringify(result));
                 });
             }
         });
@@ -73,13 +62,16 @@ class Consumer {
         const stringify = (m) => typeof m === 'string' ? m : JSON.stringify(m, null, 2);
         switch (message.topic.toLowerCase()) {
             case 'system_heartbeat':
-                log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+                message.key &&
+                    log.info(`Received heartbeat message with key ${stringify(message.key)}: ${stringify(message.value)}`);
                 break;
             case 'standard_cap':
-                log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+                message.key &&
+                    log.info(`Received CAP message with key ${stringify(message.key)}: ${stringify(message.value)}`);
                 break;
             default:
-                log.info(`Received ${message.topic} message with key ${stringify(message.key)}: ${stringify(message.value)}`);
+                message.key &&
+                    log.info(`Received ${message.topic} message with key ${stringify(message.key)}: ${stringify(message.value)}`);
                 break;
         }
     }

@@ -1,6 +1,6 @@
-import { Logger, LogLevel, TestBedAdapter, } from 'node-test-bed-adapter';
+import { AdapterLogger, LogLevel, TestBedAdapter, } from 'node-test-bed-adapter';
 const utcStr = () => `${new Date().toUTCString()}:`;
-const log = Logger.instance;
+const log = AdapterLogger.instance;
 const info = (msg) => log.info(`${utcStr()} ${msg}`);
 const warn = (msg) => log.warn(`${utcStr()} ${msg}`);
 const error = (msg) => log.error(`${utcStr()} ${msg}`);
@@ -60,15 +60,17 @@ const silentProducer = () => {
                 });
             try {
                 const createdTopics = await adapter.createTopics(schemasToSend);
-                if (createdTopics.length === 0) {
+                if (!createdTopics) {
                     // Crash if the topics were not correctly created. This will trigger a restart which should resolve the issue.
                     warn('0 topics created, restarting');
                     process.exit(1);
                 }
-                info(`Created the following topics:\n${createdTopics
-                    .sort()
-                    .map((t) => `- ${typeof t === 'string' ? t : t.topic}`)
-                    .join('\n')}\n`);
+                // info(
+                //   `Created the following topics:\n${createdTopics
+                //     .sort()
+                //     .map((t) => `- ${typeof t === 'string' ? t : t.topic}`)
+                //     .join('\n')}\n`
+                // );
             }
             catch (err) {
                 error(err);

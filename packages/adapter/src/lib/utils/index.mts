@@ -1,13 +1,14 @@
-import * as fs from 'fs';
+import { existsSync, readdirSync, lstatSync } from 'fs';
 import { default as axios } from 'axios';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { DataType, ILargeDataUpdate } from 'test-bed-schemas';
-import { TestBedAdapter, ProduceRequest, Logger } from '../index.mjs';
-import { LargeDataUpdateTopic } from '../avro';
-import { ISendResponse, ITestBedOptions } from '../models';
+import { TestBedAdapter, RecordMetadata } from '../index.mjs';
+import { LargeDataUpdateTopic } from '../avro/index.mjs';
+import { AdapterProducerRecord, ITestBedOptions } from '../models/index.mjs';
+import { Logger } from '../logger/logger.mjs';
 
-export const clone = <T>(model: T) => {
+export const clone = <T extends any>(model: T) => {
   return JSON.parse(JSON.stringify(model)) as T;
 };
 
@@ -22,14 +23,14 @@ export const findFilesInDir = (directoryName: string, ext: string) => {
   ext = (ext[0] === '.' ? ext : `.${ext}`).toLowerCase();
   let results: string[] = [];
 
-  if (!fs.existsSync(directoryName)) {
+  if (!existsSync(directoryName)) {
     console.error(`Error - Directory ${directoryName} does not exist`);
     return [];
   }
 
-  fs.readdirSync(directoryName).forEach((f) => {
+  readdirSync(directoryName).forEach((f) => {
     const filename = path.join(directoryName, f);
-    const stat = fs.lstatSync(filename);
+    const stat = lstatSync(filename);
     if (stat.isDirectory()) {
       results = results.concat(findFilesInDir(filename, ext)); // recurse
     } else if (path.extname(filename).toLowerCase() === ext) {
@@ -108,7 +109,7 @@ export const largeFileUploadCallback = (
   title?: string,
   description?: string,
   dataType = DataType.other,
-  cb: (err: any, data?: ISendResponse) => void = (err) =>
+  cb: (err: Error, data?: RecordMetadata[]) => void = (err) =>
     err ? Logger.instance.error(err) : undefined
 ) => {
   return (err?: Error, url?: string) => {
@@ -121,19 +122,16 @@ export const largeFileUploadCallback = (
       description,
       dataType,
     } as ILargeDataUpdate;
-    const payload: ProduceRequest[] = [
-      {
-        topic: LargeDataUpdateTopic,
-        messages: msg,
-        attributes: 1, // Gzip
-      },
-    ];
+    const payload: AdapterProducerRecord = {
+      topic: LargeDataUpdateTopic,
+      messages: [{ value: msg }],
+    };
     adapter.send(payload, cb);
   };
 };
 
 /** Is unique filter for array filter method */
-export const isUnique = <T>(value: T, index: number, arr: T[]) =>
+export const isUnique = <T extends any>(value: T, index: number, arr: T[]) =>
   arr.indexOf(value) === index;
 
 /** Check if the schema registry is available */

@@ -43,8 +43,8 @@
     "axios": "^0.27.2",
     "bluebird": "^3.7.2",
     "form-data": "^4.0.0",
-    "kafka-node": "5.0.0",
-    "test-bed-schemas": "^0.4.0",
+    "kafkajs": "^2.2.0",
+    "test-bed-schemas": "workspace:*",
     "url": "^0.11.0"
   },
   "devDependencies": {

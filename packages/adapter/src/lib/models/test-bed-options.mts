@@ -1,11 +1,21 @@
-import { ConsumerGroupOptions } from 'kafka-node';
-import { LogLevel } from '../logger/log-levels';
+import {
+  BrokersFunction,
+  ConsumerConfig,
+  ConsumerGroup,
+  KafkaConfig,
+} from 'kafkajs';
+import { LogLevel } from '../logger/index.mjs';
 
-export interface ITestBedOptions extends ConsumerGroupOptions {
+export interface ITestBedOptions
+  extends Omit<KafkaConfig, 'brokers'>,
+    Pick<ConsumerGroup, 'groupId'>,
+    Pick<ConsumerConfig, 'sessionTimeout' | 'rebalanceTimeout'> {
   /** Consumer group ID of this client */
   clientId?: string;
-  /** Uri for the Kafka broker, e.g. broker:3501 */
-  kafkaHost: string;
+  /** DEPRECATED, use brokers: Uri for the Kafka broker, e.g. broker:3501 */
+  kafkaHost?: string;
+  /** One or more kafka brokers to initialize the connection. */
+  brokers?: string[] | BrokersFunction;
   /** Uri for the schema registry, e.g. schema_registry:3502 */
   schemaRegistry: string;
   /** Uri for the large file service, e.g. localhost:9090/api */
@@ -45,9 +55,9 @@ export interface ITestBedOptions extends ConsumerGroupOptions {
   schemaFolder?: string;
   /** If set true, use the topics offset to retreive messages */
   fromOffset?: 'earliest' | 'latest' | 'none';
-  /** The minimum bytes to include in the message set for this partition. This helps bound the size of the response. */
+  /** The minimum bytes (minBytes) to include in the message set for this partition. This helps bound the size of the response. */
   fetchMinBytes?: number;
-  /** The maximum bytes to include in the message set for this partition. This helps bound the size of the response. */
+  /** The maximum bytes (maxBytes) to include in the message set for this partition. This helps bound the size of the response. */
   fetchMaxBytes?: number;
   /** If true (default false), fetch all schema versions (and not only the latest) */
   fetchAllVersions?: boolean;
@@ -82,4 +92,6 @@ export interface ITestBedOptions extends ConsumerGroupOptions {
   };
   /** Specify partitioner type of the producer, all-to-1-partition = 0, random = 1, cyclic = 2, keyed = 3, custom = 4, default == 2! */
   partitionerType?: number;
+  /** Default number of partitions to use when creating topics. Default 1 */
+  partitions?: number;
 }

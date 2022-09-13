@@ -1,5 +1,4 @@
-import { ICanLog } from './logger';
-import { LogLevel } from './log-levels';
+import { ICanLog, LogLevel } from './index.mjs';
 
 /**
  * Console logger.

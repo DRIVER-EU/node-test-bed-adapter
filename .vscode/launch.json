@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Launch Silent Producer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/packages/example/src/silent-producer.ts",
+      "program": "${workspaceFolder}/packages/example/src/silent-producer.mts",
       "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal",
       "env": {
@@ -22,58 +22,58 @@
       "request": "launch",
       "name": "Launch Producer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/packages/example/src/producer.ts",
+      "program": "${workspaceFolder}/packages/example/src/producer.mts",
       "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal"
     },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch SSL Producer",
-      "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/packages/example/src/producer-secure.ts",
-      "outFiles": ["${workspaceFolder}/**/*"],
-      "console": "integratedTerminal"
-    },
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Launch SSL Producer",
+    //   "cwd": "${workspaceFolder}",
+    //   "program": "${workspaceFolder}/packages/example/src/producer-secure.mts",
+    //   "outFiles": ["${workspaceFolder}/**/*"],
+    //   "console": "integratedTerminal"
+    // },
     {
       "type": "node",
       "request": "launch",
       "name": "Launch Consumer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/packages/example/src/consumer.ts",
+      "program": "${workspaceFolder}/packages/example/src/consumer.mts",
       "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal" //,
       // "env": {
       //   "DEBUG": "kafka-node:*"
       // }
     },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Basic Consumer",
-      "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/packages/example/src/consumer-basic-registration.ts",
-      "outFiles": ["${workspaceFolder}/**/*"],
-      "console": "integratedTerminal" //,
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Time Consumer",
-      "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/src/example/consumer-time.ts",
-      "outFiles": ["${workspaceFolder}/**/*"],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch SSL  Consumer",
-      "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/src/example/consumer-secure.ts",
-      "outFiles": ["${workspaceFolder}/**/*"],
-      "console": "integratedTerminal"
-    },
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Launch Basic Consumer",
+    //   "cwd": "${workspaceFolder}",
+    //   "program": "${workspaceFolder}/packages/example/src/consumer-basic-registration.mts",
+    //   "outFiles": ["${workspaceFolder}/**/*"],
+    //   "console": "integratedTerminal" //,
+    // },
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Launch Time Consumer",
+    //   "cwd": "${workspaceFolder}",
+    //   "program": "${workspaceFolder}/src/example/consumer-time.mts",
+    //   "outFiles": ["${workspaceFolder}/**/*"],
+    //   "console": "integratedTerminal"
+    // },
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Launch SSL  Consumer",
+    //   "cwd": "${workspaceFolder}",
+    //   "program": "${workspaceFolder}/src/example/consumer-secure.mts",
+    //   "outFiles": ["${workspaceFolder}/**/*"],
+    //   "console": "integratedTerminal"
+    // },
     {
       "type": "node",
       "request": "launch",

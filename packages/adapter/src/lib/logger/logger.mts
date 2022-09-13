@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { LogLevel } from './log-levels';
+import { LogLevel } from './log-levels.mjs';
 
 export interface ICanLog {
   log(
@@ -88,8 +88,8 @@ export class Logger extends EventEmitter {
     }
     const message = typeof msg === 'object' ? JSON.stringify(msg) : msg;
     this.loggers
-      .filter(logger => level >= logger.minLevel)
-      .forEach(logger =>
+      .filter((logger) => level >= logger.minLevel)
+      .forEach((logger) =>
         logger.logger.log(level, message, (err, result) => {
           if (err) {
             this.emit('error', err);

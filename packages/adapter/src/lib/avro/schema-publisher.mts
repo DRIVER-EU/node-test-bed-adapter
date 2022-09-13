@@ -2,15 +2,15 @@ import {
   findMissingKeyFiles,
   findFilesInDir,
   isSchemaRegistryAvailable,
-} from '../index.mjs';
+} from '../utils/index.mjs';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
 import Promise from 'bluebird';
-import { ITestBedOptions } from '../models';
+import { ITestBedOptions } from '../models/index.mjs';
 import { default as axios } from 'axios';
-import { Logger } from '../index.mjs';
-import { defaultKeySchema } from './default-key-schema';
+import { Logger } from '../logger/index.mjs';
+import { defaultKeySchema } from './default-key-schema.mjs';
 
 /**
  * Helper class to publish schema's to the schema registry.
