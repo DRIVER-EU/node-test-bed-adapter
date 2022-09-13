@@ -3,7 +3,7 @@ import { default as axios } from 'axios';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { DataType, ILargeDataUpdate } from 'test-bed-schemas';
-import { TestBedAdapter, ProduceRequest, Logger } from '..';
+import { TestBedAdapter, ProduceRequest, Logger } from '../index.mjs';
 import { LargeDataUpdateTopic } from '../avro';
 import { ISendResponse, ITestBedOptions } from '../models';
 

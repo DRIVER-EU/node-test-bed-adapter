@@ -6,16 +6,15 @@ import {
   IMultiPolygon,
   IPoint,
   IPolygon,
-} from '..';
+} from '../index.mjs';
 
 /**
  * Deep copy function for TypeScript.
- * @param T Generic type of target/copied value.
  * @param target Target value to be copied.
  * @see Source project, ts-deepcopy https://github.com/ykdr2017/ts-deepcopy
  * @see Code pen https://codepen.io/erikvullings/pen/ejyBYg
  */
-export const deepCopy = <T>(target: T): T => {
+export const deepCopy = <T extends unknown>(target: T): T => {
   if (target === null) {
     return target;
   }

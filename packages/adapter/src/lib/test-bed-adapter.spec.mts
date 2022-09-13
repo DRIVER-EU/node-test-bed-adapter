@@ -1,4 +1,9 @@
-import { TestBedAdapter, ITestBedOptions, ProduceRequest, LogLevel } from './';
+import {
+  TestBedAdapter,
+  ITestBedOptions,
+  ProduceRequest,
+  LogLevel,
+} from './index.mjs';
 import proxyquire from 'proxyquire';
 import { EventEmitter } from 'events';
 import { KafkaClient } from 'kafka-node';

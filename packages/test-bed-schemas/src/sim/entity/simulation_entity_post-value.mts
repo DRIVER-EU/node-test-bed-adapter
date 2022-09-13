@@ -1,4 +1,4 @@
-import { ILocation } from './simulation_entity_item-value';
+import { ILocation } from './simulation_entity_item-value.mjs';
 
 export interface IHeader {
   /** Sender of the post */

@@ -3,7 +3,7 @@ import { toMessageBuffer, fromMessageBuffer } from './../models/magic-byte';
 import { IValidator } from '../models/validator';
 import { IEncoder } from '../models/encoder';
 import { IDecoder } from '../models/decoder';
-import { Logger } from '..';
+import { Logger } from '../index.mjs';
 import { SchemaRegistry } from './schema-registry';
 
 const removeNulls = (_key: string, value: any) =>

@@ -2,7 +2,7 @@ import { default as axios, AxiosRequestConfig } from 'axios';
 import { Type } from 'avsc';
 import * as url from 'url';
 import { ITestBedOptions } from '../models';
-import { Logger, isUnique, isSchemaRegistryAvailable } from '..';
+import { Logger, isUnique, isSchemaRegistryAvailable } from '../index.mjs';
 import { HeartbeatTopic, LogTopic } from '../avro';
 import { Message } from 'kafka-node';
 

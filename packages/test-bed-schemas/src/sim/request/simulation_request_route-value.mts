@@ -1,4 +1,4 @@
-import { ILocation, MoveType } from '../..';
+import { ILocation, MoveType } from '../../index.mjs';
 
 /**
  * A route request is a specific request for calculating a route from a starting

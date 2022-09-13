@@ -6,7 +6,7 @@ import {
   IMultiLineString,
   IPolygon,
   IMultiPolygon,
-} from '../..';
+} from '../../index.mjs';
 
 export interface ISource {
   filename: string;

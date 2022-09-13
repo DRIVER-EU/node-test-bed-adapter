@@ -1,6 +1,6 @@
 import { SchemaRegistry } from '../avro/schema-registry';
 import { IAvroDecoded } from '../declarations/avro';
-import { Logger } from '..';
+import { Logger } from '../index.mjs';
 import { Type } from 'avsc';
 /**
  * Encode and decode an Avro message for Confluent schema registry (SR) with magic byte.

@@ -2,9 +2,9 @@
   "name": "node-test-bed-adapter",
   "version": "2.3.0",
   "description": "An adapter to connect a node.js application to the Test-bed's Common Information Space or Common Simulation Space.",
-  "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
-  "type": "commonjs",
+  "main": "./dist/lib/index.mjs",
+  "typings": "./dist/lib/index.d.mts",
+  "type": "module",
   "scripts": {
     "clean": "rimraf dist",
     "dev": "tsc -w",

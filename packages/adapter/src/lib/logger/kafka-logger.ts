@@ -1,8 +1,8 @@
-import { TestBedAdapter } from '../test-bed-adapter';
+import { TestBedAdapter } from '../test-bed-adapter.mjs';
 import { ICanLog, LogLevel, LogLevelToType } from '.';
 import { ProduceRequest } from 'kafka-node';
 import { ILog as ILogMessage } from 'test-bed-schemas';
-import { LogTopic } from '..';
+import { LogTopic } from '../index.mjs';
 
 export interface IKafkaLoggerOptions {
   adapter: TestBedAdapter;

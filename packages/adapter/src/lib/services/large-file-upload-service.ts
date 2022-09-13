@@ -1,4 +1,4 @@
-import { ITestBedOptions, Logger } from '..';
+import { ITestBedOptions, Logger } from '../index.mjs';
 import * as fs from 'fs';
 import * as path from 'path';
 import FormData from 'form-data';

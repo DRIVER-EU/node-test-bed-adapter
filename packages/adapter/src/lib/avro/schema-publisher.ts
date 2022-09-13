@@ -2,14 +2,14 @@ import {
   findMissingKeyFiles,
   findFilesInDir,
   isSchemaRegistryAvailable,
-} from '..';
+} from '../index.mjs';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
 import Promise from 'bluebird';
 import { ITestBedOptions } from '../models';
 import { default as axios } from 'axios';
-import { Logger } from '..';
+import { Logger } from '../index.mjs';
 import { defaultKeySchema } from './default-key-schema';
 
 /**

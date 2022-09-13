@@ -2,8 +2,9 @@
   "name": "test-bed-schemas",
   "version": "0.4.0",
   "description": "Schema's commonly used for the Common Information Space or Common Simulation Space.",
-  "main": "./dist/index.js",
-  "typings": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "typings": "./dist/index.d.mts",
+  "type": "module",
   "scripts": {
     "clean": "rimraf dist",
     "dev": "tsc -w",

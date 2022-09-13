@@ -1,4 +1,4 @@
-import { IFeatureCollection } from '../..';
+import { IFeatureCollection } from '../../index.mjs';
 
 /**
  * An envelope containing a GeoJSON FeatureCollection object, with a unique id and

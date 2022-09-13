@@ -30,7 +30,7 @@ import {
   ConsoleLogger,
   ILogger,
 } from './logger';
-import { IAdapterMessage } from '.';
+import { IAdapterMessage } from './index.mjs';
 import { Type } from 'avsc';
 import { LargeFileUploadService, TimeService, computerInfo } from './services';
 import {

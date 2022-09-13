@@ -8,5 +8,5 @@ export * from './models';
 export * from './utils';
 export * from './avro/core-topics';
 export * from 'test-bed-schemas';
-export { TestBedAdapter, OffsetOutOfRange } from './test-bed-adapter';
+export { TestBedAdapter, OffsetOutOfRange } from './test-bed-adapter.mjs';
 export { IDefaultKey } from './avro/default-key-schema';
