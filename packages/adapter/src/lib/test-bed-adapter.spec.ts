@@ -60,7 +60,7 @@ describe('TestBedAdapter', () => {
     const result = new TestBedAdapterMock({
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
-      clientId: 'client',
+      groupId: 'client',
     });
     expect(result.isConnected).toBe(false);
   });
@@ -69,7 +69,7 @@ describe('TestBedAdapter', () => {
     const tba = new TestBedAdapterMock({
       kafkaHost: 'localhost:3501',
       schemaRegistry: 'localhost:3502',
-      clientId: 'client',
+      groupId: 'client',
       logging: {
         logToConsole: LogLevel.Info,
       },

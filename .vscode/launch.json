@@ -7,12 +7,23 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Launch Silent Producer",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/packages/example/src/silent-producer.ts",
+      "outFiles": ["${workspaceFolder}/**/*"],
+      "console": "integratedTerminal",
+      "env": {
+        "SCHEMA_FOLDER": "${workspaceFolder}/packages/example/src/schemas",
+        "PARTITION_SPECIFICATION": "system_heartbeat:1:600000, simulation_time_mgmt:1:60000000, system_logging"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch Producer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/src/example/producer.ts",
-      "outFiles": [
-        "${workspaceFolder}/**/*"
-      ],
+      "program": "${workspaceFolder}/packages/example/src/producer.ts",
+      "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal"
     },
     {
@@ -20,10 +31,8 @@
       "request": "launch",
       "name": "Launch SSL Producer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/src/example/producer-secure.ts",
-      "outFiles": [
-        "${workspaceFolder}/**/*"
-      ],
+      "program": "${workspaceFolder}/packages/example/src/producer-secure.ts",
+      "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal"
     },
     {
@@ -31,11 +40,9 @@
       "request": "launch",
       "name": "Launch Consumer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/src/example/consumer.ts",
-      "outFiles": [
-        "${workspaceFolder}/**/*"
-      ],
-      "console": "integratedTerminal"//,
+      "program": "${workspaceFolder}/packages/example/src/consumer.ts",
+      "outFiles": ["${workspaceFolder}/**/*"],
+      "console": "integratedTerminal" //,
       // "env": {
       //   "DEBUG": "kafka-node:*"
       // }
@@ -45,11 +52,9 @@
       "request": "launch",
       "name": "Launch Basic Consumer",
       "cwd": "${workspaceFolder}",
-      "program": "${workspaceFolder}/src/example/consumer-basic-registration.ts",
-      "outFiles": [
-        "${workspaceFolder}/**/*"
-      ],
-      "console": "integratedTerminal"//,
+      "program": "${workspaceFolder}/packages/example/src/consumer-basic-registration.ts",
+      "outFiles": ["${workspaceFolder}/**/*"],
+      "console": "integratedTerminal" //,
     },
     {
       "type": "node",
@@ -57,9 +62,7 @@
       "name": "Launch Time Consumer",
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/src/example/consumer-time.ts",
-      "outFiles": [
-        "${workspaceFolder}/**/*"
-      ],
+      "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal"
     },
     {
@@ -68,9 +71,7 @@
       "name": "Launch SSL  Consumer",
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/src/example/consumer-secure.ts",
-      "outFiles": [
-        "${workspaceFolder}/**/*"
-      ],
+      "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal"
     },
     {
@@ -79,9 +80,7 @@
       "name": "Tests",
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine.js",
-      "args": [
-        "JASMINE_CONFIG_PATH=src/test/jasmine.json"
-      ],
+      "args": ["JASMINE_CONFIG_PATH=src/test/jasmine.json"],
       "internalConsoleOptions": "openOnSessionStart"
     }
   ]

@@ -1,0 +1,84 @@
+{
+	"type" : "record",
+	"name" : "TaskStatusReport",
+	"namespace" : "nl.ras.netn_etr",
+	"doc" : "Version 30 april 2020; schema owner https://ci.tno.nl/gitlab/battlelab/simulation-rest-service/-/tree/master/packages/simulation-service/schemas/netn-etr; A report about the status of a task the unit was ordered to execute.",
+	"fields" : 
+	[
+		{
+			"name": "Description",
+			"type": "string",
+			"doc": "Summary of taskstatus"
+		},
+		{
+			"name": "SimTaskStatus",
+			"type":
+			{
+				"type": "record",
+				"name": "SimTaskStatusType",
+				"namespace": "nl.ras.netn_etr",
+				"fields" : 
+				[
+					{
+						"name" : "Header",
+						"type" : 
+						{
+							"type" : "record",
+							"name" : "TaskManagementHeaderType",
+							"namespace" : "nl.ras.netn_etr",
+							"doc" : "A base interaction class for more specialized task management interaction classes.",
+							"fields" : 
+							[ 
+								{
+									"name" : "TaskManagementId",
+									"type" : "string",
+									"doc" : "Identifies the management task (TaskCounter/FederateHandle) Unique ID for the statusreport"
+								}, 
+								{
+									"name" : "Taskee",
+									"type" : "string",
+									"doc" : "The entity that has to execute the task."
+								}, 
+								{
+									"name" : "Tasker",
+									"type" : "string",
+									"doc" : "Identifies the commander of the task."
+								}
+							]
+						},
+						"doc" : "Task Management Header ."
+					}, 
+					{
+						"name" : "When",
+						"type" : "int",
+						"logicalType": "date",
+						"doc" : "Date and time when the reported status was valid."
+					}, 
+					{
+						"name" : "Comments",
+						"type" : "string",
+						"doc" : "Any additional comments."
+					}, 
+					{
+						"name" : "TaskId",
+						"type" : "string",
+						"doc" : "Identifies the task the report relates to (TaskCounter/FederateHandle) "
+					}, 
+					{
+						"name" : "TaskStatus",
+						"type" : 
+						 
+							{
+								"type" : "enum",
+								"name" : "TaskStatusEnum",
+								"doc" : "Indicates the evaluation status of the task.</semantics>",
+								"symbols" : [ "Accepted", "Refused", "Aborted", "Completed" ]
+							}
+						
+					} 
+				],
+				"doc" : "Determines how this new task is related to the current task."
+			}
+		}
+	]
+}

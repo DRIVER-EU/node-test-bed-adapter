@@ -1,0 +1,49 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    [
+                        [
+                            16.341400165110826,
+                            48.2764496139113
+                        ],
+                        [
+                            16.234588650986556,
+                            48.14935071777878
+                        ],
+                        [
+                            16.426086430437866,
+                            48.085275205354556
+                        ],
+                        [
+                            16.52069095987827,
+                            48.19422721745656
+                        ],
+                        [
+                            16.42303466331214,
+                            48.270457652931235
+                        ],
+                        [
+                            16.341400165110826,
+                            48.2764496139113
+                        ]
+                    ]
+                ],
+                "crs": "EPSG:4326",
+                "type": "Polygon"
+            },
+            "properties": {
+                "name": "Crowdtasker Task Report",
+                "description": "Incident Report",
+                "title": "Test",
+                "content": "Test",
+                "type": "VOLUNTEER_REPORT",
+                "GUID": "CTC0db0e8ba-3c19-4149-9f9b-46a170896790"
+            }
+        }
+    ],
+    "bbox": null
+}

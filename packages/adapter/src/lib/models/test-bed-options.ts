@@ -1,9 +1,9 @@
-import { KafkaClientOptions, OffsetFetchRequest } from 'kafka-node';
+import { ConsumerGroupOptions } from 'kafka-node';
 import { LogLevel } from '../logger/log-levels';
 
-export interface ITestBedOptions extends KafkaClientOptions {
-  /** Unique ID of this client */
-  clientId: string;
+export interface ITestBedOptions extends ConsumerGroupOptions {
+  /** Consumer group ID of this client */
+  clientId?: string;
   /** Uri for the Kafka broker, e.g. broker:3501 */
   kafkaHost: string;
   /** Uri for the schema registry, e.g. schema_registry:3502 */
@@ -44,7 +44,7 @@ export interface ITestBedOptions extends KafkaClientOptions {
   /** If autoRegisterSchemas is true, contains the folder with *.avsc schema's to register */
   schemaFolder?: string;
   /** If set true, use the topics offset to retreive messages */
-  fromOffset?: boolean;
+  fromOffset?: 'earliest' | 'latest' | 'none';
   /** The minimum bytes to include in the message set for this partition. This helps bound the size of the response. */
   fetchMinBytes?: number;
   /** The maximum bytes to include in the message set for this partition. This helps bound the size of the response. */
@@ -60,9 +60,9 @@ export interface ITestBedOptions extends KafkaClientOptions {
   /** Don't subscribe to the system_time topic (which is subscribed to by default) */
   ignoreTimeTopic?: boolean;
   /** Topics you want to consume */
-  consume?: OffsetFetchRequest[];
+  consume?: string | string[];
   /** Topics you want to produce */
-  produce?: string[];
+  produce?: string | string[];
   /** How often should the adapter try to reconnect to the kafka server if the first time fails */
   maxConnectionRetries?: number;
   /** How many seconds should the adapter wait before trying to reconnect to the kafka server if the first time fails */

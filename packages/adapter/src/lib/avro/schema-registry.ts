@@ -72,8 +72,16 @@ export class SchemaRegistry {
     axios.defaults.timeout = 30000;
     this.wrapUnions = options.wrapUnions || 'auto';
     this.fetchAllVersions = options.fetchAllVersions || false;
-    const consume = options.consume ? options.consume.map((c) => c.topic) : [];
-    const produce = options.produce ? options.produce : [];
+    const consume = options.consume
+      ? options.consume instanceof Array
+        ? options.consume
+        : [options.consume]
+      : [];
+    const produce = options.produce
+      ? options.produce instanceof Array
+        ? options.produce
+        : [options.produce]
+      : [];
     this.selectedTopics = [...consume, ...produce].filter(isUnique);
   }
 

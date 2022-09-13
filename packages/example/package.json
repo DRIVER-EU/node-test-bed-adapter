@@ -1,0 +1,41 @@
+{
+  "name": "example-node-test-bed-adapter",
+  "version": "2.0.9",
+  "description": "An example project of how to use the node-test-bed-adapter",
+  "main": "dist/producer.js",
+  "typings": "dist/producer.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc -w",
+    "start": "tsc -w",
+    "build": "tsc -b",
+    "producer": "node dist/producer.js",
+    "consumer": "node dist/consumer.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DRIVER-EU/example-node-test-bed-adapter.git"
+  },
+  "keywords": [
+    "kafka",
+    "kafka-node",
+    "driver+",
+    "test-bed",
+    "crisis",
+    "management"
+  ],
+  "author": "Erik Vullings <erik.vullings@gmail.com> (http://www.tno.nl)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DRIVER-EU/example-node-test-bed-adapter/issues"
+  },
+  "homepage": "https://github.com/DRIVER-EU/example-node-test-bed-adapter#readme",
+  "dependencies": {
+    "node-test-bed-adapter": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.10",
+    "@types/node": "^18.7.16",
+    "typescript": "4.8.3"
+  }
+}
