@@ -133,54 +133,11 @@ export class TestBedAdapter extends EventEmitter {
     }
     this.client = new Kafka(this.config);
     await this.initialize();
-    // return new Promise<void>(async (resolve) => {
-    // try {
-    //   await this.initLogger();
-    //   await this.schemaPublisher.init();
-    // } catch (e) {
-    //   this.emitErrorMsg(
-    //     `Error before initializing the testbed connection: ${e}`
-    //   );
-    // }
-    // this.client = new Kafka(this.config);
-    // await this.initialize();
-
-    // this.client.on('ready', async () => {
-    //   try {
-    //     await this.initialize();
-    //   } catch (e) {
-    //     this.emitErrorMsg(
-    //       `Error in initializing the testbed connection: ${e}`,
-    //       reject
-    //     );
-    //   }
-    //   resolve();
-    // });
-    // this.client.on('error', (error) => {
-    //   this.emitErrorMsg(error, reject);
-    // });
-    // this.client.on('reconnect', () => {
-    //   this.emit('reconnect');
-    // });
-    // });
   }
 
   public disconnect() {
     this.consumer?.disconnect();
     this.producer?.disconnect();
-    // return new Promise<boolean>((resolve) => {
-    //   if (this.client) {
-    //     this.client.close(() => {
-    //       this.isConnected = false;
-    //       this.client = undefined;
-    //       this.consumer = undefined;
-    //       this.producer = undefined;
-    //       resolve(true);
-    //     });
-    //   } else {
-    //     resolve(false);
-    //   }
-    // });
   }
 
   /**
@@ -312,79 +269,22 @@ export class TestBedAdapter extends EventEmitter {
 
     const newTopics = this.initializeConsumerTopics(myTopics);
 
-    await this.consumer.subscribe({
-      topics: newTopics,
-      fromBeginning: this.config.fromOffset === 'earliest',
-    });
-    await this.consumer.run({
-      eachMessage: async (message) => this.handleMessage(message),
-    });
+    const consumer = this.consumer;
 
-    // const registerCallback = (topics: string[]) => {
-    //   if (!cb) {
-    //     return;
-    //   }
-    //   (topics as any[])
-    //     .map((t) => (typeof t === 'string' ? t : (t as Topic).topic))
-    //     .forEach((t) => (this.callbacks[t] = cb));
-    // };
-
-    // return new Promise<string[] | void>((resolve) => {
-    //   if (!topics) {
-    //     return resolve();
-    //   }
-    //   topics = topics instanceof Array ? topics : [topics];
-    //   if (topics.length === 0) {
-    //     return resolve();
-    //   }
-    //   const newTopics = this.initializeConsumerTopics(topics);
-    //   const consumer = this.consumer;
-    //   if (typeof consumer === 'undefined' || newTopics.length === 0) {
-    //     return [];
-    //   }
-    //   let count = 0;
-    //   const addTopics = () => {
-    //     consumer.addTopics(newTopics, (error, added) => {
-    //       if (error) {
-    //         count === 0
-    //           ? this.log.info(`Initializing topics...`)
-    //           : count <= 3
-    //           ? this.log.info(
-    //               `Cannot add topics: ${JSON.stringify(newTopics)} \n ${error}`
-    //             )
-    //           : count > 3;
-    //         process.stderr.write(
-    //           `addConsumerTopics - Error ${error}. Waiting ${
-    //             ++count * 5
-    //           } seconds...\r`
-    //         );
-    //         setTimeout(addTopics, 5000);
-    //         return;
-    //       }
-    //       this.log.info(
-    //         `\nSubscribed to topic(s): ${
-    //           added instanceof Array ? added.join(', ') : added
-    //         }.`
-    //       );
-    //       registerCallback(added);
-    //       resolve(newTopics);
-    //     });
-    //   };
-    //   addTopics();
-    // });
+    const run = async () => {
+      await consumer.connect();
+      await consumer.subscribe({
+        topics: newTopics,
+        fromBeginning: this.config.fromOffset === 'earliest',
+      });
+      await consumer.run({
+        eachMessage: async (message) => this.handleMessage(message),
+      });
+    };
+    run().catch((e) => {
+      console.error(e);
+    });
   }
-
-  // public removeTopics(
-  //   topics: string[],
-  //   cb: (err: string, removed: number) => void
-  // ) {
-  //   const consumer = this.consumer;
-  //   if (typeof consumer === 'undefined' || !topics || topics.length === 0) {
-  //     cb('No topics removed', 0);
-  //   } else {
-  //     consumer.(topics, cb);
-  //   }
-  // }
 
   public async addProducerTopics(topics?: string | string[]) {
     if (!topics || topics.length === 0) {
@@ -400,26 +300,6 @@ export class TestBedAdapter extends EventEmitter {
         numPartitions: this.config.partitions,
       }))
     );
-    // return new Promise<string[]>(async (resolve, reject) => {
-    //   if (!topics || (topics instanceof Array && topics.length === 0)) {
-    //     return resolve([]);
-    //   }
-    //   topics = topics instanceof Array ? topics : [topics];
-    //   const newTopics = await this.initializeProducerTopics(topics);
-    //   if (this.producer && newTopics && newTopics.length > 0) {
-    //     this.producer.createTopics(newTopics, false, (error, _data) => {
-    //       if (error) {
-    //         return this.emitErrorMsg(
-    //           `addProducerTopics - Error ${error}`,
-    //           reject
-    //         );
-    //       }
-    //       resolve(newTopics);
-    //     });
-    //   } else {
-    //     resolve([]);
-    //   }
-    // });
   }
 
   /**
@@ -500,6 +380,7 @@ export class TestBedAdapter extends EventEmitter {
         await this.addProducerTopics(this.config.produce);
         await this.addKafkaLogger();
         await this.initConsumer(this.config.consume);
+        await this.addConsumerTopics(this.config.consume);
         await this.startHeartbeat();
         this.emit('ready');
       } catch (err) {
@@ -521,16 +402,6 @@ export class TestBedAdapter extends EventEmitter {
       createPartitioner: Partitioners.DefaultPartitioner,
     });
     this.producer.connect();
-    // return new Promise<void>((resolve, reject) => {
-    //   if (!this.client) {
-    //     return this.emitErrorMsg('Client not ready!', reject);
-    //   }
-    //   this.producer = this.client.producer({
-    //     allowAutoTopicCreation: true,
-    //   });
-    //   this.producer.on('error', (error) => this.emitErrorMsg(error));
-    //   resolve(); // The producer does not emit the ready event.
-    // });
   }
 
   private async initLogger() {
@@ -591,60 +462,12 @@ export class TestBedAdapter extends EventEmitter {
       this.emitErrorMsg(JSON.stringify(ev))
     );
     this.consumer = consumer;
-    const run = async () => {
+    const init = async () => {
       await consumer.connect();
-      await consumer.subscribe({
-        topics: typeof topics === 'string' ? [topics] : topics,
-        fromBeginning: this.config.fromOffset === 'earliest',
-      });
-      await consumer.run({
-        eachMessage: async (message) => this.handleMessage(message),
-      });
     };
-    run().catch((e) => {
+    init().catch((e) => {
       console.error(e);
     });
-    // return new Promise<void>((resolve, reject) => {
-    //   if (!this.client) {
-    //     return this.emitErrorMsg('initConsumer() - Client not ready!', reject);
-    //   }
-    //   this.consumer = this.client.consumer(
-    //     {
-    //       groupId: this.groupId,
-    //       minBytes: this.config.fetchMinBytes,
-    //       maxBytes: this.config.fetchMaxBytes,
-    //       sessionTimeout: this.config.sessionTimeout,
-    //       rebalanceTimeout: this.config.rebalanceTimeout,
-    //     }
-    //   );
-    //   await this.consumer.connect()
-    //   this.consumer.on('message', (message) => this.handleMessage(message));
-    //   this.consumer.on('error', (error) => this.emitErrorMsg(error));
-
-    //   /*
-    //    * If consumer get `offsetOutOfRange` event, fetch data from the smallest(oldest) offset
-    //    */
-    //   const offset = new Offset(this.client);
-    //   this.consumer.on('offsetOutOfRange', (topic) => {
-    //     this.emit('offsetOutOfRange', topic);
-    //     topic.maxNum = 2;
-    //     if (this.client) {
-    //       offset.fetch([topic], (err, offsets) => {
-    //         if (err) {
-    //           return console.error(err);
-    //         }
-    //         const max = Math.min.apply(
-    //           null,
-    //           offsets[topic.topic][topic.partition]
-    //         );
-    //         if (this.consumer) {
-    //           this.consumer.setOffset(topic.topic, topic.partition, min);
-    //         }
-    //       });
-    //     }
-    //   });
-    //   resolve();
-    // });
   }
 
   private handleMessage(payload: EachMessagePayload) {
