@@ -1,6 +1,6 @@
 {
   "name": "node-test-bed-adapter",
-  "version": "2.3.0",
+  "version": "2.3.1-rc.0",
   "description": "An adapter to connect a node.js application to the Test-bed's Common Information Space or Common Simulation Space.",
   "main": "./dist/lib/index.mjs",
   "typings": "./dist/lib/index.d.mts",
@@ -13,6 +13,8 @@
     "dry-run": "npm publish --dry-run",
     "patch-release": "npm run clean && npm run build && npm version patch && npm publish && git push --follow-tags",
     "minor-release": "npm run clean && npm run build && npm version minor && npm publish && git push --follow-tags",
+    "rc-full": "npm run clean && npm run build && npm version prerelease --preid=rc && npm publish && git push --follow-tags",
+    "rc": "npm run clean && npm run build && pnpm publish --tag rc --dry-run",
     "test": "jasmine --config=src/test/jasmine.json",
     "producer": "node ../example/dist/producer.js",
     "consumer": "node ../example/dist/consumer.js",
