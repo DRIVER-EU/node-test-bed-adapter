@@ -13,6 +13,15 @@ The implementation is a wrapper around [kafkajs](https://www.npmjs.com/package/k
 
 A standalone example project can be found [here](https://github.com/DRIVER-EU/example-node-test-bed-adapter).
 
+## Version 3
+
+Version 3 is a major update where [kafka-node](https://www.npmjs.com/package/kafka-node) is replaced with [kafkajs](https://www.npmjs.com/package/kafkajs), as the former hadn't been updated for more than 3 years. Therefore, it has a few breaking changes:
+
+- Preferably, your project should use ESnext (in `tsconfig` for `target`, `module` and `lib`), and set `"type"="module"` in `package.json` too. Alternatively, use `import tba from 'node-test-bed-adapter` to access the content of the module.
+- `Logger` => `AdapterLogger`
+- Consume topics: a list of strings. Using a [regex to subscribe to a group of topics](https://kafka.js.org/docs/consuming) is not supported.
+- send
+
 ## Pre-requisites
 
 Clearly, you need to install [node.js](https://nodejs.org). After that, in order to build and install the adapter on WINDOWS, run

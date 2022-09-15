@@ -500,7 +500,6 @@ export class TestBedAdapter extends EventEmitter {
         await this.addProducerTopics(this.config.produce);
         await this.addKafkaLogger();
         await this.initConsumer(this.config.consume);
-        await this.addConsumerTopics(this.config.consume);
         await this.startHeartbeat();
         this.emit('ready');
       } catch (err) {
@@ -702,7 +701,7 @@ export class TestBedAdapter extends EventEmitter {
       invitation.subscribeAllowed &&
       (await this.schemaRegistry.registerNewTopic(invitation.topicName))
     ) {
-      this.addConsumerTopics(invitation.topicName);
+      await this.addConsumerTopics(invitation.topicName);
     }
     if (
       invitation.publishAllowed &&
