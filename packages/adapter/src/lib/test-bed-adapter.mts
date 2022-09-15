@@ -462,12 +462,6 @@ export class TestBedAdapter extends EventEmitter {
       this.emitErrorMsg(JSON.stringify(ev))
     );
     this.consumer = consumer;
-    const init = async () => {
-      await consumer.connect();
-    };
-    init().catch((e) => {
-      console.error(e);
-    });
   }
 
   private handleMessage(payload: EachMessagePayload) {
