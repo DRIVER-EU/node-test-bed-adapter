@@ -272,14 +272,29 @@ export class TestBedAdapter extends EventEmitter {
     const consumer = this.consumer;
 
     const run = async () => {
+      const fromBeginning = this.config.fromOffset === 'earliest';
       await consumer.connect();
       await consumer.subscribe({
         topics: newTopics,
-        fromBeginning: this.config.fromOffset === 'earliest',
+        fromBeginning,
       });
       await consumer.run({
         eachMessage: async (message) => this.handleMessage(message),
       });
+      if (this.client && fromBeginning) {
+        const admin = this.client.admin();
+        await admin.connect();
+        for (const topic in newTopics) {
+          const offsets = await admin.fetchTopicOffsets(topic);
+          offsets.forEach((offset) =>
+            consumer.seek({
+              topic,
+              partition: offset.partition,
+              offset: offset.low,
+            })
+          );
+        }
+      }
     };
     run().catch((e) => {
       console.error(e);
@@ -457,6 +472,7 @@ export class TestBedAdapter extends EventEmitter {
       maxBytes: this.config.fetchMaxBytes,
       sessionTimeout: this.config.sessionTimeout,
       rebalanceTimeout: this.config.rebalanceTimeout,
+      allowAutoTopicCreation: true,
     });
     consumer.on('consumer.crash', (ev) =>
       this.emitErrorMsg(JSON.stringify(ev))
