@@ -284,7 +284,7 @@ export class TestBedAdapter extends EventEmitter {
       if (this.client && fromBeginning) {
         const admin = this.client.admin();
         await admin.connect();
-        for (const topic in newTopics) {
+        for (const topic of newTopics) {
           const offsets = await admin.fetchTopicOffsets(topic);
           offsets.forEach((offset) =>
             consumer.seek({
