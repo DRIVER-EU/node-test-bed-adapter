@@ -13,14 +13,14 @@ The implementation is a wrapper around [kafkajs](https://www.npmjs.com/package/k
 
 A standalone example project can be found [here](https://github.com/DRIVER-EU/example-node-test-bed-adapter).
 
-## Version 3
+## Version 3: BREAKING CHANGES
 
-Version 3 is a major update where [kafka-node](https://www.npmjs.com/package/kafka-node) is replaced with [kafkajs](https://www.npmjs.com/package/kafkajs), as the former hadn't been updated for more than 3 years. Therefore, it has a few breaking changes:
+Version 3 is a major update where [kafka-node](https://www.npmjs.com/package/kafka-node) has been replaced with [kafkajs](https://www.npmjs.com/package/kafkajs), as the former hadn't been updated for more than 3 years. Therefore, it has a few breaking changes:
 
 - Preferably, your project should use ESnext (in `tsconfig` for `target`, `module` and `lib`), and set `"type"="module"` in `package.json` too. Alternatively, use `import tba from 'node-test-bed-adapter` to access the content of the module.
 - `Logger` => `AdapterLogger`
 - Consume topics: a list of strings. Using a [regex to subscribe to a group of topics](https://kafka.js.org/docs/consuming) is not supported.
-- send
+- config option `stringBasedKey` (default true): Heartbeats and logs use the ID as key instead of an EDXL distribution message. By using string-based keys, it is easier to filter messages, cheaper to create messages, and the key can be used for routing across multiple partitions (by default, messages with the same key go to the same partition). This requires the use of the new `edxl-de-key.avsc`, which supports either strings or EDXL distribution messages as key.
 
 ## Pre-requisites
 
@@ -39,9 +39,179 @@ In case you have problems installing the adapter, you may have to first run `npm
 
 See the [src/example folder](https://github.com/DRIVER-EU/node-test-bed-adapter/tree/master/src/example) for an example of a consumer and producer sending CAP messages. Examples are also present for using SSL to connect to a secure test-bed.
 
+### Example consumer
+
+```ts
+import {
+  TestBedAdapter,
+  AdapterLogger,
+  LogLevel,
+  AdapterMessage,
+} from 'node-test-bed-adapter';
+
+const log = AdapterLogger.instance;
+
+class Consumer {
+  private id = 'tno-consumer';
+  private adapter: TestBedAdapter;
+
+  constructor() {
+    this.adapter = new TestBedAdapter({
+      kafkaHost: process.env.KAFKA_HOST || 'localhost:9092',
+      schemaRegistry: process.env.SCHEMA_REGISTRY || 'localhost:3502',
+      fetchAllSchemas: false,
+      fetchAllVersions: false,
+      wrapUnions: true,
+      groupId: this.id,
+      // consume: ['standard_cap'],
+      // fromOffset: 'earliest',
+      logging: {
+        logToConsole: LogLevel.Info,
+        logToFile: LogLevel.Info,
+        logToKafka: LogLevel.Warn,
+        logFile: 'log.txt',
+      },
+    });
+    this.adapter.on('ready', () => {
+      this.subscribe();
+      log.info('Consumer is connected');
+      this.getTopics();
+    });
+    this.adapter.connect();
+  }
+
+  private subscribe() {
+    this.adapter.on('message', (message) => this.handleMessage(message));
+    this.adapter.on('error', (err) =>
+      console.error(`Consumer received an error: ${err}`)
+    );
+    this.adapter.on('offsetOutOfRange', (err) => {
+      console.error(
+        `Consumer received an offsetOutOfRange error on topic ${err.topic}.`
+      );
+    });
+  }
+
+  private async getTopics() {
+    await this.adapter.loadMetadataForTopics([], (error, results) => {
+      if (error) {
+        return log.error(error);
+      }
+      if (results && results.length > 0) {
+        results.forEach((result) => {
+          console.log(JSON.stringify(result));
+        });
+      }
+    });
+  }
+
+  private handleMessage(message: AdapterMessage) {
+    const stringify = (m: string | Object) =>
+      typeof m === 'string' ? m : JSON.stringify(m, null, 2);
+    switch (message.topic.toLowerCase()) {
+      case 'system_heartbeat':
+        message.key &&
+          log.info(
+            `Received heartbeat message with key ${stringify(
+              message.key
+            )}: ${stringify(message.value)}`
+          );
+        break;
+      default:
+        message.key &&
+          log.info(
+            `Received ${message.topic} message with key ${stringify(
+              message.key
+            )}: ${stringify(message.value)}`
+          );
+        break;
+    }
+  }
+}
+
+new Consumer();
+```
+
+### Example producer
+
+```ts
+import {
+  TestBedAdapter,
+  AdapterLogger,
+  LogLevel,
+  AdapterProducerRecord,
+} from 'node-test-bed-adapter';
+
+const log = AdapterLogger.instance;
+
+class Producer {
+  private id = 'tno-producer';
+  private adapter: TestBedAdapter;
+
+  constructor() {
+    const hasLargeFileService = false;
+    this.adapter = new TestBedAdapter({
+      kafkaHost: process.env.KAFKA_HOST || 'localhost:9092',
+      schemaRegistry: process.env.SCHEMA_REGISTRY || 'localhost:3502',
+      largeFileService: hasLargeFileService
+        ? 'localhost:9090'
+        : undefined,
+      // sslOptions: {
+      //   pfx: fs.readFileSync('../certs/other-tool-1-client.p12'),
+      //   passphrase: 'changeit',
+      //   ca: fs.readFileSync('../certs/test-ca.pem'),
+      //   rejectUnauthorized: true,
+      // },
+      groupId: this.id,
+      fetchAllSchemas: false,
+      fetchAllVersions: false,
+      autoRegisterSchemas: false,
+      wrapUnions: 'auto',
+      stringBasedKey: true,
+      schemaFolder: process.env.SCHEMA_FOLDER || `${process.cwd()}/src/schemas`,
+      produce: [
+        'standard_cap',
+        'standard_geojson',
+        RequestChangeOfTrialStage,
+        TimeTopic,
+      ],
+      logging: {
+        logToConsole: LogLevel.Info,
+        logToKafka: LogLevel.Warn,
+      },
+    });
+    this.adapter.on('error', (e) => console.error(e));
+    this.adapter.on('ready', () => {
+      log.info(`Current simulation time: ${this.adapter.simulationTime}`);
+      log.info('Producer is connected');
+    });
+    this.adapter.connect();
+  }
+
+  /** Will only work if you are authorized to send CAP messages. */
+  send(topic: string, messages: AvroMessage[]) {
+    const payloads: AdapterProducerRecord = {
+      topic,
+      messages,
+    };
+    this.adapter.send(payloads, (error, data) => {
+      if (error) {
+        log.error(error);
+      }
+      if (data) {
+        log.info(data);
+      }
+    });
+  }
+}
+
+const producer = new Producer();
+producer.send('standard_cap', [{ value: {}, key: 'my_key' }]);
+```
+
 ## Functionality
 
-### Completed
+### Features
 
 - Connect to Kafka
 - Connect to Kafka using SSL

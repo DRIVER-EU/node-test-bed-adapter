@@ -177,19 +177,19 @@ export class TestBedAdapter extends EventEmitter {
     this.disconnect();
   }
 
+  private keyFactory = () => ({
+    distributionID: uuid4(),
+    senderID: this.config.clientId || this.config.groupId,
+    dateTimeSent: Date.now(),
+    dateTimeExpires: 0,
+    distributionStatus: 'Exercise',
+    distributionKind: 'Unknown',
+  });
+
   public async send(
     payload: AdapterProducerRecord,
     cb: (error?: any, data?: RecordMetadata[]) => any
   ) {
-    const keyFactory = () => ({
-      distributionID: uuid4(),
-      senderID: this.config.clientId || this.config.groupId,
-      dateTimeSent: Date.now(),
-      dateTimeExpires: 0,
-      distributionStatus: 'Exercise',
-      distributionKind: 'Unknown',
-    });
-
     if (!this.producer) {
       return this.emitErrorMsg('Producer not ready!');
     }
@@ -202,11 +202,21 @@ export class TestBedAdapter extends EventEmitter {
         undefined
       );
     }
-    const key = topic.encodeKey(keyFactory());
+
+    // const keyFactory = () => ({
+    //   distributionID: uuid4(),
+    //   senderID: this.config.clientId || this.config.groupId,
+    //   dateTimeSent: Date.now(),
+    //   dateTimeExpires: 0,
+    //   distributionStatus: 'Exercise',
+    //   distributionKind: 'Unknown',
+    // });
+
+    // const key = topic.encodeKey(keyFactory());
 
     const plMessages = payload.messages.map((m) => ({
       ...m,
-      key: m.key || key,
+      key: m.key || topic.encodeKey(this.keyFactory()),
     }));
     if (topic.isValid(plMessages)) {
       const messages = plMessages.map((message) => topic.encode(message));
@@ -451,6 +461,10 @@ export class TestBedAdapter extends EventEmitter {
           logger: new KafkaLogger({
             adapter: this,
             clientId: this.groupId,
+            stringBasedKey:
+              typeof this.config.stringBasedKey === 'undefined'
+                ? true
+                : this.config.stringBasedKey,
           }),
           minLevel: logOptions.logToKafka,
         });
@@ -644,6 +658,7 @@ export class TestBedAdapter extends EventEmitter {
           topic: HeartbeatTopic,
           messages: [
             {
+              key: this.config.clientId,
               value: {
                 id: this.config.clientId,
                 alive: Date.now(),
@@ -656,7 +671,7 @@ export class TestBedAdapter extends EventEmitter {
           if (error) {
             this.log.error(error);
           }
-          setTimeout(sendHeartbeat, this.config.heartbeatInterval || 5000);
+          setTimeout(sendHeartbeat, this.config.heartbeatInterval || 10000);
         }
       );
     };
@@ -681,6 +696,7 @@ export class TestBedAdapter extends EventEmitter {
         groupId: '',
         autoConnect: true,
         wrapUnions: 'auto',
+        stringBasedKey: true,
         fromOffset: 'latest',
         heartbeatInterval: TestBedAdapter.HeartbeatInterval,
         produce: [],
@@ -690,7 +706,7 @@ export class TestBedAdapter extends EventEmitter {
         protocol: ['roundrobin'],
         sessionTimeout: 1000000,
         maxConnectionRetries: 10,
-        autoRegisterDefaultSchemas: false,
+        autoRegisterDefaultSchemas: true,
         connectTimeout: 5000,
         partitionerType: 2,
         partitions: 1,
