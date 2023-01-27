@@ -16,7 +16,6 @@ import { EventEmitter } from 'events';
 import {
   IInitializedTopic,
   ITestBedOptions,
-  AvroMessage,
   AdapterProducerRecord,
   AdapterMessage,
 } from './models/index.mjs';
@@ -243,14 +242,12 @@ export class TestBedAdapter extends EventEmitter {
    * It only works when `auto.create.topics.enable = true`.
    */
   public async createTopics(topics: ITopicConfig[]) {
-    if (!this.client) {
+    if (!this.client || topics.length === 0) {
       return false;
     }
     const admin = this.client.admin();
     await admin.connect();
-    const metadata = await admin.fetchTopicMetadata({
-      topics: topics.map((t) => t.topic),
-    });
+    const metadata = await admin.fetchTopicMetadata();
     const existingTopics = metadata.topics.map((md) => md.name);
     const newTopics = topics.filter((t) => existingTopics.indexOf(t.topic) < 0);
     if (newTopics.length === 0) {
@@ -637,10 +634,8 @@ export class TestBedAdapter extends EventEmitter {
    * Start transmitting a heartbeat message.
    */
   private async startHeartbeat() {
-    // return new Promise<void>((resolve, reject) => {
     if (this.isConnected) {
       return;
-      // return resolve();
     }
     this.isConnected = true;
     const sendHeartbeat = async () => {
@@ -675,11 +670,8 @@ export class TestBedAdapter extends EventEmitter {
         }
       );
     };
-    console.log('Started heartbeat');
     this.log.info('Started heartbeat');
     await sendHeartbeat();
-    // resolve();
-    // });
   }
 
   /**
