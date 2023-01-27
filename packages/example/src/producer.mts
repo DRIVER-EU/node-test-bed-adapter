@@ -45,9 +45,9 @@ class Producer {
       groupId: this.id,
       fetchAllSchemas: false,
       fetchAllVersions: false,
-      // autoRegisterSchemas: true,
       autoRegisterSchemas: false,
       wrapUnions: 'auto',
+      stringBasedKey: true,
       schemaFolder: process.env.SCHEMA_FOLDER || `${process.cwd()}/src/schemas`,
       produce: [
         'standard_cap',
@@ -160,10 +160,10 @@ class Producer {
     const payloads: AdapterProducerRecord = {
       topic: 'standard_cap',
       messages: [
-        { value: amberAlert },
-        { value: earthquakeAlert },
-        { value: thunderstormAlert },
-        { value: homelandSecurityAlert },
+        { value: amberAlert, key: 'EV' },
+        { value: earthquakeAlert, key: 'EV' },
+        { value: thunderstormAlert, key: 'EV' },
+        { value: homelandSecurityAlert, key: 'EV' },
       ],
     };
     this.adapter.send(payloads, (error, data) => {
@@ -208,7 +208,7 @@ export const largeFileUploadCallback = (
     } as ILargeDataUpdate;
     const payload: AdapterProducerRecord = {
       topic: LargeDataUpdateTopic,
-      messages: [{ value: msg }],
+      messages: [{ value: msg, key: 'EV' }],
     };
     adapter.send(payload, cb);
   };

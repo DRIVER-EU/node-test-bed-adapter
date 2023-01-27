@@ -7,6 +7,8 @@ export interface IKafkaLoggerOptions {
   adapter: TestBedAdapter;
   /** Client id: id will be the key of each payload */
   clientId: string;
+  /** When true (default), the key is a string instead of an EDXL distribution envelope. */
+  stringBasedKey: boolean;
 }
 
 /**
@@ -17,10 +19,15 @@ export class KafkaLogger implements ICanLog {
   private adapter: TestBedAdapter;
   private id: string | number;
   private isInitialized = false;
+  private stringBasedKey: boolean;
 
   constructor(options: IKafkaLoggerOptions) {
     this.id = options.clientId;
     this.adapter = options.adapter;
+    this.stringBasedKey =
+      typeof options.stringBasedKey === 'undefined'
+        ? true
+        : options.stringBasedKey;
     this.adapter
       .addProducerTopics(LogTopic)
       .then(() => (this.isInitialized = true));
@@ -38,6 +45,7 @@ export class KafkaLogger implements ICanLog {
       topic: LogTopic,
       messages: [
         {
+          key: this.stringBasedKey ? this.id.toString() : undefined,
           value: {
             id: this.id,
             level: LogLevelToType(level),

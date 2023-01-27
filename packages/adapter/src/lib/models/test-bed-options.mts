@@ -37,6 +37,8 @@ export interface ITestBedOptions
   };
   /** Avro parser setting: whether to wrap union types in schema*/
   wrapUnions?: boolean | 'auto' | 'never' | 'always';
+  /** When true (default), the key is a string instead of an EDXL distribution envelope. */
+  stringBasedKey?: boolean;
   /**
    * If true (default), automatically register typical Test-bed schema's. In normal situations,
    * you should at least register the HeartbeatTopic, LogTopic and, optionally, the TimeTopic.
