@@ -28,9 +28,9 @@ export class KafkaLogger implements ICanLog {
       typeof options.stringBasedKey === 'undefined'
         ? true
         : options.stringBasedKey;
-    this.adapter
-      .addProducerTopics(LogTopic)
-      .then(() => (this.isInitialized = true));
+    // this.adapter
+    //   .addProducerTopics(LogTopic)
+    //   .then(() => (this.isInitialized = true));
   }
 
   public log(
