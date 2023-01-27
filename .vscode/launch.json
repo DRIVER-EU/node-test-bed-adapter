@@ -13,6 +13,9 @@
       "outFiles": ["${workspaceFolder}/**/*"],
       "console": "integratedTerminal",
       "env": {
+        "CLIENT_ID": "tno-silent-producer",
+        "KAFKA_HOST": "localhost:9092",
+        "SCHEMA_REGISTRY": "localhost:3502",
         "SCHEMA_FOLDER": "${workspaceFolder}/packages/example/src/schemas",
         "PARTITION_SPECIFICATION": "system_heartbeat:1:600000, simulation_time_mgmt:1:60000000, system_logging"
       }
@@ -24,7 +27,13 @@
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/packages/example/src/producer.mts",
       "outFiles": ["${workspaceFolder}/**/*"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+        "CLIENT_ID": "tno-producer",
+        "KAFKA_HOST": "localhost:9092",
+        "SCHEMA_REGISTRY": "localhost:3502",
+        "KAFKAJS_LOG_LEVEL": "debug"
+      }
     },
     // {
     //   "type": "node",
@@ -42,10 +51,14 @@
       "cwd": "${workspaceFolder}",
       "program": "${workspaceFolder}/packages/example/src/consumer.mts",
       "outFiles": ["${workspaceFolder}/**/*"],
-      "console": "integratedTerminal" //,
-      // "env": {
-      //   "DEBUG": "kafka-node:*"
-      // }
+      "console": "integratedTerminal",
+      "env": {
+        "CLIENT_ID": "tno-producer",
+        "KAFKA_HOST": "localhost:9092",
+        "SCHEMA_REGISTRY": "localhost:3502",
+        "KAFKAJS_LOG_LEVEL": "debug",
+        "DEBUG": "kafka-node:*"
+      }
     },
     // {
     //   "type": "node",
