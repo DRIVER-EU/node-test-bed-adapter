@@ -1,6 +1,6 @@
 {
   "name": "node-test-bed-adapter",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "An adapter to connect a node.js application to the Test-bed's Common Information Space or Common Simulation Space.",
   "main": "./dist/lib/index.mjs",
   "typings": "./dist/lib/index.d.mts",
@@ -11,8 +11,8 @@
     "build": "tsc -b",
     "start": "npm run dev",
     "dry-run": "npm publish --dry-run",
-    "patch-release": "npm run clean && npm run build && npm version patch && npm publish && git push --follow-tags",
-    "minor-release": "npm run clean && npm run build && npm version minor && npm publish && git push --follow-tags",
+    "patch-release": "npm run clean && npm run build && npm version patch && pnpm publish && git push --follow-tags",
+    "minor-release": "npm run clean && npm run build && npm version minor && pnpm publish && git push --follow-tags",
     "rc-dry-run": "npm run clean && npm run build && pnpm publish --tag rc --publish-branch kafkajs --no-git-checks --dry-run",
     "rc": "npm run clean && npm run build && pnpm publish --tag rc --publish-branch kafkajs",
     "test": "jasmine --config=src/test/jasmine.json",
