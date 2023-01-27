@@ -4,7 +4,7 @@ export enum DistributionStatus {
   System = 'System',
   Test = 'Test',
   Unknown = 'Unknown',
-  NoAppropriateDefault = 'NoAppropriateDefault'
+  NoAppropriateDefault = 'NoAppropriateDefault',
 }
 
 export enum DistributionKind {
@@ -21,7 +21,7 @@ export enum DistributionKind {
   SensorStatus = 'SensorStatus',
   SensorDetection = 'SensorDetection',
   Unknown = 'Unknown',
-  NoAppropriateDefault = 'NoAppropriateDefault'
+  NoAppropriateDefault = 'NoAppropriateDefault',
 }
 
 /** The required fields of an EDXL 2.0 Distribution Element */
@@ -45,3 +45,6 @@ export interface IEDXLDistribution {
   /** The function of the message. */
   distributionKind: DistributionKind;
 }
+
+/** The key can either be a string or an IEDXLDistribution */
+export type EdxlDeKey = string | IEDXLDistribution;
