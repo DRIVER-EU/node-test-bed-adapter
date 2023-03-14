@@ -3,7 +3,11 @@ import avsc from 'avsc';
 import * as url from 'url';
 import { ITestBedOptions } from '../models/index.mjs';
 import { Logger } from '../logger/index.mjs';
-import { isUnique, isSchemaRegistryAvailable } from '../utils/index.mjs';
+import {
+  isUnique,
+  isSchemaRegistryAvailable,
+  resolveUrl,
+} from '../utils/index.mjs';
 import { HeartbeatTopic, LogTopic } from '../avro/index.mjs';
 
 export interface ISchema {
@@ -215,8 +219,8 @@ export class SchemaRegistry {
 
   /** Get all the topics that are registered with the schema registry */
   private fetchAllSchemaTopics() {
-    return new Promise<string[]>((resolve) => {
-      const fetchAllTopicsUrl = url.resolve(
+    return new Promise<string[]>(async (resolve) => {
+      const fetchAllTopicsUrl = resolveUrl(
         this.options.schemaRegistry,
         'subjects'
       );
@@ -224,17 +228,16 @@ export class SchemaRegistry {
         `fetchAllSchemaTopics() - Fetching all schemas using url: ${fetchAllTopicsUrl}`
       );
 
-      return Promise.resolve(axios.get(fetchAllTopicsUrl))
-        .then((response) => {
-          this.log.debug(
-            `fetchAllSchemaTopics() - Fetched total schemas: ${response.data.length}.`
-          );
-          resolve(response.data);
-        })
-        .catch((err) => {
-          this.suppressAxiosError(err);
-          resolve([]);
-        });
+      try {
+        const response = await Promise.resolve(axios.get(fetchAllTopicsUrl));
+        this.log.debug(
+          `fetchAllSchemaTopics() - Fetched total schemas: ${response.data.length}.`
+        );
+        resolve(response.data);
+      } catch (err: any) {
+        this.suppressAxiosError(err);
+        resolve([]);
+      }
     });
   }
 
@@ -303,7 +306,7 @@ export class SchemaRegistry {
   /** Fetch the latest version of a topic */
   private fetchLatestVersion(schemaTopic: string) {
     return new Promise<ISchemaTopic | void>((resolve) => {
-      const fetchLatestVersionUrl = url.resolve(
+      const fetchLatestVersionUrl = resolveUrl(
         this.options.schemaRegistry,
         `subjects/${schemaTopic}/versions/latest`
       );
@@ -437,7 +440,7 @@ export class SchemaRegistry {
    */
   private fetchAllSchemaVersions(schemaTopic: string) {
     return new Promise<ISchemaTopic[]>((resolve) => {
-      const fetchVersionsUrl = url.resolve(
+      const fetchVersionsUrl = resolveUrl(
         this.options.schemaRegistry,
         'subjects/' + schemaTopic + '/versions'
       );
@@ -529,7 +532,7 @@ export class SchemaRegistry {
       const schemaType = parts.pop();
       const topic = parts.join('-') || schemaType;
 
-      const fetchSchemaUrl = url.resolve(
+      const fetchSchemaUrl = resolveUrl(
         this.options.schemaRegistry,
         `subjects/${schemaTopic}/versions/${version}`
       );

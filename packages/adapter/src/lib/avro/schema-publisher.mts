@@ -2,6 +2,7 @@ import {
   findMissingKeyFiles,
   findFilesInDir,
   isSchemaRegistryAvailable,
+  resolveUrl,
 } from '../utils/index.mjs';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -68,7 +69,7 @@ export class SchemaPublisher {
       const schemaTopic = path
         .basename(schemaFilename)
         .replace(path.extname(schemaFilename), '');
-      const uri = url.resolve(
+      const uri = resolveUrl(
         this.options.schemaRegistry,
         `subjects/${schemaTopic}/versions`
       );
