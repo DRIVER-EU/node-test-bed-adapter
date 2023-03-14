@@ -46,7 +46,9 @@ const silentProducer = () => {
 
       const days7 = 7 * 24 * 3600000;
       const topicWithPartition = partitionSpecification.reduce((acc, item) => {
-        const [topic, partitions = 1, retention = days7] = item.split(':');
+        const [topic, partitions = 1, retention = days7] = item
+          .split(':')
+          .map((s) => s.trim());
         acc[topic] = [
           isNaN(+partitions) ? 1 : +partitions,
           isNaN(+retention) ? days7 : +retention,
@@ -55,12 +57,12 @@ const silentProducer = () => {
       }, {} as Record<string, [partition: number, retention: number]>);
 
       const replicationFactor = 1;
-      const partitions = process.env.DEFAULT_PARTITIONS || 1;
+      const numPartitions = process.env.DEFAULT_PARTITIONS || 1;
       const schemasToSend = adapter.uploadedSchemas.map((topic: string) =>
         topic in topicWithPartition
           ? {
               topic,
-              partitions: topicWithPartition[topic][0],
+              numPartitions: topicWithPartition[topic][0],
               replicationFactor,
               configEntries: [
                 {
@@ -71,7 +73,7 @@ const silentProducer = () => {
             }
           : {
               topic,
-              partitions,
+              numPartitions,
               replicationFactor,
             }
       ) as Array<ITopicConfig>;
@@ -79,7 +81,7 @@ const silentProducer = () => {
         const createdTopics = await adapter.createTopics(schemasToSend);
         if (!createdTopics) {
           // Crash if the topics were not correctly created. This will trigger a restart which should resolve the issue.
-          warn('0 topics created, restarting');
+          warn('0 topics created, exiting');
           process.exit(1);
         }
         // info(

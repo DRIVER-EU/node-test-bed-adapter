@@ -13,6 +13,20 @@ The implementation is a wrapper around [kafkajs](https://www.npmjs.com/package/k
 
 A standalone example project can be found [here](https://github.com/DRIVER-EU/example-node-test-bed-adapter).
 
+## Updates
+
+- Heartbeat interval can be set to 0, in which case no heartbeat is sent.
+- Default heartbeat interval is 10 seconds.
+- adapter.getClient() exposes the underlying KafkaJs client. This can be used, for example, to create an admin client, e.g.
+
+```ts
+const client = this.adapter.getClient();
+const admin = client?.admin();
+```
+
+- Fixes a bug in the creation of multiple partitions in the silent producer, where the format is `TOPIC_NAME:NUM_PARTITIONS:RETENTION_TIME_IN_MSEC`, e.g.:
+  - `"PARTITION_SPECIFICATION": "system_heartbeat:1:6000, standard_cap:2:12345678, simulation_time_mgmt:1:60000000, system_logging"`
+
 ## Version 3: BREAKING CHANGES
 
 Version 3 is a major update where [kafka-node](https://www.npmjs.com/package/kafka-node) has been replaced with [kafkajs](https://www.npmjs.com/package/kafkajs), as the former hadn't been updated for more than 3 years. Therefore, it has a few breaking changes:
