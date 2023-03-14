@@ -67,7 +67,7 @@ export interface ITestBedOptions
   fetchAllSchemas?: boolean;
   /** If true, the adapter allows you to publish unvalidated messages */
   // canPublishUnvalidatedMessages?: boolean;
-  /** Hearbeat interval in msec */
+  /** Hearbeat interval in msec, default 10000 msec. If <= 0, do not send any heartbeats */
   heartbeatInterval?: number;
   /** Don't subscribe to the system_time topic (which is subscribed to by default) */
   ignoreTimeTopic?: boolean;

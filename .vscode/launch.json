@@ -17,7 +17,7 @@
         "KAFKA_HOST": "localhost:9092",
         "SCHEMA_REGISTRY": "localhost:3502",
         "SCHEMA_FOLDER": "${workspaceFolder}/packages/example/src/schemas",
-        "PARTITION_SPECIFICATION": "system_heartbeat:1:600000, simulation_time_mgmt:1:60000000, system_logging"
+        "PARTITION_SPECIFICATION": "system_heartbeat:1:6000, standard_cap:2:12345678, simulation_time_mgmt:1:60000000, system_logging"
       }
     },
     {
@@ -57,7 +57,8 @@
         "KAFKA_HOST": "localhost:9092",
         "SCHEMA_REGISTRY": "localhost:3502",
         "KAFKAJS_LOG_LEVEL": "debug",
-        "DEBUG": "kafka-node:*"
+        "DEBUG": "kafka-node:*",
+        "HEARTBEAT_INTERVAL": "0"
       }
     },
     // {

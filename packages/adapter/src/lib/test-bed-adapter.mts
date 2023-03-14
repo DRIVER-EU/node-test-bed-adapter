@@ -76,7 +76,7 @@ export interface TestBedAdapter {
 }
 
 export class TestBedAdapter extends EventEmitter {
-  public static HeartbeatInterval = 5000;
+  public static HeartbeatInterval = 10000;
   public isConnected = false;
 
   private groupId: string;
@@ -93,9 +93,6 @@ export class TestBedAdapter extends EventEmitter {
   private producerTopics: { [topic: string]: IInitializedTopic } = {};
   /** Location of the configuration file */
   private configFile = 'config/test-bed-config.json';
-  private callbacks: {
-    [topic: string]: (error: string, message: Message) => void;
-  } = {};
   private timeService = new TimeService();
   private origin?: string;
 
@@ -137,6 +134,14 @@ export class TestBedAdapter extends EventEmitter {
   public disconnect() {
     this.consumer?.disconnect();
     this.producer?.disconnect();
+  }
+
+  /**
+   * Get the underlying KafkaJS client, if defined.
+   * Should be available after the 'ready' event is emitted.
+   */
+  public getClient() {
+    return this.client;
   }
 
   /**
@@ -403,7 +408,7 @@ export class TestBedAdapter extends EventEmitter {
         await this.addKafkaLogger();
         await this.initConsumer(this.config.consume);
         await this.addConsumerTopics(this.config.consume);
-        await this.startHeartbeat();
+        this.config.heartbeatInterval !== 0 && (await this.startHeartbeat());
         this.emit('ready');
       } catch (err) {
         return this.emitErrorMsg(
@@ -666,7 +671,10 @@ export class TestBedAdapter extends EventEmitter {
           if (error) {
             this.log.error(error);
           }
-          setTimeout(sendHeartbeat, this.config.heartbeatInterval || 10000);
+          setTimeout(
+            sendHeartbeat,
+            this.config.heartbeatInterval || TestBedAdapter.HeartbeatInterval
+          );
         }
       );
     };

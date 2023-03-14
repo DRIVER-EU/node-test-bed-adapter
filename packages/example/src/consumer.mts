@@ -20,6 +20,9 @@ class Consumer {
     this.adapter = new TestBedAdapter({
       kafkaHost: process.env.KAFKA_HOST || 'localhost:9092',
       schemaRegistry: process.env.SCHEMA_REGISTRY || 'localhost:3502',
+      heartbeatInterval: process.env.HEARTBEAT_INTERVAL
+        ? +process.env.HEARTBEAT_INTERVAL
+        : undefined,
       fetchAllSchemas: false,
       fetchAllVersions: false,
       wrapUnions: true,
