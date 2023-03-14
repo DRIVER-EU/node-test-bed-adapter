@@ -10,7 +10,12 @@
     "start": "tsc -w",
     "build": "tsc -b",
     "producer": "node dist/producer.js",
-    "consumer": "node dist/consumer.js"
+    "consumer": "node dist/consumer.js",
+    "docker:build": "docker build -t silent-producer .",
+    "docker:tag": "docker tag silent-producer drivereu/silent-producer:3.0.4",
+    "docker:tag:latest": "docker tag silent-producer drivereu/silent-producer:latest",
+    "docker:publish": "docker push drivereu/silent-producer:3.0.4",
+    "docker:publish:latest": "docker push drivereu/silent-producer:latest"
   },
   "repository": {
     "type": "git",
