@@ -144,7 +144,7 @@ export const isSchemaRegistryAvailable = (
   return new Promise<void>((resolve) => {
     let retries = maxRetries;
     const intervalId = setInterval(() => {
-      const url = options.schemaRegistry;
+      const url = resolveUrl(options.schemaRegistry, 'subjects');
       axios
         .get(url)
         .then(() => {
