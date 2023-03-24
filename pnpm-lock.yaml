@@ -4,29 +4,29 @@ importers:
 
   .:
     specifiers:
-      pnpm: ^7.29.1
+      pnpm: ^7.30.3
     devDependencies:
-      pnpm: 7.29.1
+      pnpm: 7.30.3
 
   packages/adapter:
     specifiers:
       '@types/bluebird': ^3.5.38
       '@types/geojson': ^7946.0.10
       '@types/jasmine': ^4.3.1
-      '@types/node': ^18.15.3
+      '@types/node': ^18.15.7
       '@types/proxyquire': ^1.3.28
       avsc: ^5.7.7
       axios: ^1.3.4
       bluebird: ^3.7.2
       form-data: ^4.0.0
-      jasmine: ^4.5.0
+      jasmine: ^4.6.0
       kafkajs: ^2.2.4
       node-gyp: ^9.3.1
       proxyquire: ^2.1.3
-      rimraf: 4.4.0
+      rimraf: 4.4.1
       test-bed-schemas: workspace:*
       ts-node: ^10.9.1
-      typescript: ^4.9.5
+      typescript: ^5.0.2
       url: ^0.11.0
     dependencies:
       '@types/bluebird': 3.5.38
@@ -40,35 +40,35 @@ importers:
     devDependencies:
       '@types/geojson': 7946.0.10
       '@types/jasmine': 4.3.1
-      '@types/node': 18.15.3
+      '@types/node': 18.15.7
       '@types/proxyquire': 1.3.28
-      jasmine: 4.5.0
+      jasmine: 4.6.0
       node-gyp: 9.3.1_bluebird@3.7.2
       proxyquire: 2.1.3
-      rimraf: 4.4.0
-      ts-node: 10.9.1_cbfmry4sbbh4vatmdrsmatfg5a
-      typescript: 4.9.5
+      rimraf: 4.4.1
+      ts-node: 10.9.1_gkjsv6qbk4dkl5zwoikfngqpvy
+      typescript: 5.0.2
 
   packages/example:
     specifiers:
       '@types/geojson': ^7946.0.10
-      '@types/node': ^18.15.3
+      '@types/node': ^18.15.7
       node-test-bed-adapter: workspace:*
-      typescript: 4.9.5
+      typescript: 5.0.2
     dependencies:
       node-test-bed-adapter: link:../adapter
     devDependencies:
       '@types/geojson': 7946.0.10
-      '@types/node': 18.15.3
-      typescript: 4.9.5
+      '@types/node': 18.15.7
+      typescript: 5.0.2
 
   packages/test-bed-schemas:
     specifiers:
-      rimraf: 4.4.0
-      typescript: ^4.9.5
+      rimraf: 4.4.1
+      typescript: ^5.0.2
     devDependencies:
-      rimraf: 4.4.0
-      typescript: 4.9.5
+      rimraf: 4.4.1
+      typescript: 5.0.2
 
 packages:
 
@@ -149,8 +149,8 @@ packages:
     resolution: {integrity: sha512-Vu8l+UGcshYmV1VWwULgnV/2RDbBaO6i2Ptx7nd//oJPIZGhoI1YLST4VKagD2Pq/Bc2/7zvtvhM7F3p4SN7kQ==}
     dev: true
 
-  /@types/node/18.15.3:
-    resolution: {integrity: sha512-p6ua9zBxz5otCmbpb5D3U4B5Nanw6Pk3PPyX05xnxbB/fRv71N7CPmORg7uAD5P70T0xmx1pzAx/FUfa5X+3cw==}
+  /@types/node/18.15.7:
+    resolution: {integrity: sha512-LFmUbFunqmBn26wJZgZPYZPrDR1RwGOu2v79Mgcka1ndO6V0/cwjivPTc4yoK6n9kmw4/ls1r8cLrvh2iMibFA==}
     dev: true
 
   /@types/proxyquire/1.3.28:
@@ -450,18 +450,18 @@ packages:
       once: 1.4.0
     dev: true
 
-  /glob/9.3.0:
-    resolution: {integrity: sha512-EAZejC7JvnQINayvB/7BJbpZpNOJ8Lrw2OZNEvQxe0vaLn1SuwMcfV7/MNaX8L/T0wmptBFI4YMtDvSBxYDc7w==}
+  /glob/9.3.2:
+    resolution: {integrity: sha512-BTv/JhKXFEHsErMte/AnfiSv8yYOLLiyH2lTg8vn02O21zWFgHPTfxtgn1QRe7NRgggUhC8hacR2Re94svHqeA==}
     engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
       fs.realpath: 1.0.0
-      minimatch: 7.4.2
+      minimatch: 7.4.3
       minipass: 4.2.5
-      path-scurry: 1.6.1
+      path-scurry: 1.6.3
     dev: true
 
-  /graceful-fs/4.2.10:
-    resolution: {integrity: sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==}
+  /graceful-fs/4.2.11:
+    resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
     dev: true
 
   /has-unicode/2.0.1:
@@ -566,16 +566,16 @@ packages:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
     dev: true
 
-  /jasmine-core/4.5.0:
-    resolution: {integrity: sha512-9PMzyvhtocxb3aXJVOPqBDswdgyAeSB81QnLop4npOpbqnheaTEwPc9ZloQeVswugPManznQBjD8kWDTjlnHuw==}
+  /jasmine-core/4.6.0:
+    resolution: {integrity: sha512-O236+gd0ZXS8YAjFx8xKaJ94/erqUliEkJTDedyE7iHvv4ZVqi+q+8acJxu05/WJDKm512EUNn809In37nWlAQ==}
     dev: true
 
-  /jasmine/4.5.0:
-    resolution: {integrity: sha512-9olGRvNZyADIwYL9XBNBst5BTU/YaePzuddK+YRslc7rI9MdTIE4r3xaBKbv2GEmzYYUfMOdTR8/i6JfLZaxSQ==}
+  /jasmine/4.6.0:
+    resolution: {integrity: sha512-iq7HQ5M8ydNUspjd9vbFW9Lu+6lQ1QLDIqjl0WysEllF5EJZy8XaUyNlhCJVwOx2YFzqTtARWbS56F/f0PzRFw==}
     hasBin: true
     dependencies:
       glob: 7.2.3
-      jasmine-core: 4.5.0
+      jasmine-core: 4.6.0
     dev: true
 
   /kafkajs/2.2.4:
@@ -653,8 +653,8 @@ packages:
       brace-expansion: 2.0.1
     dev: true
 
-  /minimatch/7.4.2:
-    resolution: {integrity: sha512-xy4q7wou3vUoC9k1xGTXc+awNdGaGVHtFUaey8tiX4H1QRc04DZ/rmDFwNm2EBsuYEhAZ6SgMmYf3InGY6OauA==}
+  /minimatch/7.4.3:
+    resolution: {integrity: sha512-5UB4yYusDtkRPbRiy1cqZ1IpGNcJCGlEMG17RKzPddpyiPKoCdwohbED8g4QXT0ewCt8LTkQXuljsUfQ3FKM4A==}
     engines: {node: '>=10'}
     dependencies:
       brace-expansion: 2.0.1
@@ -749,7 +749,7 @@ packages:
     dependencies:
       env-paths: 2.2.1
       glob: 7.2.3
-      graceful-fs: 4.2.10
+      graceful-fs: 4.2.11
       make-fetch-happen: 10.2.1_bluebird@3.7.2
       nopt: 6.0.0
       npmlog: 6.0.2
@@ -802,16 +802,16 @@ packages:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
     dev: true
 
-  /path-scurry/1.6.1:
-    resolution: {integrity: sha512-OW+5s+7cw6253Q4E+8qQ/u1fVvcJQCJo/VFD8pje+dbJCF1n5ZRMV2AEHbGp+5Q7jxQIYJxkHopnj6nzdGeZLA==}
-    engines: {node: '>=14'}
+  /path-scurry/1.6.3:
+    resolution: {integrity: sha512-RAmB+n30SlN+HnNx6EbcpoDy9nwdpcGPnEKrJnu6GZoDWBdIjo1UQMVtW2ybtC7LC2oKLcMq8y5g8WnKLiod9g==}
+    engines: {node: '>=16 || 14 >=14.17'}
     dependencies:
       lru-cache: 7.18.3
       minipass: 4.2.5
     dev: true
 
-  /pnpm/7.29.1:
-    resolution: {integrity: sha512-dn+65B2XpMIin7sQZvBIJ2Zyx8Z7LK95qyAvgEPE8qXkWYL/LuwpfMfK9Muc7+zNnpPwiQgtGEsxgOtuabFibQ==}
+  /pnpm/7.30.3:
+    resolution: {integrity: sha512-Z/pNEfZF45OwdZSUAeSTYySs27UW+GG4AQ2iXz4u127QVtkCMCeyrMNZmb/17BazaZTtvXqk/+jxTVkyh8apIA==}
     engines: {node: '>=14.6'}
     hasBin: true
     dev: true
@@ -887,12 +887,12 @@ packages:
       glob: 7.2.3
     dev: true
 
-  /rimraf/4.4.0:
-    resolution: {integrity: sha512-X36S+qpCUR0HjXlkDe4NAOhS//aHH0Z+h8Ckf2auGJk3PTnx5rLmrHkwNdbVQuCSUhOyFrlRvFEllZOYE+yZGQ==}
+  /rimraf/4.4.1:
+    resolution: {integrity: sha512-Gk8NlF062+T9CqNGn6h4tls3k6T1+/nXdOcSZVikNVtlRdYpA7wRJJMoXmuvOnLW844rPjdQ7JgXCYM6PPC/og==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
-      glob: 9.3.0
+      glob: 9.3.2
     dev: true
 
   /safe-buffer/5.2.1:
@@ -990,7 +990,7 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /ts-node/10.9.1_cbfmry4sbbh4vatmdrsmatfg5a:
+  /ts-node/10.9.1_gkjsv6qbk4dkl5zwoikfngqpvy:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -1009,21 +1009,21 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 18.15.3
+      '@types/node': 18.15.7
       acorn: 8.8.2
       acorn-walk: 8.2.0
       arg: 4.1.3
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 4.9.5
+      typescript: 5.0.2
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
 
-  /typescript/4.9.5:
-    resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
-    engines: {node: '>=4.2.0'}
+  /typescript/5.0.2:
+    resolution: {integrity: sha512-wVORMBGO/FAs/++blGNeAVdbNKtIh1rbBL2EyQ1+J9lClJ93KiiKe8PmFIVdXhHcyv44SL9oglmfeSsndo0jRw==}
+    engines: {node: '>=12.20'}
     hasBin: true
     dev: true
 
