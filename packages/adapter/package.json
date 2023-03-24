@@ -1,6 +1,6 @@
 {
   "name": "node-test-bed-adapter",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "An adapter to connect a node.js application to the Test-bed's Common Information Space or Common Simulation Space.",
   "main": "./dist/lib/index.mjs",
   "typings": "./dist/lib/index.d.mts",
@@ -10,7 +10,8 @@
     "dev": "tsc -w",
     "build": "tsc -b",
     "start": "npm run dev",
-    "dry-run": "npm publish --dry-run",
+    "dry-run": "pnpm publish --dry-run",
+    "publish": "git push --follow-tags && pnpm publish",
     "patch-release": "npm run clean && npm run build && npm version patch && git push --follow-tags && pnpm publish",
     "minor-release": "npm run clean && npm run build && npm version minor && git push --follow-tags && pnpm publish",
     "rc-dry-run": "npm run clean && npm run build && pnpm publish --tag rc --publish-branch kafkajs --no-git-checks --dry-run",
