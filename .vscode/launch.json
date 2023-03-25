@@ -54,7 +54,7 @@
       "console": "integratedTerminal",
       "env": {
         "CLIENT_ID": "tno-producer",
-        "KAFKA_HOST": "localhost:9092",
+        "KAFKA_HOST": "localhost:3501",
         "SCHEMA_REGISTRY": "localhost:3502",
         "KAFKAJS_LOG_LEVEL": "debug",
         "DEBUG": "kafka-node:*",

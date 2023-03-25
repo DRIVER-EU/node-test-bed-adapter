@@ -285,28 +285,34 @@ export class TestBedAdapter extends EventEmitter {
 
     const run = async () => {
       const fromBeginning = this.config.fromOffset === 'earliest';
+      if (this.client && fromBeginning) {
+        const admin = this.client.admin();
+        await admin.connect();
+        consumer.on('consumer.connect', async () => {
+          for (const topic of newTopics) {
+            const offsets = await admin.fetchTopicOffsets(topic);
+            offsets.forEach((offset) =>
+              consumer.seek({
+                topic,
+                partition: offset.partition,
+                offset: offset.low,
+              })
+            );
+          }
+        });
+      }
+
+      consumer.on('consumer.disconnect', (e) => {
+        console.log(e);
+      });
       await consumer.connect();
       await consumer.subscribe({
         topics: newTopics,
         fromBeginning,
       });
-      await consumer.run({
+      consumer.run({
         eachMessage: async (message) => this.handleMessage(message),
       });
-      if (this.client && fromBeginning) {
-        const admin = this.client.admin();
-        await admin.connect();
-        for (const topic of newTopics) {
-          const offsets = await admin.fetchTopicOffsets(topic);
-          offsets.forEach((offset) =>
-            consumer.seek({
-              topic,
-              partition: offset.partition,
-              offset: offset.low,
-            })
-          );
-        }
-      }
     };
     run().catch((e) => {
       console.error(e);
@@ -408,7 +414,10 @@ export class TestBedAdapter extends EventEmitter {
         await this.addKafkaLogger();
         await this.initConsumer(this.config.consume);
         await this.addConsumerTopics(this.config.consume);
-        this.config.heartbeatInterval !== 0 && (await this.startHeartbeat());
+        this.isConnected = true;
+        if (this.config.heartbeatInterval !== 0) {
+          await this.startHeartbeat();
+        }
         this.emit('ready');
       } catch (err) {
         return this.emitErrorMsg(
@@ -642,7 +651,6 @@ export class TestBedAdapter extends EventEmitter {
     if (this.isConnected) {
       return;
     }
-    this.isConnected = true;
     const sendHeartbeat = async () => {
       if (
         !this.isConnected ||
