@@ -1,6 +1,6 @@
 {
   "name": "node-test-bed-adapter",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "An adapter to connect a node.js application to the Test-bed's Common Information Space or Common Simulation Space.",
   "main": "./dist/lib/index.mjs",
   "typings": "./dist/lib/index.d.mts",
