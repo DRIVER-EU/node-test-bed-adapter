@@ -712,7 +712,7 @@ export class TestBedAdapter extends EventEmitter {
         encoding: 'buffer',
         keyEncoding: 'buffer',
         protocol: ['roundrobin'],
-        sessionTimeout: 1000000,
+        sessionTimeout: 200000,
         maxConnectionRetries: 10,
         autoRegisterDefaultSchemas: true,
         connectTimeout: 5000,
