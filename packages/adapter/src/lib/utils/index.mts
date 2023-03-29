@@ -183,3 +183,7 @@ export const resolveUrl = (from: string, to: string) => {
   }
   return resolvedUrl.toString();
 };
+
+/** Sleep for msec time */
+export const sleep = (msec: number) =>
+  new Promise((resolve) => setTimeout(resolve, msec));
