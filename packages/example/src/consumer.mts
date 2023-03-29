@@ -8,6 +8,7 @@ import {
   AdapterLogger,
   LogLevel,
   AdapterMessage,
+  sleep,
 } from 'node-test-bed-adapter';
 
 const log = AdapterLogger.instance;
@@ -18,7 +19,7 @@ class Consumer {
 
   constructor() {
     this.adapter = new TestBedAdapter({
-      kafkaHost: process.env.KAFKA_HOST || 'localhost:9092',
+      kafkaHost: process.env.KAFKA_HOST || 'localhost:3501',
       schemaRegistry: process.env.SCHEMA_REGISTRY || 'localhost:3502',
       heartbeatInterval: process.env.HEARTBEAT_INTERVAL
         ? +process.env.HEARTBEAT_INTERVAL
@@ -28,7 +29,7 @@ class Consumer {
       wrapUnions: true,
       // wrapUnions: 'auto',
       groupId: this.id,
-      // consume: [{ topic: TimeControlTopic }],
+      // consume: ['config'],
       consume: ['standard_cap'],
       fromOffset: 'earliest',
       logging: {
@@ -38,10 +39,15 @@ class Consumer {
         logFile: 'log.txt',
       },
     });
+    this.adapter.on('error', async (err) => {
+      console.error(`Consumer ${this.id} received an error: ${err}`);
+      await sleep(1000);
+      this.adapter.connect();
+    });
     this.adapter.on('ready', () => {
       this.subscribe();
-      log.info('Consumer is connected');
       this.getTopics();
+      log.info('Consumer is connected');
       // this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
       //   if (err) {
       //     return log.error(err);
@@ -49,14 +55,12 @@ class Consumer {
       //   this.handleMessage(msg as IAdapterMessage);
       // });
     });
+
     this.adapter.connect();
   }
 
   private subscribe() {
     this.adapter.on('message', (message) => this.handleMessage(message));
-    this.adapter.on('error', (err) =>
-      console.error(`Consumer received an error: ${err}`)
-    );
     this.adapter.on('offsetOutOfRange', (err) => {
       console.error(
         `Consumer received an offsetOutOfRange error on topic ${err.topic}.`
@@ -71,7 +75,7 @@ class Consumer {
       }
       if (results && results.length > 0) {
         results.forEach((result) => {
-          console.log(JSON.stringify(result));
+          console.log(JSON.stringify(result, null, 2));
         });
       }
     });
