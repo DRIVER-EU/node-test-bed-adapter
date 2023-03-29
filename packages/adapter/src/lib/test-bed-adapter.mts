@@ -406,10 +406,10 @@ export class TestBedAdapter extends EventEmitter {
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {
-    return new Promise<void>(async (resolve, reject) => {
+    return new Promise<void | string>(async (resolve) => {
       try {
-        this.initProducer();
         await this.schemaRegistry.init();
+        await this.initProducer();
         await this.addProducerTopics(this.config.produce);
         await this.addKafkaLogger();
         await this.initConsumer(this.config.consume);
@@ -422,14 +422,14 @@ export class TestBedAdapter extends EventEmitter {
       } catch (err) {
         return this.emitErrorMsg(
           `Error initializing kafka services: ${err}`,
-          reject
+          resolve
         );
       }
       resolve();
     });
   }
 
-  private initProducer() {
+  private async initProducer() {
     if (!this.client) {
       return this.emitErrorMsg('Client not ready!');
     }
@@ -437,7 +437,7 @@ export class TestBedAdapter extends EventEmitter {
       allowAutoTopicCreation: true,
       createPartitioner: Partitioners.DefaultPartitioner,
     });
-    this.producer.connect();
+    await this.producer.connect();
   }
 
   private async initLogger() {
