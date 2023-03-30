@@ -36,27 +36,29 @@ export class SchemaPublisher {
   }
 
   public init() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if (!this.isInitialized) {
         return resolve();
       }
-      isSchemaRegistryAvailable(this.options, this.log).then(() => {
-        const files = findFilesInDir(this.schemaFolder, '.avsc');
-        const missing = findMissingKeyFiles(files);
-        this.topics = files
-          .filter((file) => /-value/i.test(file))
-          .map((file) =>
-            path
-              .basename(file)
-              .replace(path.extname(file), '')
-              .replace('-value', '')
-          );
-        Promise.map([...files, ...missing], (f, i) =>
-          this.uploadSchema(f, i >= files.length)
-        )
-          .then(() => resolve())
-          .catch((err) => reject(err));
-      });
+      isSchemaRegistryAvailable(this.options, this.log)
+        .then(() => {
+          const files = findFilesInDir(this.schemaFolder, '.avsc');
+          const missing = findMissingKeyFiles(files);
+          this.topics = files
+            .filter((file) => /-value/i.test(file))
+            .map((file) =>
+              path
+                .basename(file)
+                .replace(path.extname(file), '')
+                .replace('-value', '')
+            );
+          Promise.map([...files, ...missing], (f, i) =>
+            this.uploadSchema(f, i >= files.length)
+          )
+            .then(() => resolve())
+            .catch((err) => reject(err));
+        })
+        .catch((err) => reject(err));
     });
   }
 

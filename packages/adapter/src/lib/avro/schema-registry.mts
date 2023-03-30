@@ -91,7 +91,7 @@ export class SchemaRegistry {
     this.selectedTopics = [...consume, ...produce].filter(isUnique);
   }
 
-  public init() {
+  public async init() {
     this.log.info(
       `init() - Initializing SR will fetch ${
         this.options.fetchAllSchemas ? 'all' : 'requested consumer and producer'
@@ -100,29 +100,27 @@ export class SchemaRegistry {
       }.`
     );
 
-    const tryToInitialize = () => {
-      return new Promise<void>((resolve, reject) => {
-        isSchemaRegistryAvailable(this.options, this.log)
-          .then(() => this.fetchTopics())
-          .then((t) => this.storeTopics(t))
-          .then((topics) =>
-            Promise.all(
-              topics.map((t) => this.fetchLatestVersion(t), { concurrency: 10 })
-            )
+    const tryToInitialize = async () => {
+      await isSchemaRegistryAvailable(this.options, this.log)
+        .then(() => this.fetchTopics())
+        .then((t) => this.storeTopics(t))
+        .then((topics) =>
+          Promise.all(
+            topics.map((t) => this.fetchLatestVersion(t), {
+              concurrency: 10,
+            })
           )
-          .then((topics) => topics.filter((t) => (t ? true : false)))
-          .then((topics) =>
-            Promise.all(
-              topics.map((t) => this.fetchSchema(t!), { concurrency: 10 })
-            )
+        )
+        .then((topics) => topics.filter((t) => (t ? true : false)))
+        .then((topics) =>
+          Promise.all(
+            topics.map((t) => this.fetchSchema(t!), { concurrency: 10 })
           )
-          .then((schemas) =>
-            Promise.all(schemas.map((t) => this.registerSchemaLatest(t)))
-          )
-          .then((schemas) => Promise.resolve(this.checkForAllVersions(schemas)))
-          .then(() => resolve())
-          .catch((e) => reject(e));
-      });
+        )
+        .then((schemas) =>
+          Promise.all(schemas.map((t) => this.registerSchemaLatest(t)))
+        )
+        .then((schemas) => Promise.resolve(this.checkForAllVersions(schemas)));
     };
 
     const missingSchemas = () =>
@@ -132,33 +130,22 @@ export class SchemaRegistry {
       return missing.length === 0 || (missing.length === 1 && !missing[0]);
     };
 
-    return new Promise<void>((resolve) => {
+    const tryingToInitializeSchemas = async () => {
       let count = 0;
-      const tryingToInitializeSchemas = async () => {
-        await tryToInitialize();
-        if (isSuccess()) {
-          resolve();
-        } else {
-          count === 0
-            ? this.log.info(`Retrieving schema's...`)
-            : count <= 3
-            ? this.log.info(
-                `Missing schema's: ${JSON.stringify(missingSchemas())}`
-              )
-            : process.stdout.write(
-                `Missing schema's: ${JSON.stringify(
-                  missingSchemas()
-                )}... waiting ${5 * (count + 1)} seconds\r`
-              ) &&
-              this.log.warn(
-                `Missing schema's: ${JSON.stringify(missingSchemas())}`
-              );
-          count++;
-          setTimeout(tryingToInitializeSchemas, 5000);
-        }
-      };
-      tryingToInitializeSchemas();
-    });
+      await tryToInitialize();
+      if (isSuccess()) {
+        return;
+      } else {
+        const ms = `Missing schema's: ${JSON.stringify(missingSchemas())}`;
+        count <= 3
+          ? this.log.info(ms)
+          : process.stdout.write(`${ms}... waiting ${5 * count} seconds\r`) &&
+            this.log.warn(ms);
+        count++;
+        setTimeout(tryingToInitializeSchemas, 5 * count);
+      }
+    };
+    await tryingToInitializeSchemas();
   }
 
   /** Register a new topic */

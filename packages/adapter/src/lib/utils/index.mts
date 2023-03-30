@@ -141,10 +141,10 @@ export const isSchemaRegistryAvailable = (
 ) => {
   const timeout = (options.retryTimeout || 5) * 1000;
   const maxRetries = options.maxConnectionRetries || 20;
-  return new Promise<void>((resolve) => {
+  return new Promise<void>((resolve, reject) => {
     let retries = maxRetries;
+    const url = resolveUrl(options.schemaRegistry, 'subjects');
     const intervalId = setInterval(() => {
-      const url = resolveUrl(options.schemaRegistry, 'subjects');
       axios
         .get(url)
         .then(() => {
@@ -163,11 +163,14 @@ export const isSchemaRegistryAvailable = (
               maxRetries - retries
             }x.`
           );
-          if (retries === 0) {
+          if (retries <= 0) {
+            clearInterval(intervalId);
             log.error(
-              `isSchemaRegistryAvailable - Cannot access schema registry at ${url}. Retried ${maxRetries}x. Exiting...`
+              `isSchemaRegistryAvailable - Cannot access schema registry at ${url}. Retried ${maxRetries}x. Giving up.`
             );
-            process.exit(1);
+            reject(
+              'isSchemaRegistryAvailable - Schema registry is not available.'
+            );
           }
         });
     }, timeout);

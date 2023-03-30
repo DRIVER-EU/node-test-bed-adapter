@@ -31,6 +31,7 @@ class Consumer {
       groupId: this.id,
       // consume: ['config'],
       consume: ['standard_cap'],
+      maxConnectionRetries: 1,
       fromOffset: 'earliest',
       logging: {
         logToConsole: LogLevel.Info,
@@ -41,8 +42,6 @@ class Consumer {
     });
     this.adapter.on('error', async (err) => {
       console.error(`Consumer ${this.id} received an error: ${err}`);
-      await sleep(1000);
-      this.adapter.connect();
     });
     this.adapter.on('ready', () => {
       this.subscribe();
@@ -55,8 +54,16 @@ class Consumer {
       //   this.handleMessage(msg as IAdapterMessage);
       // });
     });
+    this.connectWithRetry();
+  }
 
-    this.adapter.connect();
+  async connectWithRetry() {
+    try {
+      await this.adapter.connect();
+    } catch {
+      await sleep(1000);
+      await this.connectWithRetry();
+    }
   }
 
   private subscribe() {

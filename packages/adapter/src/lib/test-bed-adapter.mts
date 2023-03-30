@@ -119,14 +119,8 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public async connect() {
-    try {
-      await this.initLogger();
-      await this.schemaPublisher.init();
-    } catch (e) {
-      this.emitErrorMsg(
-        `Error before initializing the testbed connection: ${e}`
-      );
-    }
+    await this.initLogger();
+    await this.schemaPublisher.init();
     this.client = new Kafka(this.config);
     await this.initialize();
   }
@@ -406,7 +400,7 @@ export class TestBedAdapter extends EventEmitter {
 
   /** After the Kafka client is connected, initialize the other services too, starting with the schema registry. */
   private initialize() {
-    return new Promise<void | string>(async (resolve) => {
+    return new Promise<void | string>(async (resolve, reject) => {
       try {
         await this.schemaRegistry.init();
         await this.initProducer();
@@ -422,7 +416,7 @@ export class TestBedAdapter extends EventEmitter {
       } catch (err) {
         return this.emitErrorMsg(
           `Error initializing kafka services: ${err}`,
-          resolve
+          reject
         );
       }
       resolve();
