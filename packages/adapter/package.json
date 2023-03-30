@@ -11,7 +11,7 @@
     "build": "tsc -b",
     "start": "npm run dev",
     "dry-run": "pnpm publish --dry-run",
-    "publish": "git push --follow-tags && pnpm publish",
+    "to-npm": "git push --follow-tags && pnpm publish",
     "patch-release": "npm run clean && npm run build && npm version patch && git push --follow-tags && pnpm publish",
     "minor-release": "npm run clean && npm run build && npm version minor && git push --follow-tags && pnpm publish",
     "rc-dry-run": "npm run clean && npm run build && pnpm publish --tag rc --publish-branch kafkajs --no-git-checks --dry-run",
