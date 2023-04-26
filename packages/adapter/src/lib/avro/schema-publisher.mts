@@ -6,8 +6,6 @@ import {
 } from '../utils/index.mjs';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as url from 'url';
-import Promise from 'bluebird';
 import { ITestBedOptions } from '../models/index.mjs';
 import { default as axios } from 'axios';
 import { Logger } from '../logger/index.mjs';
