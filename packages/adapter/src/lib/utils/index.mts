@@ -190,3 +190,40 @@ export const resolveUrl = (from: string, to: string) => {
 /** Sleep for msec time */
 export const sleep = (msec: number) =>
   new Promise((resolve) => setTimeout(resolve, msec));
+
+export interface MapOptions {
+  concurrency?: number;
+}
+
+Promise.map = async function <T, U>(
+  iterable: Iterable<T>,
+  mapper: (value: T, index: number) => U | Promise<U>,
+  options: MapOptions = {}
+): Promise<U[]> {
+  let { concurrency = Infinity } = options;
+
+  let index = 0;
+  const results: U[] = [];
+  const pending: Promise<void>[] = [];
+  const iterator = iterable[Symbol.iterator]();
+
+  while (concurrency-- > 0) {
+    const thread = wrappedMapper();
+    if (thread) pending.push(thread);
+    else break;
+  }
+
+  await Promise.all(pending);
+  return results;
+
+  function wrappedMapper(): Promise<void> | null {
+    const next = iterator.next();
+    if (next.done) return null;
+    const i = index++;
+    const mapped = mapper(next.value, i);
+    return Promise.resolve(mapped).then((resolved) => {
+      results[i] = resolved;
+      return wrappedMapper() as Promise<void>;
+    });
+  }
+};
