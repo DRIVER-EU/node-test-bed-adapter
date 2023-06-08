@@ -27,6 +27,6 @@
   },
   "homepage": "https://github.com/DRIVER-EU/node-test-bed-adapter#readme",
   "devDependencies": {
-    "pnpm": "^8.0.0"
+    "pnpm": "^8.3.1"
   }
 }

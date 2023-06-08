@@ -1,6 +1,7 @@
 import { default as axios, AxiosRequestConfig } from 'axios';
 import avsc from 'avsc';
-import * as url from 'url';
+import toOpenApi from '@openapi-contrib/json-schema-to-openapi-schema';
+import { avroToJSONSchema } from 'avro-to-json-schema';
 import { ITestBedOptions } from '../models/index.mjs';
 import { Logger } from '../logger/index.mjs';
 import {
@@ -27,33 +28,32 @@ export interface ISchemaTopic {
   schemaTopic: string;
 }
 
+export type SchemaInfo = {
+  srId: number;
+  type: avsc.Type;
+  // jsonSchema: Record<string, any>;
+  // openApiModel: Record<string, any>;
+};
+
 export class SchemaRegistry {
   /**
    * A dict containing the instance of the "avsc" package, and key the SR schema id.
    * Keys are in the form 'schema-[SCHEMA_ID]'
-   *
-   * @type {Object}
    */
   public schemaTypeById: { [key: string]: avsc.Type } = {};
 
   /**
    * A dict containing all the key schemas with key the bare topic name and
    * value the instance of the "avsc" package.
-   *
-   * @type {Object}
    */
-  public keySchemas: { [topic: string]: { type: avsc.Type; srId: number } } =
-    {};
+  public keySchemas: { [topic: string]: SchemaInfo } = {};
 
   /**
    * A dict containing all the value schemas with value the instance of the "avsc" package.
    * It not only contains schemas for topics with key/value pairs, but also for topics with
    * only a schema.
-   *
-   * @type {Object}
    */
-  public valueSchemas: { [topic: string]: { type: avsc.Type; srId: number } } =
-    {};
+  public valueSchemas: { [topic: string]: SchemaInfo } = {};
 
   private log = Logger.instance;
   private selectedTopics: string[] = [];
@@ -255,17 +255,45 @@ export class SchemaRegistry {
         `registerSchemaLatest() - Registered ${schemaObj.schemaType} schema: ${schemaObj.topic}`
       );
 
-      this.schemaTypeById['schema-' + schemaObj.responseRaw.id] =
-        schemaObj.type as avsc.Type;
+      const type = schemaObj.type as avsc.Type;
+      // const jsonSchema = avroToJSONSchema((type as any).getSchema());
+      // console.log(jsonSchema);
+
+      // const openApiModel = await toOpenApi({
+      //   $schema: 'http://json-schema.org/draft-04/schema#',
+      //   title: 'Person',
+      //   description: 'some description',
+      //   type: 'object',
+      //   properties: {
+      //     name: {
+      //       description: 'name',
+      //       type: 'string',
+      //     },
+      //     favorite_number: {
+      //       type: 'number',
+      //     },
+      //     favorite_color: {
+      //       type: 'string',
+      //     },
+      //   },
+      //   required: ['name', 'favorite_number', 'favorite_color'],
+      // });
+      // const openApiModel = await toOpenApi(jsonSchema);
+      // console.log(openApiModel);
+      this.schemaTypeById['schema-' + schemaObj.responseRaw.id] = type;
       if (schemaObj.schemaType.toLowerCase() === 'key') {
         this.keySchemas[schemaObj.topic] = {
-          type: schemaObj.type as avsc.Type,
           srId: schemaObj.responseRaw.id,
+          type,
+          // jsonSchema: {},
+          // openApiModel: {},
         };
       } else {
         this.valueSchemas[schemaObj.topic] = {
-          type: schemaObj.type as avsc.Type,
           srId: schemaObj.responseRaw.id,
+          type,
+          // jsonSchema: {},
+          // openApiModel: {},
         };
         this.schemaMeta[schemaObj.topic] = schemaObj.responseRaw;
       }
