@@ -321,12 +321,17 @@ export class TestBedAdapter extends EventEmitter {
       typeof topics === 'string' ? [topics] : topics
     );
 
-    await this.createTopics(
-      newTopics.map((topic) => ({
-        topic,
-        numPartitions: this.config.partitions,
-      }))
-    );
+    if (this.config.autoCreateTopics === true) {
+      await this.createTopics(
+        newTopics.map((topic) => ({
+          topic,
+          numPartitions: this.config.partitions,
+        }))
+      );
+    } else
+      this.log.info(
+        'AutoCreateTopics is disabled, so not creating any topics.'
+      );
   }
 
   /**
@@ -712,6 +717,7 @@ export class TestBedAdapter extends EventEmitter {
         connectTimeout: 5000,
         partitionerType: 2,
         partitions: 1,
+        autoCreateTopics: false,
       } as ITestBedOptions & KafkaConfig,
       options
     );

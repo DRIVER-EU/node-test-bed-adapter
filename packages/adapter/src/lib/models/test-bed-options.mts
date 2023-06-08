@@ -96,4 +96,6 @@ export interface ITestBedOptions
   partitionerType?: number;
   /** Default number of partitions to use when creating topics. Default 1 */
   partitions?: number;
+  /** If true, automatically create topics */
+  autoCreateTopics?: boolean;
 }
