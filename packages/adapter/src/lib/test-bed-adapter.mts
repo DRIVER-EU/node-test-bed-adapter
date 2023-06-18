@@ -11,6 +11,8 @@ import {
   KafkaConfig,
   ITopicMetadata,
   Partitioners,
+  ConsumerEvents,
+  ValueOf,
 } from 'kafkajs';
 import { EventEmitter } from 'events';
 import {
@@ -63,6 +65,26 @@ export interface OffsetOutOfRange {
 
 export interface TestBedAdapter {
   on(event: 'ready', listener: () => void): this;
+  on(event: 'connect', listener: () => void): this;
+  on(event: 'consumer.heartbeat', listener: () => void): this;
+  on(event: 'consumer.commit_offsets', listener: () => void): this;
+  on(event: 'consumer.group_join', listener: () => void): this;
+  on(event: 'consumer.fetch_start', listener: () => void): this;
+  on(event: 'consumer.fetch', listener: () => void): this;
+  on(event: 'consumer.start_batch_process', listener: () => void): this;
+  on(event: 'consumer.end_batch_process', listener: () => void): this;
+  on(event: 'consumer.connect', listener: () => void): this;
+  on(event: 'consumer.disconnect', listener: () => void): this;
+  on(event: 'consumer.stop', listener: () => void): this;
+  on(event: 'consumer.crash', listener: () => void): this;
+  on(event: 'consumer.rebalancing', listener: () => void): this;
+  on(
+    event: 'consumer.received_unsubscribed_topics',
+    listener: () => void
+  ): this;
+  on(event: 'consumer.network.request', listener: () => void): this;
+  on(event: 'consumer.network.request_timeout', listener: () => void): this;
+  on(event: 'consumer.network.request_queue_size', listener: () => void): this;
   on(event: 'reconnect', listener: () => void): this;
   on(event: 'error', listener: (error: string) => void): this;
   on(
@@ -498,9 +520,32 @@ export class TestBedAdapter extends EventEmitter {
       rebalanceTimeout: this.config.rebalanceTimeout,
       allowAutoTopicCreation: true,
     });
-    consumer.on('consumer.crash', (ev) =>
-      this.emitErrorMsg(JSON.stringify(ev))
-    );
+    // Wrap events emitted by the consumer
+    for (const event of [
+      'consumer.heartbeat',
+      'consumer.commit_offsets',
+      'consumer.group_join',
+      'consumer.fetch_start',
+      'consumer.fetch',
+      'consumer.start_batch_process',
+      'consumer.end_batch_process',
+      'consumer.connect',
+      'consumer.disconnect',
+      'consumer.stop',
+      'consumer.crash',
+      'consumer.rebalancing',
+      'consumer.received_unsubscribed_topics',
+      'consumer.network.request',
+      'consumer.network.request_timeout',
+      'consumer.network.request_queue_size',
+    ]) {
+      consumer.on(event as ValueOf<ConsumerEvents>, (ev) => {
+        this.emit(event, ev);
+      });
+    }
+    // consumer.on('consumer.crash', (ev) =>
+    //   this.emitErrorMsg(JSON.stringify(ev))
+    // );
     this.consumer = consumer;
   }
 

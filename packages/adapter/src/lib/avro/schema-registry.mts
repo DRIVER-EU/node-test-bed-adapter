@@ -101,26 +101,32 @@ export class SchemaRegistry {
     );
 
     const tryToInitialize = async () => {
-      await isSchemaRegistryAvailable(this.options, this.log)
-        .then(() => this.fetchTopics())
-        .then((t) => this.storeTopics(t))
-        .then((topics) =>
-          Promise.all(
-            topics.map((t) => this.fetchLatestVersion(t), {
-              concurrency: 10,
-            })
+      try {
+        await isSchemaRegistryAvailable(this.options, this.log)
+          .then(() => this.fetchTopics())
+          .then((t) => this.storeTopics(t))
+          .then((topics) =>
+            Promise.all(
+              topics.map((t) => this.fetchLatestVersion(t), {
+                concurrency: 10,
+              })
+            )
           )
-        )
-        .then((topics) => topics.filter((t) => (t ? true : false)))
-        .then((topics) =>
-          Promise.all(
-            topics.map((t) => this.fetchSchema(t!), { concurrency: 10 })
+          .then((topics) => topics.filter((t) => (t ? true : false)))
+          .then((topics) =>
+            Promise.all(
+              topics.map((t) => this.fetchSchema(t!), { concurrency: 10 })
+            )
           )
-        )
-        .then((schemas) =>
-          Promise.all(schemas.map((t) => this.registerSchemaLatest(t)))
-        )
-        .then((schemas) => Promise.resolve(this.checkForAllVersions(schemas)));
+          .then((schemas) =>
+            Promise.all(schemas.map((t) => this.registerSchemaLatest(t)))
+          )
+          .then((schemas) =>
+            Promise.resolve(this.checkForAllVersions(schemas))
+          );
+      } catch (e: any) {
+        throw new Error(`Schema registry initialization failed (${e}).`);
+      }
     };
 
     const missingSchemas = () =>
@@ -132,7 +138,9 @@ export class SchemaRegistry {
 
     const tryingToInitializeSchemas = async () => {
       let count = 0;
-      await tryToInitialize();
+      await tryToInitialize().catch((e) => {
+        throw new Error(e);
+      });
       if (isSuccess()) {
         return;
       } else {
@@ -353,11 +361,11 @@ export class SchemaRegistry {
    * After the initial schema registration is complete check if it is required to
    * fetch all the past versions for each topic and concatenate those results.
    *
-   * @param {Array.<Object>} registeredSchemas The registered schemas from the first op.
+   * @param {ISchema[]} registeredSchemas The registered schemas from the first op.
    * @return {Promise(Array.<Object>)} The same schemas plus all the versions if requested.
    * @private
    */
-  private checkForAllVersions(registeredSchemas: ISchema[]) {
+  private checkForAllVersions(registeredSchemas: ISchema[]): Promise<any> {
     return new Promise<ISchema[]>((resolve) => {
       if (!this.fetchAllVersions) {
         resolve(registeredSchemas);

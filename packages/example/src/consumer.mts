@@ -18,42 +18,57 @@ class Consumer {
   private adapter: TestBedAdapter;
 
   constructor() {
-    this.adapter = new TestBedAdapter({
-      kafkaHost: process.env.KAFKA_HOST || 'localhost:3501',
-      schemaRegistry: process.env.SCHEMA_REGISTRY || 'localhost:3502',
-      heartbeatInterval: process.env.HEARTBEAT_INTERVAL
-        ? +process.env.HEARTBEAT_INTERVAL
-        : undefined,
-      fetchAllSchemas: false,
-      fetchAllVersions: false,
-      wrapUnions: true,
-      // wrapUnions: 'auto',
-      groupId: this.id,
-      // consume: ['config'],
-      consume: ['standard_cap'],
-      maxConnectionRetries: 1,
-      fromOffset: 'earliest',
-      logging: {
-        logToConsole: LogLevel.Info,
-        logToFile: LogLevel.Info,
-        logToKafka: LogLevel.Warn,
-        logFile: 'log.txt',
-      },
-    });
-    this.adapter.on('error', async (err) => {
-      console.error(`Consumer ${this.id} received an error: ${err}`);
-    });
-    this.adapter.on('ready', () => {
-      this.subscribe();
-      this.getTopics();
-      log.info('Consumer is connected');
-      // this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
-      //   if (err) {
-      //     return log.error(err);
-      //   }
-      //   this.handleMessage(msg as IAdapterMessage);
-      // });
-    });
+    const initAdapter = () => {
+      const adapter = new TestBedAdapter({
+        kafkaHost: process.env.KAFKA_HOST || 'localhost:3501',
+        schemaRegistry: process.env.SCHEMA_REGISTRY || 'localhost:3502',
+        heartbeatInterval: process.env.HEARTBEAT_INTERVAL
+          ? +process.env.HEARTBEAT_INTERVAL
+          : undefined,
+        fetchAllSchemas: false,
+        fetchAllVersions: false,
+        wrapUnions: true,
+        // wrapUnions: 'auto',
+        groupId: this.id,
+        // consume: ['config'],
+        consume: ['standard_cap'],
+        maxConnectionRetries: 1,
+        fromOffset: 'earliest',
+        logging: {
+          logToConsole: LogLevel.Info,
+          logToFile: LogLevel.Info,
+          logToKafka: LogLevel.Warn,
+          logFile: 'log.txt',
+        },
+      });
+      adapter.on('error', async (err) => {
+        console.error(`Consumer ${this.id} received an error: ${err}`);
+      });
+      adapter.on('consumer.disconnect', async () => {
+        console.error(`Consumer ${this.id} disconnected`);
+      });
+      adapter.on('consumer.stop', async () => {
+        console.error(`Consumer ${this.id} stopped`);
+      });
+      adapter.on('consumer.crash', async () => {
+        console.error(`Consumer ${this.id} crashed`);
+        this.adapter = initAdapter();
+        this.connectWithRetry();
+      });
+      adapter.on('ready', () => {
+        this.subscribe();
+        this.getTopics();
+        log.info('Consumer is connected');
+        // this.adapter.addConsumerTopics({ topic: 'system_configuration', offset: 0 }, true, (err, msg) => {
+        //   if (err) {
+        //     return log.error(err);
+        //   }
+        //   this.handleMessage(msg as IAdapterMessage);
+        // });
+      });
+      return adapter;
+    };
+    this.adapter = initAdapter();
     this.connectWithRetry();
   }
 
