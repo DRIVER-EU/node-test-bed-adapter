@@ -1,7 +1,5 @@
 import { default as axios, AxiosRequestConfig } from 'axios';
 import avsc from 'avsc';
-import toOpenApi from '@openapi-contrib/json-schema-to-openapi-schema';
-import { avroToJSONSchema } from 'avro-to-json-schema';
 import { ITestBedOptions } from '../models/index.mjs';
 import { Logger } from '../logger/index.mjs';
 import {

@@ -45,8 +45,6 @@
     "avsc": "^5.7.7",
     "axios": "^1.4.0",
     "form-data": "^4.0.0",
-    "@openapi-contrib/json-schema-to-openapi-schema": "^2.2.5",
-    "avro-to-json-schema": "^0.1.0",
     "kafkajs": "^2.2.4",
     "test-bed-schemas": "workspace:*"
   },
