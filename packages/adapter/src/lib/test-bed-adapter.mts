@@ -153,6 +153,7 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public disconnect() {
+    this.removeAllListeners();
     this.consumer?.disconnect();
     this.producer?.disconnect();
   }
@@ -199,6 +200,7 @@ export class TestBedAdapter extends EventEmitter {
 
   /** Deprecated: use disconnect */
   public close() {
+    this.removeAllListeners();
     this.disconnect();
   }
 
