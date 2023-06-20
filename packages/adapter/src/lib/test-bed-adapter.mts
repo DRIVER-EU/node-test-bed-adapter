@@ -141,10 +141,15 @@ export class TestBedAdapter extends EventEmitter {
   }
 
   public async connect() {
-    await this.initLogger();
-    await this.schemaPublisher.init();
-    this.client = new Kafka(this.config);
-    await this.initialize();
+    try {
+      await this.initLogger();
+      await this.schemaPublisher.init();
+      this.client = new Kafka(this.config);
+      await this.initialize();
+      return true;
+    } catch (e: any) {
+      return false;
+    }
   }
 
   public disconnect() {

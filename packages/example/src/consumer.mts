@@ -15,9 +15,10 @@ const log = AdapterLogger.instance;
 
 class Consumer {
   private id = 'tno-consumer';
-  private adapter: TestBedAdapter;
+  private adapter!: TestBedAdapter;
 
   constructor() {
+    let count = 0;
     const initAdapter = () => {
       const adapter = new TestBedAdapter({
         kafkaHost: process.env.KAFKA_HOST || 'localhost:3501',
@@ -43,6 +44,7 @@ class Consumer {
       });
       adapter.on('error', async (err) => {
         console.error(`Consumer ${this.id} received an error: ${err}`);
+        connectWithRetry();
       });
       adapter.on('consumer.disconnect', async () => {
         console.error(`Consumer ${this.id} disconnected`);
@@ -52,8 +54,7 @@ class Consumer {
       });
       adapter.on('consumer.crash', async () => {
         console.error(`Consumer ${this.id} crashed`);
-        this.adapter = initAdapter();
-        this.connectWithRetry();
+        connectWithRetry();
       });
       adapter.on('ready', () => {
         this.subscribe();
@@ -68,17 +69,18 @@ class Consumer {
       });
       return adapter;
     };
-    this.adapter = initAdapter();
-    this.connectWithRetry();
-  }
 
-  async connectWithRetry() {
-    try {
-      await this.adapter.connect();
-    } catch {
+    const connectWithRetry = async () => {
+      console.log(`Connecting to Kafka... count ${count++}`);
+      if (this.adapter) {
+        this.adapter.disconnect();
+        this.adapter.close();
+      }
       await sleep(1000);
-      await this.connectWithRetry();
-    }
+      this.adapter = initAdapter();
+      await this.adapter.connect();
+    };
+    connectWithRetry();
   }
 
   private subscribe() {
