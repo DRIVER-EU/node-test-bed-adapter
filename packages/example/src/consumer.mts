@@ -73,9 +73,7 @@ class Consumer {
     const connectWithRetry = async () => {
       console.log(`Connecting to Kafka... count ${count++}`);
       if (this.adapter) {
-        this.adapter.removeAllListeners();
         this.adapter.disconnect();
-        this.adapter.close();
       }
       await sleep(1000);
       this.adapter = initAdapter();
