@@ -1,23 +1,23 @@
 {
-  "name": "Post",
-  "namespace": "eu.driver.model.sim.entity",
-  "doc": "A post is a specific entity representing a piece of writing, image or other content published. Examples of posts can range from (e-)mail to social media posts. *Copyright (C) 2019-2020 XVR Simulation B.V., Delft, The Netherlands, Martijn Hendriks <hendriks @ xvrsim.com>. This file is licensed under the MIT license : https://github.com/DRIVER-EU/avro-schemas/blob/master/LICENSE*",
-  "type": "record",
-  "fields": [
-    {
-      "name": "id",
-      "doc": "Unique case-insensitive identifier of the post",
-      "type": "string"
-    },
+	"name": "Post",
+	"namespace": "eu.driver.model.sim.entity",
+	"doc": "A post is a specific entity representing a piece of writing, image or other content published. Examples of posts can range from (e-)mail to social media posts. *Copyright (C) 2019-2020 XVR Simulation B.V., Delft, The Netherlands, Martijn Hendriks <hendriks @ xvrsim.com>. This file is licensed under the MIT license : https://github.com/DRIVER-EU/avro-schemas/blob/master/LICENSE*",
+	"type": "record",
+	"fields": [
 		{
-      "name": "body",
-      "doc": "Body text of the post",
-      "type": "string"
-    },
+			"name": "id",
+			"doc": "Unique case-insensitive identifier of the post",
+			"type": "string"
+		},
 		{
-      "name": "header",
-      "doc": "Optional header information of the post",
-      "type": [
+			"name": "body",
+			"doc": "Body text of the post",
+			"type": "string"
+		},
+		{
+			"name": "header",
+			"doc": "Optional header information of the post",
+			"type": [
 				"null",
 				{
 					"name": "Header",
@@ -74,13 +74,19 @@
 						{
 							"name": "subject",
 							"doc": "Optional subject of the post",
-							"type": ["null", "string"],
+							"type": [
+								"null",
+								"string"
+							],
 							"default": null
 						},
 						{
 							"name": "intro",
 							"doc": "Optional introductory text of the post",
-							"type": ["null", "string"],
+							"type": [
+								"null",
+								"string"
+							],
 							"default": null
 						},
 						{
@@ -119,7 +125,10 @@
 										{
 											"name": "altitude",
 											"doc": "Optional in meters, where 0 is the surface of the WGS84-based ellipsoid, or another agreed upon common ground level (specified inside the configuration guidelines). A positive number indicates a location outside the ellipsoid (or above the ground level), while a negative number indicates a location inside the ellipsoid (or below the ground level). If an altitude is not provided, it is presumed that the location is at the ground level of the provided latitude and longitude coordinates",
-											"type": ["null", "double"],
+											"type": [
+												"null",
+												"double"
+											],
 											"default": null
 										}
 									]
@@ -130,44 +139,58 @@
 					]
 				}
 			],
-      "default": null
-    },
-		{
-      "name": "name",
-      "doc": "Optional name of the post",
-      "type": ["null", "string"],
 			"default": null
-    },
+		},
 		{
-      "name": "type",
-      "doc": "Optional type of the post",
-      "type": ["null", "string"],
+			"name": "name",
+			"doc": "Optional name of the post",
+			"type": [
+				"null",
+				"string"
+			],
 			"default": null
-    },
-    {
-      "name": "owner",
-      "doc": "Optional unique case-insensitive identifier of the connected application owning the post",
-      "type": ["null", "string"],
-			"default": null
-    },
+		},
 		{
-      "name": "timestamp",
+			"name": "type",
+			"doc": "Optional type of the post",
+			"type": [
+				"null",
+				"string"
+			],
+			"default": null
+		},
+		{
+			"name": "owner",
+			"doc": "Optional unique case-insensitive identifier of the connected application owning the post",
+			"type": [
+				"null",
+				"string"
+			],
+			"default": null
+		},
+		{
+			"name": "timestamp",
 			"doc": "Optional UNIX Epoch time in milliseconds marking the time the update was performed",
-      "type": ["null", "long"],
-      "logicalType": "timestamp-millis",
+			"type": [
+				"null",
+				{
+					"type": "long",
+					"logicalType": "timestamp-millis"
+				}
+			],
 			"default": null
-    },
-    {
-      "name": "tags",
-      "doc": "Optional map containing post specific information: key – unique name of the specific property; value – value of that property",
-      "type": [
-        "null",
-        {
-          "type": "map",
-          "values": "string"
-        }
-      ],
-      "default": null
-    }
-  ]
+		},
+		{
+			"name": "tags",
+			"doc": "Optional map containing post specific information: key – unique name of the specific property; value – value of that property",
+			"type": [
+				"null",
+				{
+					"type": "map",
+					"values": "string"
+				}
+			],
+			"default": null
+		}
+	]
 }
