@@ -182,19 +182,35 @@ export class TestBedAdapter extends EventEmitter {
     return this.schemaRegistry.valueSchemas;
   }
 
-  public pause() {
+  /** Pause all topics when no topics are specified, or only the ones that are specified */
+  public pause(
+    topics?: {
+      topic: string;
+      partitions?: number[] | undefined;
+    }[]
+  ) {
     if (!this.consumer) {
       return this.emitErrorMsg('Consumer not ready!');
     }
-    const topics = Object.keys(this.consumerTopics).map((topic) => ({ topic }));
+    if (typeof topics === 'undefined') {
+      topics = Object.keys(this.consumerTopics).map((topic) => ({ topic }));
+    }
     this.consumer.pause(topics);
   }
 
-  public resume() {
+  /** Resume all topics when no topics are specified, or only the ones that are specified */
+  public resume(
+    topics?: {
+      topic: string;
+      partitions?: number[] | undefined;
+    }[]
+  ) {
     if (!this.consumer) {
       return this.emitErrorMsg('Consumer not ready!');
     }
-    const topics = Object.keys(this.consumerTopics).map((topic) => ({ topic }));
+    if (typeof topics === 'undefined') {
+      topics = Object.keys(this.consumerTopics).map((topic) => ({ topic }));
+    }
     this.consumer.resume(topics);
   }
 
