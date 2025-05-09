@@ -459,7 +459,10 @@ export class TestBedAdapter extends EventEmitter {
         await this.initConsumer(this.config.consume);
         await this.addConsumerTopics(this.config.consume);
         this.isConnected = true;
-        if (this.config.heartbeatInterval !== 0) {
+        if (
+          typeof this.config.heartbeatInterval !== 'undefined' &&
+          this.config.heartbeatInterval > 0
+        ) {
           await this.startHeartbeat();
         }
         this.emit('ready');
