@@ -34,8 +34,8 @@
     "node-test-bed-adapter": "workspace:*"
   },
   "devDependencies": {
-    "@types/geojson": "^7946.0.14",
-    "@types/node": "^20.12.7",
-    "typescript": "5.4.5"
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^22.15.17",
+    "typescript": "5.8.3"
   }
 }
