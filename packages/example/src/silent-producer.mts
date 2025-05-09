@@ -32,6 +32,7 @@ const silentProducer = () => {
       autoRegisterDefaultSchemas: false,
       wrapUnions: 'auto',
       schemaFolder: process.env.SCHEMA_FOLDER || `${process.cwd()}/src/schemas`,
+      heartbeatInterval: 0,
       logging: {
         logToConsole: LogLevel.Info,
         logToKafka: LogLevel.Warn,
