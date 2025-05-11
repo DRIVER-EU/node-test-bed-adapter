@@ -80,7 +80,7 @@ Assuming you have node (8 or higher) have installed, you can do the following:
 
 ```console
 npm i
-npm build
+npm run build
 npm run test
 ```
 
