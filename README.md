@@ -4,7 +4,7 @@ This is the test-bed adapter for node.js: it allows you to easily connect JavaSc
 
 The implementation is a wrapper around [kafkajs](https://www.npmjs.com/package/kafkajs), offering support for:
 
-- AVRO schema's and messages: both key's and values should have a schema as explained [here](https:/github.com/DRIVER-EU/avro-schemas).
+- AVRO schema's and messages: both key's and values should have a schema as explained [here](https://github.com/DRIVER-EU/avro-schemas).
 - Logging via console, file and via Kafka: you can set for each log provider the log level (e.g. error or debug).
 - Management
   - Heartbeat (topic: connect-status-heartbeat), so you know which clients are online.
